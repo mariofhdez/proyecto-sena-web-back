@@ -14,6 +14,22 @@ app.get('/', (req, res)=>{
         `)
 });
 
+app.get('/users/:id', (req, res)=>{
+    const userId = req.params.id;
+    res.send(`Mostrar información del usuario con ID: ${userId}`)
+});
+
+app.get('/search', (req, res) =>{
+    const terms = req.query.termino || 'No especificado';
+    const category = req.query.category || 'Todas';
+
+    res.send(`
+        <h2> Resultados de búsqueda:</h2>
+        <p>Término: ${terms}</p>
+        <p>Categoría: ${category}</p>
+        `);
+});
+
 
 app.listen(PORT, () =>{
 console.log(`Servidor: http://localhost:${PORT}`)
