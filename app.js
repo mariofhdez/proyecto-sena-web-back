@@ -1,14 +1,23 @@
 require('dotenv').config();
 const express = require('express');
+
+const { validateUser } = require('./utils/validation');
+const LoggerMiddleware = require('./middlewares/logger');
+const errorHandler = require('./middlewares/errorHandler');
+
 const bodyParser = require('body-parser');
 
 const fs = require('fs');
 const path = require('path');
 const usersFilePath = path.join(__dirname, 'users.json');
 
+const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(LoggerMiddleware);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
@@ -72,41 +81,25 @@ app.get('/users', (req, res) => {
 
 app.post('/users', (req, res) => {
     const newUser = req.body;
-    const id = newUser.id;
-    const name = newUser.name;
-    const email = newUser.email;
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // let users = [];
-
+    // valida información
     if (!newUser || Object.keys(newUser).length === 0) {
         return res.status(400).json({ error: 'No se recibieron datos' });
     }
 
-    if (name.length < 3) {
-        return res.status(400).json({ error: 'El campo \'name\' debe ser igual o mayor a 3 caracteres' })
-    }
-
-    if (!regex.test(email)) {
-        return res.status(400).json({ error: 'El campo \'email\' no cumple con la estructura esperada de un correo' })
-    }
-
     fs.readFile(usersFilePath, 'utf-8', (err, data) => {
         if (err) {
-            return res.status(400).json({ error: 'Error con la conexión de datos' })
+            return res.status(500).json({ error: 'Error con la conexión de datos' })
         }
-
         const users = JSON.parse(data);
 
-        const isRegistered = users.find(user => user.id == id);
+        const validation = validateUser(newUser, users);
 
-        if(!isRegistered){
-            users.push(newUser);
-        }else{
-            return res.status(400).json({ error: 'El \'id\' ya se encuentra registrado en nuestra base de datos' })
+        if(!validation.isValid){
+            return res.status(400).json({ error: validation.error });
         }
 
-
+        users.push(newUser);
         fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), (err) => {
             if (err) {
                 return res.status(500).json({ error: 'Error al guardar usuario' })
@@ -114,10 +107,60 @@ app.post('/users', (req, res) => {
             res.status(201).json(newUser);
         })
     });
+});
 
-    // console.log(users.length);
+app.put('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const updatedUser = req.body;
 
+    if (!updatedUser || Object.keys(updatedUser).length === 0) {
+        return res.status(400).json({ error: 'No se recibieron datos' });
+    }
 
+    fs.readFile(usersFilePath, 'utf-8', (err, data) => {
+        if(err){
+            return res.status(500).json({ error: 'Error con conexión de datos' });
+        }
+        let users = JSON.parse(data);
+
+        const validation = validateUser(updatedUser, users);
+
+        if(!validation.isValid){
+            return res.status(400).json({ error: validation.error });
+        }
+        
+        users = users.map(user => (user.id === userId ? {...user, ...updatedUser}:user));
+
+        fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), (err) => {
+            if(err){
+                return res.status(500).json({ error: 'Error al guardar usuario' })
+            }
+            res.json(updatedUser);
+        })
+    })
+})
+
+app.delete('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+
+    fs.readFile(usersFilePath, 'utf-8', (err, data) => {
+        if(err){
+            return res.status(500).json({ error: 'Error con conexión de datos' });
+        }
+        let users = JSON.parse(data);
+        users = users.filter(user => user.id !== userId);
+        
+        fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), (err) => {
+            if(err){
+                return res.status(500).json({ error: 'Error al eliminar usuario' })
+            }
+            res.status(204).send();
+        })
+    })
+});
+
+app.get('/error', (req, res, next) => {
+    next(new Error('Error intencional'));
 });
 
 
