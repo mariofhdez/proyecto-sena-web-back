@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 
 const { validateUser } = require('./utils/validation');
 const LoggerMiddleware = require('./middlewares/logger');
