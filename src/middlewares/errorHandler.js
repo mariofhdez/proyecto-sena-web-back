@@ -14,6 +14,8 @@ const errorHandler = (err, req, res, next) => {
         message,
         ...err(process.env.NODE_ENV === 'develpoment' && { stack: err.stack })
     });
+
+    next();
 }
 
 module.exports = errorHandler;
