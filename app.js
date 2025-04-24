@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
 
-const { validateUser } = require('./utils/validation');
-const LoggerMiddleware = require('./middlewares/logger');
-const errorHandler = require('./middlewares/errorHandler');
+const { validateUser } = require('./src/utils/validation');
+const LoggerMiddleware = require('./src/middlewares/logger');
+const errorHandler = require('./src/middlewares/errorHandler');
 
 const bodyParser = require('body-parser');
 
@@ -12,6 +12,9 @@ const path = require('path');
 const usersFilePath = path.join(__dirname, 'users.json');
 
 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const db = require('./src/libs/sequelize');
+const cityController = require('./src/controllers/cityController');
 
 const app = express();
 app.use(bodyParser.json());
@@ -162,6 +165,17 @@ app.delete('/users/:id', (req, res) => {
 app.get('/error', (req, res, next) => {
     next(new Error('Error intencional'));
 });
+
+app.get('/test-db', (req, res) =>{
+    db.testConnection((err) => {
+        if(err){
+            return res.status(500).json({ error: 'Error test'});
+        }
+        res.status(200).send({ message: 'Ok'});
+        db.sequelize.close();
+    });
+})
+app.post('/test-db', cityController.create);
 
 
 app.listen(PORT, () => {
