@@ -2,8 +2,8 @@ require('dotenv').config();
 const express = require('express');
 
 const { validateUser } = require('./utils/validation');
-const LoggerMiddleware = require('./middlewares/logger');
-const errorHandler = require('./middlewares/errorHandler');
+const LoggerMiddleware = require('./src/middlewares/logger');
+const errorHandler = require('./src/middlewares/errorHandler');
 
 const bodyParser = require('body-parser');
 
