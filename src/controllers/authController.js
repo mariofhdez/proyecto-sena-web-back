@@ -1,16 +1,4 @@
-const { getUsersService, registerService, loginService} = require('../services/authService')
-
-exports.users = async(req, res) => {
-    try{
-        const users = await getUsersService();
-        if(!users){
-            return res.status(404).json({ error: 'Error fetching data'});
-        }
-        return res.json(users);
-    } catch (error) {
-        return res.status(500).json({error: error.message});
-    }
-}
+const { registerService, loginService } = require('../services/authService')
 
 exports.register = async(req, res) => {
     try {
