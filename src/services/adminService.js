@@ -20,3 +20,11 @@ exports.deactivateUser = async (userId) => {
         throw new Error( error )
     }
 }
+
+exports.deleteUser = async (userId) => {
+    try {
+        return prisma.user.delete({ where: { id: parseInt(userId, 10) }});
+    } catch (error) {
+        throw new Error('Error al eliminar usuario de la base de datos.');
+    }
+}
