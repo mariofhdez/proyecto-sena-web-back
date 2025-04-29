@@ -6,11 +6,11 @@ exports.users = async(req, res) => {
         
         const users = await getUsersService();
         if(!users){
-            return res.status(404).json({ error: 'Error consultando datos'});
+            return res.status(404).json({ code: "AD404", error: 'Error consultando datos'});
         }
         return res.json(users);
     } catch (error) {
-        return res.status(500).json({error: error.message});
+        return res.status(500).json({code: "500", error: error.message});
     }
 }
 
@@ -26,8 +26,7 @@ exports.deactivateUser = async(req, res) => {
         return res.status(201).json({ message: 'Usuario desactivado correctamente.'});
     } catch (error) {
         console.log(error);
-        return res.status(500).json(error);
-        // return res.status(500).json({ error: 'Error al ejecutar proceso'});
+        return res.status(500).json({code: "500", error: error.message});
     }
 }
 
@@ -40,6 +39,6 @@ exports.deleteUser = async (req, res) => {
         return res.status(201).json({ message: 'Usuario eliminado con éxito!'});
     } catch (error){
         console.log(error);
-        return res.status(500).json(error);
+        return res.status(500).json({code: "500", error: error.message});
     }
 }
