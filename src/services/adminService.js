@@ -1,30 +1,40 @@
 const { PrismaClient } = require('../../generated/prisma');
+const { NotFoundError } = require('../utils/appError');
 const prisma = new PrismaClient();
 
 exports.getUsersService = async () => {
-    try{
-        const users = await prisma.user.findMany();
-        return users;
-    } catch (error){
-        throw new Error( 'Error conectando a la Base de Datos' );
-    }
+    const users = await prisma.user.findMany();
+    return users;
+
 }
 
-exports.deactivateUser = async (userId) => {
-    try {
-        return  prisma.user.update({
-            where: { id: parseInt(userId, 10)},
-            data: { isActive: 'FALSE'}
-        });
-    } catch (error) {
-        throw new Error( error )
+exports.getUserById = async (id) => {
+    
+    const user = await prisma.user.findFirst({ where: { id: parseInt(id, 10) } });
+    if (!user) throw new NotFoundError('Usuario no encontrado')
+        
+        return user;
+        
+        throw new Error('Prisma');
     }
+
+exports.deactivateUser = async (userId) => {
+
+    if (!this.getUserById(userId)) {
+        throw new NotFoundError('Usuario no encontrado')
+    }
+
+    return prisma.user.update({
+        where: { id: parseInt(userId, 10) },
+        data: { isActive: 'FALSE' }
+    });
+
 }
 
 exports.deleteUser = async (userId) => {
-    try {
-        return prisma.user.delete({ where: { id: parseInt(userId, 10) }});
-    } catch (error) {
+
+        return prisma.user.delete({ where: { id: parseInt(userId, 10) } });
+
         throw new Error('Error al eliminar usuario de la base de datos.');
-    }
+
 }

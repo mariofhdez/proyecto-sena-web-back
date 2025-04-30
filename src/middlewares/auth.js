@@ -1,12 +1,13 @@
 const jwt = require('jsonwebtoken');
+const { UnathorizedError, ForbiddenError } = require('../utils/appError');
 
 function authenticateToken(req, res, next){
-    if(!req.header('Authorization')) return res.status(401).json({ error: 'Falta en el \'header\' de la petición el elemento \'Authorization\'.'})
+    if(!req.header('Authorization')) next(new UnathorizedError('Falta en el \'header\' de la petición el elemento \'Authorization\'.'));
     const token = req.header('Authorization').split(' ')[1];
-    if(!token) return res.status(401).json({ error: 'Acceso denegado. No se ha proporcionado un token.'});
+    if(!token) return next(new UnathorizedError('Acceso denegado. No se ha proporcionado un token.'));
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if(err) return res.status(403).json({ error: err.message});
+        if(err) return next(new ForbiddenError('Token inválido'));
         req.user = user;
         next();
     })

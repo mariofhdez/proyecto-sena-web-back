@@ -1,44 +1,61 @@
-const { getUsersService, deactivateUser, deleteUser } = require('../services/adminService')
+const { getUsersService, deactivateUser, deleteUser, getUserById } = require('../services/adminService');
+const { ForbiddenError, NotFoundError, ValidationError } = require('../utils/appError');
+const { isValidNumericType } = require('../utils/userValidation');
 
-exports.users = async(req, res) => {
-    try{
-        if(req.user.role !== 'ADMIN') return res.status(403).json({ error: "Acceso denegado"});
-        
+exports.users = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
+
         const users = await getUsersService();
-        if(!users){
-            return res.status(404).json({ code: "AD404", error: 'Error consultando datos'});
-        }
+        if (!users) throw new NotFoundError('Error consultando datos');
+
         return res.json(users);
     } catch (error) {
-        return res.status(500).json({code: "500", error: error.message});
+        next(error);
     }
 }
 
-exports.deactivateUser = async(req, res) => {
-    try{
-        if(req.user.role !== 'ADMIN') return res.status(403).json({ error: "Acceso denegado"});
+exports.getUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
 
-        // const userId = req.params.id;
-        // if(!userId || userId.length == 0) return res.status(400).json({ error: 'La petición está incompleta falta el parámetro \'id\' en el path.'});
+        if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en el path.');
+        if (!isValidNumericType(parseInt(req.params.id), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
+
+        const user = await getUserById(req.params.id);
+
+        return res.status(200).json(user);
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.deactivateUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
+
+        if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en el path.');
+        if (!isValidNumericType(parseInt(req.params.id), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
         
         await deactivateUser(req.params.id);
-
-        return res.status(201).json({ message: 'Usuario desactivado correctamente.'});
+        
+        return res.status(201).json({ message: 'Usuario desactivado correctamente.' });
     } catch (error) {
-        console.log(error);
-        return res.status(500).json({code: "500", error: error.message});
+        next(error);
     }
 }
 
-exports.deleteUser = async (req, res) => {
-    try{
-        if(req.user.role !== 'ADMIN') return res.status(403).json({ error: "Acceso denegado"});
+exports.deleteUser = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
+        
+        if (!req.params.id) throw new ValidationError('Falta el \'id\' en el path.');
+        if (!isValidNumericType(parseInt(req.params.id,10), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
 
         await deleteUser(req.params.id);
 
-        return res.status(201).json({ message: 'Usuario eliminado con éxito!'});
-    } catch (error){
-        console.log(error);
-        return res.status(500).json({code: "500", error: error.message});
+        return res.status(201).json({ message: 'Usuario eliminado con éxito!' });
+    } catch (error) {
+        next(error);
     }
 }
