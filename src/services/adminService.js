@@ -9,14 +9,12 @@ exports.getUsersService = async () => {
 }
 
 exports.getUserById = async (id) => {
-    
+
     const user = await prisma.user.findFirst({ where: { id: parseInt(id, 10) } });
     if (!user) throw new NotFoundError('Usuario no encontrado')
-        
-        return user;
-        
-        throw new Error('Prisma');
-    }
+
+    return user;
+}
 
 exports.deactivateUser = async (userId) => {
 
@@ -33,8 +31,6 @@ exports.deactivateUser = async (userId) => {
 
 exports.deleteUser = async (userId) => {
 
-        return prisma.user.delete({ where: { id: parseInt(userId, 10) } });
-
-        throw new Error('Error al eliminar usuario de la base de datos.');
+    return prisma.user.delete({ where: { id: parseInt(userId, 10) } });
 
 }
