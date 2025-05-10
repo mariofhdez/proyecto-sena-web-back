@@ -27,7 +27,7 @@ exports.login = async (req, res, next) => {
             throw new ValidationError('Falta información en un campo', 400);
         }
         const token = await loginService(email, password);
-        return res.status(200).json({ message: token });
+        return res.status(200).json({ token: token });
     } catch (error) {
         next(error);
     }

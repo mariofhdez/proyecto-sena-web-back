@@ -10,7 +10,13 @@ function isValidName(name) {
 }
 
 function isValidPassword(password) {
-    return typeof password === 'string' && password.length > 8;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+    return typeof password === 'string' && passwordRegex.test(password);
+}
+
+function isValidRole(role){
+    const allowedRoles = [ 'ADMIN', 'USER'];
+    return typeof role === 'string' && allowedRoles.includes(role.toUpperCase())
 }
 
 function validateRegister(user){
@@ -25,7 +31,7 @@ function validateRegister(user){
     if(!isValidPassword(user.password)) {
         return {
             isValid: false,
-            error: 'El campo \'password\' debe ser igual o mayor a 8 caracteres',
+            error: 'La contraseña debe tener al menos 8 caracteres, una letra y un número',
         }
     }
 
@@ -33,6 +39,13 @@ function validateRegister(user){
         return {
             isValid: false,
             error: 'El campo \'email\' no cumple con la estructura esperada de un correo',
+        }
+    }
+
+    if(!isValidRole(user.role)){
+        return {
+            isValid: false,
+            error: 'El rol asignado es incorrecto'
         }
     }
 

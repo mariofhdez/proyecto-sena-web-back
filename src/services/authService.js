@@ -36,6 +36,18 @@ exports.loginService = async (email, password) => {
         throw new ValidationError('Usuario o contraseña inválidas');
     }
 
-    const token = jwt.sign({ id: user.id, user: user.email, role: user.role, isActive: user.isActive }, process.env.JWT_SECRET, { expiresIn: '4h' });
+    const token = jwt.sign(
+        { 
+            id: user.id, 
+            email: user.email,
+            role: user.role, 
+            isActive: user.isActive 
+        }, 
+        process.env.JWT_SECRET, 
+        { 
+            expiresIn: '4h',
+            algorithm: 'HS256'
+        }
+    );
     return token;
 }
