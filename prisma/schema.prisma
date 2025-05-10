@@ -20,15 +20,14 @@ model User {
   name String
   password String
   role Role @default(USER)
-  isActive TrueFalseOption @default(TRUE)
+  isActive Boolean @default(true)
+  loginAttempts Int @default(0)
+  lastLoginAttempt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
   ADMIN
   USER
-}
-
-enum TrueFalseOption {
-  TRUE
-  FALSE
 }

@@ -1,16 +1,43 @@
 const jwt = require('jsonwebtoken');
-const { UnathorizedError, ForbiddenError } = require('../utils/appError');
+const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
 
-function authenticateToken(req, res, next){
-    if(!req.header('Authorization')) next(new UnathorizedError('Falta en el \'header\' de la petición el elemento \'Authorization\'.'));
-    const token = req.header('Authorization').split(' ')[1];
-    if(!token) return next(new UnathorizedError('Acceso denegado. No se ha proporcionado un token.'));
+function authenticateToken(req, res, next) {
+    try {
+        const token = req.header('Authorization').split(' ')[1];
+        if (!token) throw new UnauthorizedError('Token no proporcionado');
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if(err) return next(new ForbiddenError('Token inválido'));
-        req.user = user;
-        next();
-    })
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) return next(new ForbiddenError('Token inválido'));
+            req.user = decoded;
+            next();
+        });
+        
+    } catch(error){
+        next(error)
+    }
 }
 
-module.exports = authenticateToken;
+function generateToken(user){
+    try {
+        const {id, email, role, isActive} = user;
+        const token = jwt.sign(
+            {
+                id: id,
+                email: email,
+                role: role,
+                isActive: isActive
+            },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: '4h',
+                algorithm: 'HS256'
+            }
+        )
+        return token
+    } catch (error) {
+        return error
+    }
+}
+
+
+module.exports = (authenticateToken, generateToken);

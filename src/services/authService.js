@@ -2,7 +2,6 @@ const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { ValidationError } = require('../utils/appError');
 
 exports.registerService = async (email, name, password, role) => {
@@ -26,28 +25,49 @@ exports.registerService = async (email, name, password, role) => {
 }
 
 exports.loginService = async (email, password) => {
-    const user = await prisma.user.findUnique({ where: { email: email } });
+    const user = await prisma.user.findUnique({ 
+        where: { email: email },
+        select: {
+            id: true,
+            email: true,
+            password: true,
+            role: true,
+            isActive: true,
+            loginAttempts: true,
+            lastLoginAttempt: true
+        }
+    });
+
     if (!user) {
         throw new ValidationError('Usuario o contraseña inválidas');
     }
 
+    // Verificar intentos de login
+    if (user.loginAttempts >= 5 && 
+        new Date() - new Date(user.lastLoginAttempt) < 15 * 60 * 1000) {
+        throw new ValidationError('Demasiados intentos fallidos. Intente más tarde');
+    }
+
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
+        await prisma.user.update({
+            where: { id: user.id },
+            data: {
+                loginAttempts: user.loginAttempts + 1,
+                lastLoginAttempt: new Date()
+            }
+        });
         throw new ValidationError('Usuario o contraseña inválidas');
     }
 
-    const token = jwt.sign(
-        { 
-            id: user.id, 
-            email: user.email,
-            role: user.role, 
-            isActive: user.isActive 
-        }, 
-        process.env.JWT_SECRET, 
-        { 
-            expiresIn: '4h',
-            algorithm: 'HS256'
+    // Resetear intentos de login
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            loginAttempts: 0,
+            lastLoginAttempt: new Date()
         }
-    );
-    return token;
+    });
+
+    return generateToken(user);
 }
