@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
 
+const roles = require('../utils/constants');
+
 function authenticateToken(req, res, next) {
     try {
+        console.log('validando...')
         const token = req.header('Authorization').split(' ')[1];
         if (!token) throw new UnauthorizedError('Token no proporcionado');
 
@@ -11,15 +14,15 @@ function authenticateToken(req, res, next) {
             req.user = decoded;
             next();
         });
-        
-    } catch(error){
+
+    } catch (error) {
         next(error)
     }
 }
 
-function generateToken(user){
+function generateToken(user) {
     try {
-        const {id, email, role, isActive} = user;
+        const { id, email, role, isActive } = user;
         const token = jwt.sign(
             {
                 id: id,

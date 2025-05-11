@@ -5,10 +5,10 @@ const { validateRegister, validateUser } = require('../utils/userValidation');
 exports.register = async(req, res, next) => {
     try {
         const { email, name, password, role } = req.body;
-        if(!email || !name || !password){
+        if(!email || !name || !password || !role){
             throw new ValidationError('Falta información en un campo', 400);
         }
-        const validation = validateRegister({ email, name, password });
+        const validation = validateRegister({ email, name, password, role });
         if (!validation.isValid){
             console.log(validation.error);
             throw new ValidationError(validation.error);

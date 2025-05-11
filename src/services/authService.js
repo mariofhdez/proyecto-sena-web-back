@@ -3,6 +3,7 @@ const prisma = new PrismaClient();
 
 const bcrypt = require('bcryptjs');
 const { ValidationError } = require('../utils/appError');
+const generateToken = require('../middlewares/auth')
 
 exports.registerService = async (email, name, password, role) => {
     const existingUser = await prisma.user.findFirst({ where: {email}});
@@ -17,7 +18,17 @@ exports.registerService = async (email, name, password, role) => {
             name,
             password: hashedPassword,
             role,
-            isActive: 'TRUE'
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            isActive: true,
+            createdAt: true
         }
     });
     return newUser;
