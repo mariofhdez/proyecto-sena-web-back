@@ -4,6 +4,7 @@ const { isValidNumericType } = require('../utils/userValidation');
 
 exports.users = async (req, res, next) => {
     try {
+        console.log('controller')
         if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
 
         const users = await getUsersService();

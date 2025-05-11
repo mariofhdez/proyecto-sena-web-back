@@ -1,23 +1,18 @@
 const jwt = require('jsonwebtoken');
 const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
 
-const roles = require('../utils/constants');
-
 function authenticateToken(req, res, next) {
-    try {
-        console.log('validando...')
-        const token = req.header('Authorization').split(' ')[1];
-        if (!token) throw new UnauthorizedError('Token no proporcionado');
 
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-            if (err) return next(new ForbiddenError('Token inválido'));
-            req.user = decoded;
-            next();
-        });
+    if (!req.header('Authorization')) throw new UnauthorizedError('La cabecera Authorization no ha sido proporcionada');
 
-    } catch (error) {
-        next(error)
-    }
+    const token = req.header.authorization.split(' ')[1];
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) return next(new ForbiddenError('Token inválido'));
+        req.user = user;
+        next();
+    });
+
 }
 
 function generateToken(user) {
@@ -42,5 +37,4 @@ function generateToken(user) {
     }
 }
 
-
-module.exports = (authenticateToken, generateToken);
+module.exports = { authenticateToken, generateToken };
