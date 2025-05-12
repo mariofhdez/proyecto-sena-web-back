@@ -31,3 +31,220 @@ enum Role {
   ADMIN
   USER
 }
+
+// ------------------ Tablas estáticas ------------------
+model Departamento {
+  id     String   @id @db.VarChar(2)
+  nombre String   @db.VarChar(50)
+  ciudades Ciudad[]
+  direcciones Direccion[]
+}
+
+model Ciudad {
+  id     String   @id @db.VarChar(10)
+  nombre String   @db.VarChar(50)
+  departamentoId String
+  departamento       Departamento     @relation(fields: [departamentoId], references: [id])
+  direcciones Direccion[]
+}
+
+
+model TipoIdentificacion {
+  id     String   @id @db.VarChar(2)
+  nombre String   @db.VarChar(50)
+  empleadores Empleador[]
+  trabajadores Trabajador[]
+}
+
+model MetodoPago {
+  id          String      @id @db.VarChar(3)
+  descripcion String      @db.VarChar(120)
+  datosPago   DatoPago[]
+}
+
+model SubtipoTrabajador {
+  id                String           @id @db.Char(4)
+  descripcion       String           @db.VarChar(45)
+  contratos         InformacionContrato[]
+}
+
+model TipoTrabajador {
+  id          String      @id @db.VarChar(2)
+  descripcion String      @db.VarChar(120)
+  contratos   InformacionContrato[]
+}
+
+
+model TipoContrato {
+  id          String      @id @db.Char(4)
+  descripcion String      @db.VarChar(25)
+  contratos   InformacionContrato[]
+}
+
+model TipoIncapacidad {
+  id          String           @id @db.Char(1)
+  descripcion String      @db.VarChar(45)
+  ausencias   MvAusencia[]
+}
+
+model ConceptoNomina {
+  id          Int         @id @default(autoincrement())
+  tipo        String      @db.VarChar(45)
+  es_salarial Boolean
+  novedades   NovedadNomina[]
+}
+
+// ------------------ Tablas dinamicas ------------------
+
+model Empleador {
+  identificacion     String   @id @db.VarChar(10)
+  digito_verificacion String? @db.Char(1)
+  nombre             String   @db.VarChar(45)
+  direccionId        Int
+  tipoIdentificacionId String
+  direccion          Direccion @relation(fields: [direccionId], references: [id])
+  tipoIdentificacion TipoIdentificacion @relation(fields: [tipoIdentificacionId], references: [id])
+}
+
+model Direccion {
+  id         Int      @id @default(autoincrement())
+  direccion  String   @db.VarChar(100)
+  ciudadId   String
+  departamentoId     String
+  ciudad     Ciudad   @relation(fields: [ciudadId], references: [id])
+  departamento       Departamento     @relation(fields: [departamentoId], references: [id])
+  empleadores Empleador[]
+  trabajadores Trabajador[]
+  informacionContratos InformacionContrato[]
+}
+
+model Trabajador {
+  id                  Int      @id @default(autoincrement())
+  primer_apellido     String   @db.VarChar(45)
+  segundo_apellido    String?  @db.VarChar(45)
+  primer_nombre       String   @db.VarChar(45)
+  otros_nombres       String?  @db.VarChar(45)
+  tipoIdentificacionId String
+  identificacion      String   @db.VarChar(10)
+  direccionId         Int
+  datosPagoId         Int
+  tipoIdentificacion  TipoIdentificacion @relation(fields: [tipoIdentificacionId], references: [id])
+  direccion           Direccion @relation(fields: [direccionId], references: [id])
+  datosPago           DatoPago @relation(fields: [datosPagoId], references: [id])
+  contratos           InformacionContrato[]
+  novedades           NovedadNomina[]
+}
+
+model DatoPago {
+  id                Int         @id @default(autoincrement())
+  esta_activo       Boolean
+  metodoPagoId      String
+  numero_cuenta     String      @db.VarChar(45)
+  entidad_bancaria  String      @db.VarChar(100)
+  metodoPago        MetodoPago  @relation(fields: [metodoPagoId], references: [id])
+  trabajadores      Trabajador[]
+  novedadesNomina   NovedadNomina[]
+}
+
+model InformacionContrato {
+  id                Int         @id @default(autoincrement())
+  riesgo_pension    Int
+  salario           Float
+  fecha_inicio      DateTime
+  fecha_fin         DateTime?
+  cargo             String      @db.VarChar(45)
+  tipoTrabajadorId  String
+  subtipoTrabajadorId String
+  tipoContratoId    String
+  direccionId       Int
+  trabajadorId      Int
+  tipoTrabajador    TipoTrabajador @relation(fields: [tipoTrabajadorId], references: [id])
+  subtipoTrabajador SubtipoTrabajador @relation(fields: [subtipoTrabajadorId], references: [id])
+  tipoContrato      TipoContrato @relation(fields: [tipoContratoId], references: [id])
+  direccion         Direccion @relation(fields: [direccionId], references: [id])
+  trabajador        Trabajador @relation(fields: [trabajadorId], references: [id])
+  liquidaciones     LiquidacionTrabajador[]
+}
+
+model PeriodoNomina {
+  id                  Int      @id @default(autoincrement())
+  cantidad_empleados  Int
+  total_devengado     Float
+  total_deduccion     Float
+  total_pago          Float
+  fecha_liquidacion   DateTime
+  fecha_inicio        DateTime
+  fecha_fin           DateTime
+  liquidaciones       LiquidacionTrabajador[]
+}
+
+model LiquidacionTrabajador {
+  id                  Int      @id @default(autoincrement())
+  periodoId           Int
+  consecutivo         Int
+  total_devengado     Float
+  total_deduccion     Float
+  total_pago          Float
+  dias_laborados      Int
+  contratoId          Int
+  periodo             PeriodoNomina @relation(fields: [periodoId], references: [id])
+  contrato            InformacionContrato @relation(fields: [contratoId], references: [id])
+  deducciones         DeduccionLiquidacion[]
+  devengados          DevengadoLiquidacion[]
+  novedades           NovedadNomina[]
+}
+
+model NovedadNomina {
+  id                      Int      @id @default(autoincrement())
+  fecha_novedad           DateTime
+  cantidad_novedad        Int
+  valor_novedad           Float
+  conceptoNominaId        Int
+  trabajadorId            Int
+  datoPagoId              Int
+  conceptoNomina          ConceptoNomina @relation(fields: [conceptoNominaId], references: [id])
+  trabajador              Trabajador @relation(fields: [trabajadorId], references: [id])
+  datoPago                DatoPago @relation(fields: [datoPagoId], references: [id])
+  ausencias               MvAusencia[]
+  horasExtras             MvHorasExtrasRecargo[]
+  deducciones             DeduccionLiquidacion[]
+  devengados              DevengadoLiquidacion[]
+  liquidacionTrabajadorId Int
+  liquidacionTrabajador   LiquidacionTrabajador @relation(fields: [liquidacionTrabajadorId], references: [id])
+}
+
+model DeduccionLiquidacion {
+  id                      Int      @id @default(autoincrement())
+  valor_deduccion         Float
+  novedadNominaId         Int
+  novedadNomina           NovedadNomina @relation(fields: [novedadNominaId], references: [id])
+  liquidacionTrabajadorId Int
+  liquidacionTrabajador   LiquidacionTrabajador @relation(fields: [liquidacionTrabajadorId], references: [id])
+}
+
+model DevengadoLiquidacion {
+  id                      Int      @id @default(autoincrement())
+  valor_devengado         Float
+  novedadNominaId         Int
+  novedadNomina           NovedadNomina @relation(fields: [novedadNominaId], references: [id])
+  liquidacionTrabajadorId Int
+  liquidacionTrabajador   LiquidacionTrabajador @relation(fields: [liquidacionTrabajadorId], references: [id])
+}
+
+model MvAusencia {
+  id                  Int      @id @default(autoincrement())
+  fecha_inicio        DateTime
+  fecha_fin           DateTime
+  tipoIncapacidadId   String
+  novedadNominaId     Int
+  tipoIncapacidad     TipoIncapacidad @relation(fields: [tipoIncapacidadId], references: [id])
+  novedadNomina       NovedadNomina @relation(fields: [novedadNominaId], references: [id])
+}
+
+model MvHorasExtrasRecargo {
+  id                  Int      @id @default(autoincrement())
+  hora_inicio         DateTime
+  hora_fin            DateTime
+  novedadNominaId     Int
+  novedadNomina       NovedadNomina @relation(fields: [novedadNominaId], references: [id])
+}

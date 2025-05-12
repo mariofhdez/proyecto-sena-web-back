@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node --watch ./src/server.js",
     "start": "node ./src/server.js",
-    "test": "jest"
+    "test": "jest",
+    "seed:static": "node prisma/seedStatic.js"
   },
   "keywords": [],
   "author": "Mario Flórez <mario.florez249@gmail.com>",

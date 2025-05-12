@@ -5,7 +5,7 @@ function authenticateToken(req, res, next) {
 
     if (!req.header('Authorization')) throw new UnauthorizedError('La cabecera Authorization no ha sido proporcionada');
 
-    const token = req.header.authorization.split(' ')[1];
+    const token = req.header('Authorization').split(' ')[1];
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) return next(new ForbiddenError('Token inválido'));
