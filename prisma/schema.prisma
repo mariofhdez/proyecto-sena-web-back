@@ -105,9 +105,9 @@ model InabilityType {
 }
 
 model PayrollConcept {
-  id          Int           @id 
-  code        String        @db.VarChar(3)
-  name        String        @db.VarChar(45)
+  id          Int           @id @default(autoincrement())
+  code        String        @unique @db.VarChar(3)
+  name        String        @db.VarChar(50)
   type        PayrollConceptType
   isSalary    Boolean       @map("is_salary")
   isIBC       Boolean       @map("is_ibc")
@@ -190,6 +190,8 @@ model BankData {
   accountNumber   String        @map("account_number") @db.VarChar(45)
   paymentDataId   Int           @unique @map("payment_data_id")
   paymentData     PaymentData   @relation(fields: [paymentDataId], references: [id])
+
+  @@map("bank_data")
 }
 
 model ContractInformation {
