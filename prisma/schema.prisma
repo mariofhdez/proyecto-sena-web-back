@@ -177,7 +177,6 @@ model PaymentData {
   bankEntity      String        @map("bank_entity") @db.VarChar(100)
   paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
   employees       Employee?
-  payrollNews     PayrollNews[]
   bankData        BankData?
 
   @@map("payment_data")
@@ -257,12 +256,10 @@ model PayrollNews {
   newsValue            Float                 @map("news_value")
   payrollConceptId     Int                   @map("payroll_concept_id")
   employeeId           Int                   @map("employee_id")
-  paymentDataId        Int                   @map("payment_data_id")
-  employeeSettlementId Int                   @map("employee_settlement_id")
+  employeeSettlementId Int?                   @map("employee_settlement_id")
   payrollConcept       PayrollConcept        @relation(fields: [payrollConceptId], references: [id])
   employee             Employee              @relation(fields: [employeeId], references: [id])
-  paymentData          PaymentData           @relation(fields: [paymentDataId], references: [id])
-  employeeSettlement   EmployeeSettlement    @relation(fields: [employeeSettlementId], references: [id])
+  employeeSettlement   EmployeeSettlement?    @relation(fields: [employeeSettlementId], references: [id])
   absences             AbsenceNew[]
   extraHours           OvertimeNew[]
   deductions           SettlementDeduction[]
