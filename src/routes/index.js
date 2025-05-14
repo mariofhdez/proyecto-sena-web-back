@@ -12,6 +12,7 @@ router.use('/auth', authRouter);
 router.use('/admin', adminRouter);
 router.use('/user', userRouter);
 router.use('/employee', employeesRouter);
+router.use('/payroll-new', payrollNewRouter);
 router.use('/payroll-period', payrollPeriodRouter);
 
 module.exports = router;
