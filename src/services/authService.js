@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Servicio para la autenticación de usuarios
+ * @module services/authService
+ */
+
 const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
@@ -5,6 +10,18 @@ const bcrypt = require('bcryptjs');
 const { ValidationError } = require('../utils/appError');
 const {generateToken} = require('../middlewares/auth')
 
+/**
+ * Registra un nuevo usuario en el sistema
+ * 
+ * @async
+ * @function registerService
+ * @param {string} email - Correo electrónico del usuario
+ * @param {string} name - Nombre del usuario
+ * @param {string} password - Contraseña del usuario
+ * @param {string} role - Rol del usuario en el sistema
+ * @returns {Object} Datos del usuario creado sin la contraseña
+ * @throws {ValidationError} Si el correo ya está registrado
+ */
 exports.registerService = async (email, name, password, role) => {
     const existingUser = await prisma.user.findFirst({ where: {email}});
     if(existingUser){
@@ -35,6 +52,16 @@ exports.registerService = async (email, name, password, role) => {
 
 }
 
+/**
+ * Autentica a un usuario en el sistema
+ * 
+ * @async
+ * @function loginService
+ * @param {string} email - Correo electrónico del usuario
+ * @param {string} password - Contraseña del usuario
+ * @returns {string} Token JWT para autenticación
+ * @throws {ValidationError} Si las credenciales son inválidas o hay demasiados intentos fallidos
+ */
 exports.loginService = async (email, password) => {
     const user = await prisma.user.findUnique({ 
         where: { email: email },
