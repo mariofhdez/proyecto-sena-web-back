@@ -1,6 +1,8 @@
 const express = require('express');
 const routes = require('./routes');
 
+// Este fichero contiene lo básico de la aplicación: rutas y la librería principal
+
 const app = express();
 
 app.use(express.json());

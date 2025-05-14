@@ -1,10 +1,24 @@
-const { getUsersService, deactivateUser, deleteUser } = require('../services/adminService')
+const { getUsers, getUser, deactivateUser, deleteUser } = require('../services/adminService')
 
 exports.users = async(req, res) => {
     try{
         if(req.user.role !== 'ADMIN') return res.status(403).json({ error: "Acceso denegado"});
         
-        const users = await getUsersService();
+        const users = await getUsers();
+        if(!users){
+            return res.status(404).json({ code: "AD404", error: 'Error consultando datos'});
+        }
+        return res.json(users);
+    } catch (error) {
+        return res.status(500).json({code: "500", error: error.message});
+    }
+}
+
+exports.getUser = async(req, res) => {
+    try{
+        if(req.user.role !== 'ADMIN') return res.status(403).json({ error: "Acceso denegado"});
+        
+        const users = await getUser(req.params.id);
         if(!users){
             return res.status(404).json({ code: "AD404", error: 'Error consultando datos'});
         }

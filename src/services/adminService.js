@@ -1,7 +1,7 @@
 const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
-exports.getUsersService = async () => {
+exports.getUsers = async () => {
     try{
         const users = await prisma.user.findMany();
         return users;
@@ -10,11 +10,21 @@ exports.getUsersService = async () => {
     }
 }
 
+exports.getUser = async (id) => {
+    try{
+        const user = await prisma.user.findFirst({ where: { id: parseInt(id,10) }});
+        return user;
+    } catch (error){
+        console.error(error);
+        throw new Error( 'Error conectando a la Base de Datos', error );
+    }
+}
+
 exports.deactivateUser = async (userId) => {
     try {
         return  prisma.user.update({
             where: { id: parseInt(userId, 10)},
-            data: { isActive: 'FALSE'}
+            data: { isActive: false}
         });
     } catch (error) {
         throw new Error( error )
