@@ -8,6 +8,8 @@ const prisma = new PrismaClient();
 
 const { NotFoundError } = require('../utils/appError');
 
+const {formatDate} = require('../utils/formatDate')
+
 /**
  * Obtiene todas las novedades de nómina con sus relaciones
  * 
@@ -61,11 +63,7 @@ exports.getById = async (id) => {
  * @returns {Object} Datos de la novedad creada con sus relaciones
  */
 exports.create = async (data) => {
-    const formatDate = (dateStr) => {
-        if (!dateStr) return null;
-        const date = new Date(dateStr);
-        return date.toISOString();
-    };
+    
 
     return await prisma.payrollNews.create({
         data: {
@@ -81,12 +79,12 @@ exports.create = async (data) => {
                 connect: {
                     id: data.employeeId
                 }
-            }
+            },
+            status: 'OPEN'
         },
         include: {
             payrollConcept: true,
-            employee: true,
-            employeeSettlement: true
+            employee: true
         }
     });
 };

@@ -3,7 +3,7 @@
  * @module controllers/payrollNewController
  */
 
-const payrollNewService = require('../services/payrollNewService');
+const settlementNewService = require('../services/settlementNewService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/userValidation');
 
@@ -19,7 +19,7 @@ const { isValidNumericType } = require('../utils/userValidation');
  */
 exports.getNews = async (req, res, next) => {
     try {
-        const news = await payrollNewService.getAll();
+        const news = await settlementNewService.getAll();
         res.json(news);
     } catch (error) {
         next(error);
@@ -45,7 +45,7 @@ exports.getNew = async (req, res, next) => {
             throw new ValidationError('El \'id\' debe ser un valor numérico.');
         }
 
-        const news = await payrollNewService.getById(req.params.id);
+        const news = await settlementNewService.getById(req.params.id);
         res.json(news);
     } catch (error) {
         next(error);
@@ -65,7 +65,7 @@ exports.getNew = async (req, res, next) => {
  */
 exports.createNew = async (req, res, next) => {
     try {
-        const newPayrollNews = await payrollNewService.create(req.body);
+        const newPayrollNews = await settlementNewService.create(req.body);
         res.status(201).json(newPayrollNews);
     } catch (error) {
         next(error);
@@ -92,7 +92,7 @@ exports.updateNew = async (req, res, next) => {
             throw new ValidationError('El \'id\' debe ser un valor numérico.');
         }
 
-        const updatedNews = await payrollNewService.update(req.params.id, req.body);
+        const updatedNews = await settlementNewService.update(req.params.id, req.body);
         res.json(updatedNews);
     } catch (error) {
         next(error);
@@ -118,7 +118,7 @@ exports.deleteNew = async (req, res, next) => {
             throw new ValidationError('El \'id\' debe ser un valor numérico.');
         }
 
-        await payrollNewService.remove(req.params.id);
+        await settlementNewService.remove(req.params.id);
         res.json({ mensaje: 'Novedad de nómina eliminada' });
     } catch (error) {
         next(error);

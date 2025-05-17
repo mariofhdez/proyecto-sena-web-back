@@ -6,7 +6,7 @@
 
 const express = require('express');
 const payrollNewRouter = express.Router();
-const payrollNewController = require('../controllers/payrollNewController');
+const payrollNewController = require('../controllers/settlementNewController');
 
 /**
  * Ruta para obtener todas las novedades de nómina

@@ -36,74 +36,6 @@ enum Role {
 
 // ------------------ Tablas estáticas ------------------
 
-model State {
-  id        String    @id @db.VarChar(2)
-  name      String    @db.VarChar(50)
-  cities    City[]
-  addresses Address[]
-
-  @@map("state")
-}
-
-model City {
-  id        String    @id @db.VarChar(5)
-  name      String    @db.VarChar(50)
-  stateId   String    @map("state_id")
-  state     State     @relation(fields: [stateId], references: [id])
-  addresses Address[]
-
-  @@map("city")
-}
-
-model IdentificationType {
-  id        String     @id @db.VarChar(2)
-  name      String     @db.VarChar(50)
-  employers Employer[]
-  employees Employee[]
-
-  @@map("identification_type")
-}
-
-model PaymentMethod {
-  id          String        @id @db.VarChar(3)
-  description String        @db.VarChar(120)
-  paymentData PaymentData[]
-
-  @@map("payment_method")
-}
-
-model EmployeeSubtype {
-  id          String                @id @db.Char(2)
-  description String                @db.VarChar(50)
-  contracts   ContractInformation[]
-
-  @@map("employee_subtype")
-}
-
-model EmployeeType {
-  id          String                @id @db.VarChar(2)
-  description String                @db.VarChar(120)
-  contracts   ContractInformation[]
-
-  @@map("employee_type")
-}
-
-model ContractType {
-  id          String                @id @db.Char(1)
-  description String                @db.VarChar(25)
-  contracts   ContractInformation[]
-
-  @@map("contract_type")
-}
-
-model InabilityType {
-  id          String       @id @db.Char(1)
-  description String       @db.VarChar(45)
-  absences    AbsenceNew[]
-
-  @@map("inability_type")
-}
-
 model PayrollConcept {
   id          Int           @id @default(autoincrement())
   code        String        @unique @db.VarChar(3)
@@ -111,6 +43,7 @@ model PayrollConcept {
   type        PayrollConceptType
   isSalary    Boolean       @map("is_salary")
   isIBC       Boolean       @map("is_ibc")
+  calculationType CalculationType @map("calculation_type")
   payrollNews PayrollNews[]
 
   @@map("payroll_concept")
@@ -122,32 +55,20 @@ enum PayrollConceptType {
   EXTRA
 }
 
+enum CalculationType {
+  LINEAL
+  FACTORIAL
+  NOMINAL
+}
+
 // ------------------ Dynamic Tables ------------------
 
 model Employer {
   identification       String             @id @db.VarChar(10)
   verificationDigit    String?            @map("verification_digit") @db.Char(1)
   name                 String             @db.VarChar(45)
-  addressId            Int                @unique @map("address_id")
-  identificationTypeId String             @map("identification_type_id")
-  address              Address            @relation(fields: [addressId], references: [id])
-  identificationType   IdentificationType @relation(fields: [identificationTypeId], references: [id])
 
   @@map("employer")
-}
-
-model Address {
-  id                  Int                   @id @default(autoincrement())
-  address             String                @db.VarChar(100)
-  cityId              String                @map("city_id")
-  stateId             String                @map("state_id")
-  city                City                  @relation(fields: [cityId], references: [id])
-  state               State                 @relation(fields: [stateId], references: [id])
-  employers           Employer?
-  employees           Employee?
-  contractInformation ContractInformation?
-
-  @@map("address")
 }
 
 model Employee {
@@ -157,63 +78,13 @@ model Employee {
   secondSurname        String?               @map("second_surname") @db.VarChar(45)
   firstName            String                @map("first_name") @db.VarChar(45)
   otherNames           String?               @map("other_names") @db.VarChar(45)
-  identificationTypeId String                @map("identification_type_id")
-  addressId            Int                   @unique @map("address_id")
-  paymentDataId        Int                   @unique @map("payment_data_id")
-  identificationType   IdentificationType    @relation(fields: [identificationTypeId], references: [id])
-  address              Address               @relation(fields: [addressId], references: [id])
-  paymentData          PaymentData           @relation(fields: [paymentDataId], references: [id])
-  contracts            ContractInformation[]
+  salary               Float
+  transportAllowance   Boolean                @map("transport_allowance")
+  isActive             Boolean               @map("is_active")
+  settlements          Settlement[]
   payrollNews          PayrollNews[]
 
   @@map("employee")
-}
-
-model PaymentData {
-  id              Int           @id @default(autoincrement())
-  isActive        Boolean       @map("is_active")
-  paymentMethodId String        @map("payment_method_id")
-  accountNumber   String        @map("account_number") @db.VarChar(45)
-  bankEntity      String        @map("bank_entity") @db.VarChar(100)
-  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id])
-  employees       Employee?
-  bankData        BankData?
-
-  @@map("payment_data")
-}
-
-model BankData {
-  id              Int           @id @default(autoincrement())
-  bankEntity      String        @map("bank_entity") @db.VarChar(100)
-  accountType     String        @map("account_type") @db.VarChar(50)
-  accountNumber   String        @map("account_number") @db.VarChar(45)
-  paymentDataId   Int           @unique @map("payment_data_id")
-  paymentData     PaymentData   @relation(fields: [paymentDataId], references: [id])
-
-  @@map("bank_data")
-}
-
-model ContractInformation {
-  id              Int                  @id @default(autoincrement())
-  pensionRisk     Boolean              @map("pension_risk")
-  integralSalary  Boolean              @map("integral_salary")
-  salary          Float
-  startDate       DateTime             @map("start_date")
-  endDate         DateTime?            @map("end_date")
-  position        String               @db.VarChar(45)
-  workerTypeId    String               @map("worker_type_id")
-  workerSubtypeId String               @map("worker_subtype_id")
-  contractTypeId  String               @map("contract_type_id")
-  addressId       Int                  @unique @map("address_id")
-  employeeId      Int                  @map("employee_id")
-  workerType      EmployeeType         @relation(fields: [workerTypeId], references: [id])
-  workerSubtype   EmployeeSubtype      @relation(fields: [workerSubtypeId], references: [id])
-  contractType    ContractType         @relation(fields: [contractTypeId], references: [id])
-  address         Address              @relation(fields: [addressId], references: [id])
-  employee        Employee             @relation(fields: [employeeId], references: [id])
-  settlements     EmployeeSettlement[]
-
-  @@map("contract_information")
 }
 
 model PayrollPeriod {
@@ -225,56 +96,58 @@ model PayrollPeriod {
   settlementDate DateTime             @map("settlement_date")
   startDate      DateTime             @map("start_date")
   endDate        DateTime             @map("end_date")
-  settlements    EmployeeSettlement[]
+  settlements    Settlement[]
 
   @@map("payroll_period")
 }
 
-model EmployeeSettlement {
+model Settlement {
   id             Int                   @id @default(autoincrement())
-  prefix         String
-  consecutive    Int
+  employeeId     Int                   @map("employee_id")
+  employee       Employee              @relation(fields: [employeeId], references: [id])
+  startDate      DateTime              @map("start_date")
+  endDate        DateTime              @map("end_date")
   totalEarned    Float                 @map("total_earned")
   totalDeduction Float                 @map("total_deduction")
   totalPayment   Float                 @map("total_payment")
   workedDays     Int                   @map("worked_days")
-  periodId       Int                   @map("period_id")
-  contractId     Int                   @map("contract_id")
-  period         PayrollPeriod         @relation(fields: [periodId], references: [id])
-  contract       ContractInformation   @relation(fields: [contractId], references: [id])
+  periodId       Int?                  @map("period_id")
+  period         PayrollPeriod?        @relation(fields: [periodId], references: [id])
   deductions     SettlementDeduction[]
   earnings       SettlementEarning[]
-  news           PayrollNews[]
 
   @@map("employee_settlement")
 }
 
 model PayrollNews {
   id                   Int                   @id @default(autoincrement())
-  newsDate             DateTime              @map("news_date")
-  newsQuantity         Int                   @map("news_quantity")
-  newsValue            Float                 @map("news_value")
+  newsDate             DateTime              @map("date")
+  newsQuantity         Int                   @map("quantity")
+  newsValue            Float                 @map("value")
   payrollConceptId     Int                   @map("payroll_concept_id")
   employeeId           Int                   @map("employee_id")
-  employeeSettlementId Int?                   @map("employee_settlement_id")
+  status               PayrollNewsStatus    @map("status")
   payrollConcept       PayrollConcept        @relation(fields: [payrollConceptId], references: [id])
   employee             Employee              @relation(fields: [employeeId], references: [id])
-  employeeSettlement   EmployeeSettlement?    @relation(fields: [employeeSettlementId], references: [id])
-  absences             AbsenceNew[]
-  extraHours           OvertimeNew[]
   deductions           SettlementDeduction[]
   earnings             SettlementEarning[]
 
   @@map("payroll_new")
 }
 
+enum PayrollNewsStatus {
+  OPEN
+  CLOSED
+  IN_PROGRESS
+}
+
 model SettlementDeduction {
   id                   Int                @id @default(autoincrement())
   deductionValue       Float              @map("deduction_value")
   payrollNewsId        Int                @map("payroll_news_id")
-  employeeSettlementId Int                @map("employee_settlement_id")
+  settlementId         Int?                @map("settlement_id")
   payrollNews          PayrollNews        @relation(fields: [payrollNewsId], references: [id])
-  employeeSettlement   EmployeeSettlement @relation(fields: [employeeSettlementId], references: [id])
+  settlement           Settlement?         @relation(fields: [settlementId], references: [id])
 
   @@map("settlement_deduction")
 }
@@ -283,31 +156,9 @@ model SettlementEarning {
   id                   Int                @id @default(autoincrement())
   earningValue         Float              @map("earning_value")
   payrollNewsId        Int                @map("payroll_news_id")
-  employeeSettlementId Int                @map("employee_settlement_id")
+  settlementId         Int?                @map("settlement_id")
   payrollNews          PayrollNews        @relation(fields: [payrollNewsId], references: [id])
-  employeeSettlement   EmployeeSettlement @relation(fields: [employeeSettlementId], references: [id])
+  settlement           Settlement?         @relation(fields: [settlementId], references: [id])
 
   @@map("settlement_earning")
-}
-
-model AbsenceNew {
-  id               Int           @id @default(autoincrement())
-  startDate        DateTime      @map("start_date")
-  endDate          DateTime      @map("end_date")
-  disabilityTypeId String        @map("disability_type_id")
-  payrollNewsId    Int           @map("payroll_news_id")
-  disabilityType   InabilityType @relation(fields: [disabilityTypeId], references: [id])
-  payrollNews      PayrollNews   @relation(fields: [payrollNewsId], references: [id])
-
-  @@map("absence_new")
-}
-
-model OvertimeNew {
-  id            Int         @id @default(autoincrement())
-  startDate     DateTime    @map("start_date")
-  endDate       DateTime    @map("end_date")
-  payrollNewsId Int         @map("payroll_news_id")
-  payrollNews   PayrollNews @relation(fields: [payrollNewsId], references: [id])
-
-  @@map("overtime_new")
 }

@@ -5,7 +5,7 @@
  * @requires ./admin
  * @requires ./user
  * @requires ./employee
- * @requires ./payrollNew
+ * @requires ./settlementNew
  * @requires ./payrollPeriod
  */
 
@@ -17,7 +17,7 @@ const authRouter = require('./auth');
 const adminRouter = require('./admin');
 const userRouter = require('./user');
 const employeesRouter = require('./employee');
-const payrollNewRouter = require('./payrollNew');
+const settlementNewRouter = require('./settlementNew');
 const payrollPeriodRouter = require('./payrollPeriod');
 
 /**
@@ -29,7 +29,7 @@ router.use('/auth', authRouter);
 router.use('/admin', adminRouter);
 router.use('/user', userRouter);
 router.use('/employee', employeesRouter);
-router.use('/payroll-new', payrollNewRouter);
+router.use('/settlement-new', settlementNewRouter);
 router.use('/payroll-period', payrollPeriodRouter);
 
 module.exports = router;

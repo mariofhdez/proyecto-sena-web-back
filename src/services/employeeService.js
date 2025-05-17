@@ -51,72 +51,17 @@ exports.getById = async (id) => {
  * @returns {Object} Datos del empleado creado
  */
 exports.create = async (data) => {
-  // Formatear las fechas al formato ISO
-  const formatDate = (dateStr) => {
-    if (!dateStr) return null;
-    const date = new Date(dateStr);
-    return date.toISOString();
-  };
 
   return await prisma.employee.create({ 
     data: {
+      identification: data.identification,
       firstSurname: data.firstSurname,
       firstName: data.firstName,
       secondSurname: data.secondSurname,
       otherNames: data.otherNames,
-      identification: data.identification,
-      identificationType: {
-        connect: {
-          id: data.identificationType
-        }
-      },
-      address: {
-        create: {
-          address: data.address.address,
-          cityId: data.address.city,
-          stateId: data.address.state
-        }
-      },
-      paymentData: {
-        create: {
-          paymentMethodId: data.payment.paymentMethod,
-          accountNumber: data.payment.bankAccount,
-          bankEntity: data.payment.bank,
-          isActive: true
-        }
-      },
-      contracts: {
-        create: {
-          pensionRisk: data.contract.risk,
-          integralSalary: data.contract.integralSalary,
-          salary: data.contract.salary,
-          startDate: formatDate(data.contract.startDate),
-          endDate: formatDate(data.contract.endDate),
-          position: data.contract.position,
-          workerType: {
-            connect: {
-              id: data.contract.workerType
-            }
-          },
-          workerSubtype: {
-            connect: {
-              id: data.contract.workerSubtype
-            }
-          },
-          contractType: {
-            connect: {
-              id: data.contract.type
-            }
-          },
-          address: {
-            create: {
-              address: data.address.address,
-              cityId: data.address.city,
-              stateId: data.address.state
-            }
-          }
-        }
-      }
+      salary: data.salary,
+      transportAllowance: data.transportAllowance,
+      isActive: data.isActive,
     } 
   });
 };
@@ -133,7 +78,16 @@ exports.create = async (data) => {
 exports.update = async (id, data) => {
   return await prisma.employee.update({
     where: { id: parseInt(id) },
-    data
+    data: {
+      identification: data.identification,
+      firstSurname: data.firstSurname,
+      firstName: data.firstName,
+      secondSurname: data.secondSurname,
+      otherNames: data.otherNames,
+      salary: data.salary,
+      transportAllowance: data.transportAllowance,
+      isActive: data.isActive,
+    }
   });
 };
 

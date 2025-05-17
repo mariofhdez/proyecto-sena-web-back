@@ -50,14 +50,14 @@ async function upsertUnique(model, uniqueField, items) {
  * @returns {Promise<void>}
  */
 async function main() {
-  await upsertUnique('state', 'id', data.departamentos);
-  await upsertUnique('city', 'id', data.municipios);
-  await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
-  await upsertUnique('paymentMethod', 'id', data.metodosPago);
-  await upsertUnique('employeeType', 'id', data.tiposTrabajador);
-  await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
-  await upsertUnique('contractType', 'id', data.tiposContrato);
-  await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
+  // await upsertUnique('state', 'id', data.departamentos);
+  // await upsertUnique('city', 'id', data.municipios);
+  // await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
+  // await upsertUnique('paymentMethod', 'id', data.metodosPago);
+  // await upsertUnique('employeeType', 'id', data.tiposTrabajador);
+  // await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
+  // await upsertUnique('contractType', 'id', data.tiposContrato);
+  // await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
   await upsertUnique('payrollConcept', 'code', data.conceptosNomina); // Si no tiene id
   console.log('Tablas estáticas alimentadas correctamente.');
 }
