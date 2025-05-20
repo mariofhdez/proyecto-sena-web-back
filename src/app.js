@@ -49,29 +49,6 @@ app.get('/{any}', (req, res) => {
         `);
 });
 
-const settlementEarningsService = require('./services/settlementEarningService');
-const settlementService = require('./services/settlementService.js');
-
-app.post('/settlement', async (req, res) => {
-    const { employeeId, startDate, endDate } = req.body;
-    const settlement = await createSettlement(employeeId, startDate, endDate);
-});
-
-async function createSettlement(employee, start, end) {
-    const settlement = await settlementService.create({
-        employeeId: employee,
-        startDate: start,
-        endDate: end,
-    })
-    const earnings = await settlementEarningsService.create({ 
-        earningValue: 25000,
-        settlementId: settlement.id,
-        payrollNewId: 2 },
-    );
-
-    settlementEarningsService.update(earnings.id, { settlementId: settlement.id })
-}
-
 // Middleware para manejo global de errores
 app.use(errorHandler);
 
