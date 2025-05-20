@@ -49,7 +49,7 @@ app.get('/{any}', (req, res) => {
         `);
 });
 
-const settlementEarningsService = require('./services/settlementEarningsService');
+const settlementEarningsService = require('./services/settlementEarningService');
 const settlementService = require('./services/settlementService.js');
 
 app.post('/settlement', async (req, res) => {

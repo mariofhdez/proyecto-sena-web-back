@@ -1,5 +1,6 @@
-exports.formatDate = (dateStr) => {
+function formatDate(dateStr) {
     if (!dateStr) return null;
     const date = new Date(dateStr);
     return date.toISOString();
 };
+module.exports = { formatDate };

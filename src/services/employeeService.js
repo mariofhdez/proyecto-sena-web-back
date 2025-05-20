@@ -16,7 +16,9 @@ const { NotFoundError } = require('../utils/appError');
  * @returns {Array<Object>} Lista de todos los empleados
  */
 exports.getAll = async () => {
-  return await prisma.employee.findMany();
+  const employees = await prisma.employee.findMany();
+  if(!employees) throw NotFoundError('Error al consultar empleados');
+  return employees;
 };
 
 /**
@@ -29,9 +31,9 @@ exports.getAll = async () => {
  * @throws {NotFoundError} Si el empleado no existe
  */
 exports.getById = async (id) => {
-  const user = await prisma.employee.findUnique({ where: { id: parseInt(id) } });
-  if (!user) throw new NotFoundError('Usuario no encontrado');
-  return user;
+  const employee = await prisma.employee.findUnique({ where: { id: id } });
+  if (!employee) throw new NotFoundError('Empleado no encontrado');
+  return employee;
 };
 
 /**
@@ -40,30 +42,12 @@ exports.getById = async (id) => {
  * @async
  * @function create
  * @param {Object} data - Datos del empleado a crear
- * @param {string} data.firstSurname - Primer apellido del empleado
- * @param {string} data.firstName - Primer nombre del empleado
- * @param {string} data.secondSurname - Segundo apellido del empleado
- * @param {string} data.otherNames - Otros nombres del empleado
- * @param {string} data.identification - Número de identificación
- * @param {Object} data.address - Información de dirección
- * @param {Object} data.payment - Información de pago
- * @param {Object} data.contract - Información del contrato
  * @returns {Object} Datos del empleado creado
  */
 exports.create = async (data) => {
-
-  return await prisma.employee.create({ 
-    data: {
-      identification: data.identification,
-      firstSurname: data.firstSurname,
-      firstName: data.firstName,
-      secondSurname: data.secondSurname,
-      otherNames: data.otherNames,
-      salary: data.salary,
-      transportAllowance: data.transportAllowance,
-      isActive: data.isActive,
-    } 
-  });
+  const newEmployee = await prisma.employee.create({ data });
+  if(!newEmployee) throw new Error('No se pudo crear el empleado')
+  return newEmployee;
 };
 
 /**
@@ -76,19 +60,13 @@ exports.create = async (data) => {
  * @returns {Object} Datos del empleado actualizado
  */
 exports.update = async (id, data) => {
-  return await prisma.employee.update({
-    where: { id: parseInt(id) },
-    data: {
-      identification: data.identification,
-      firstSurname: data.firstSurname,
-      firstName: data.firstName,
-      secondSurname: data.secondSurname,
-      otherNames: data.otherNames,
-      salary: data.salary,
-      transportAllowance: data.transportAllowance,
-      isActive: data.isActive,
-    }
+const verified = await verifyId(id);
+  if (!verified) throw new NotFoundError('Empleado no se encuentra registrado en la base de datos');  const updatedEmployee = await prisma.employee.update({
+    where: { id: id },
+    data
   });
+  if (!updatedEmployee) throw new Error('No se pudo actualizar empleado')
+  return updatedEmployee;
 };
 
 /**
@@ -100,5 +78,13 @@ exports.update = async (id, data) => {
  * @returns {Object} Datos del empleado eliminado
  */
 exports.remove = async (id) => {
-  return await prisma.employee.delete({ where: { id: parseInt(id) } });
+  const verified = await verifyId(id);
+  if (!verified) throw new NotFoundError('Empleado no se encuentra registrado en la base de datos');
+  return await prisma.employee.delete({ where: { id: id } });
 };
+
+
+async function verifyId(id){
+  const isVerified = await prisma.employee.findUnique({ where: {id: id}});
+  return isVerified? true: false;
+}

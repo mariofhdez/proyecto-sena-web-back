@@ -4,10 +4,10 @@
  */
 
 const { PrismaClient } = require('../../generated/prisma');
-const { NotFoundError, ValidationError } = require('../utils/appError');
+const { ValidationError } = require('../utils/appError');
 const prisma = new PrismaClient();
 
-const {formatDate} = require('../utils/formatDate');
+const { verifyId } = require('../utils/verifyId');
 
 /**
  * Obtiene todas las liquidaciones
@@ -17,7 +17,15 @@ const {formatDate} = require('../utils/formatDate');
  * @returns {Array<Object>} Lista de todas las liquidaciones
  */
 exports.getAll = async () => {
-    return await prisma.settlement.findMany();
+    const settlements = await prisma.settlement.findMany({
+        include: {
+            earnings: true,
+            deductions: true,
+            employee: true
+        }
+    });
+    if (!settlements) throw new Error('Error al consultar las Nóminas');
+    return settlements;
 };
 
 /**
@@ -31,10 +39,14 @@ exports.getAll = async () => {
  */
 exports.getById = async (id) => {
     const settlement = await prisma.settlement.findUnique({
-        where: { id: parseInt(id) }
+        where: { id: id },
+        include: {
+            earnings: true,
+            deductions: true,
+            employee: true
+        }
     });
-    
-    if (!settlement) throw new NotFoundError('Liquidación no encontrada');
+    if (!settlement) throw new Error('Nómina no encontrada');
     return settlement;
 };
 
@@ -52,18 +64,15 @@ exports.getById = async (id) => {
  * @returns {Object} Datos de la liquidación creada
  */
 exports.create = async (data) => {
-    return await prisma.settlement.create({
-        data: {
-            employeeId: data.employeeId,
-            startDate: formatDate(data.startDate),
-            endDate: formatDate(data.endDate),
-            totalEarned: 0,
-            totalDeduction: 0,
-            totalPayment: 0,
-            workedDays: 0,
-            periodId: null,
+    const newSettlement = await prisma.settlement.create({
+        data,
+        include: {
+            earnings: true,
+            deductions: true
         }
     });
+    if (!newSettlement) throw new Error('No se pudo crear la Nómina');
+    return newSettlement;
 };
 
 /**
@@ -76,16 +85,19 @@ exports.create = async (data) => {
  * @returns {Object} Datos de la liquidación actualizada
  */
 exports.update = async (id, data) => {
-    return await prisma.settlement.update({
-        where: { id: parseInt(id) },
-        data: {
-            employeeId: data.employeeId,
-            payrollPeriodId: data.payrollPeriodId,
-            totalEarned: data.totalEarned,
-            totalDeduction: data.totalDeduction,
-            netPayment: data.netPayment
+    const isValidId = await verifyId(id, 'settlement');
+    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
+    const updatedSettlement = await prisma.settlement.update({
+        where: { id: id },
+        data,
+        include: {
+            earnings: true,
+            deductions: true,
+            employee: true
         }
     });
+    if (!updatedSettlement) throw new Error('No se pudo actualizar la Nómina');
+    return updatedSettlement;
 };
 
 /**
@@ -97,7 +109,7 @@ exports.update = async (id, data) => {
  * @returns {Object} Datos de la liquidación eliminada
  */
 exports.remove = async (id) => {
-    return await prisma.settlement.delete({
-        where: { id: parseInt(id) }
-    });
+    const isValidId = await verifyId(id, 'settlement');
+    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
+    return await prisma.settlement.delete({where: { id: id }});
 };

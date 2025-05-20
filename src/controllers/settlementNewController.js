@@ -4,8 +4,12 @@
  */
 
 const settlementNewService = require('../services/settlementNewService');
+const conceptService = require('../services/conceptService');
+const employeeService = require('../services/employeeService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/userValidation');
+const {formatDate} = require('../utils/formatDate');
+const { verifyId } = require('../utils/verifyId');
 
 /**
  * Obtiene todas las novedades de nómina
@@ -17,12 +21,12 @@ const { isValidNumericType } = require('../utils/userValidation');
  * @param {Function} next - Función para pasar al siguiente middleware
  * @returns {Object} Respuesta JSON con la lista de novedades de nómina
  */
-exports.getNews = async (req, res, next) => {
+exports.retrieveNews = async (req, res, next) => {
     try {
-        const news = await settlementNewService.getAll();
-        res.json(news);
+        const settlementNews = await settlementNewService.getAll();
+        res.json(settlementNews);
     } catch (error) {
-        next(error);
+        res.status(500).json({error: error.message});
     }
 };
 
@@ -39,16 +43,17 @@ exports.getNews = async (req, res, next) => {
  * @returns {Object} Respuesta JSON con los datos de la novedad
  * @throws {ValidationError} Si el ID no es válido
  */
-exports.getNew = async (req, res, next) => {
+exports.getNewById = async (req, res, next) => {
     try {
-        if (!isValidNumericType(parseInt(req.params.id), 'number')) {
-            throw new ValidationError('El \'id\' debe ser un valor numérico.');
+        const id = parseInt(req.params.id);
+        if (!isValidNumericType( id)) {
+            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
         }
 
-        const news = await settlementNewService.getById(req.params.id);
-        res.json(news);
+        const settlementNew = await settlementNewService.getById(id);
+        res.json(settlementNew);
     } catch (error) {
-        next(error);
+        res.status(500).json({error: error.message});
     }
 };
 
@@ -65,9 +70,29 @@ exports.getNew = async (req, res, next) => {
  */
 exports.createNew = async (req, res, next) => {
     try {
-        const newPayrollNews = await settlementNewService.create(req.body);
-        res.status(201).json(newPayrollNews);
+        const data = {
+            date: formatDate(req.body.date),
+            quantity: req.body.quantity,
+            value: req.body.value,
+            status: 'OPEN',
+            concept: {
+                connect: { id: parseInt(req.body.conceptId, 10) }
+            },
+            employee: {
+                connect: { id: parseInt(req.body.employeeId, 10) }
+            }
+        }
+
+        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10),'payrollConcept');
+        if(!isValidConcept) throw new ValidationError('El concepto no se encuentra registrado en base de datos');
+
+        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), 'employee');
+        if(!isValidEmployee) throw new ValidationError('El employee no se encuentra registrado en base de datos');
+
+        const createdSettlementNew = await settlementNewService.create(data);
+        res.status(201).json(createdSettlementNew);
     } catch (error) {
+        // res.status(500).json({error: error.message});
         next(error);
     }
 };
@@ -88,14 +113,16 @@ exports.createNew = async (req, res, next) => {
  */
 exports.updateNew = async (req, res, next) => {
     try {
-        if (!isValidNumericType(parseInt(req.params.id), 'number')) {
-            throw new ValidationError('El \'id\' debe ser un valor numérico.');
+        const id = parseInt(req.params.id);
+        const data = req.body;
+        if (!isValidNumericType( id)) {
+            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
         }
 
-        const updatedNews = await settlementNewService.update(req.params.id, req.body);
+        const updatedNews = await settlementNewService.update(id, data);
         res.json(updatedNews);
     } catch (error) {
-        next(error);
+        res.status(500).json({error: error.message});
     }
 };
 
@@ -114,13 +141,40 @@ exports.updateNew = async (req, res, next) => {
  */
 exports.deleteNew = async (req, res, next) => {
     try {
-        if (!isValidNumericType(parseInt(req.params.id), 'number')) {
-            throw new ValidationError('El \'id\' debe ser un valor numérico.');
+        const id = parseInt(req.params.id);
+        if (!isValidNumericType( id)) {
+            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
         }
 
-        await settlementNewService.remove(req.params.id);
+        await settlementNewService.remove(id);
         res.json({ mensaje: 'Novedad de nómina eliminada' });
     } catch (error) {
-        next(error);
+        res.status(500).json({error: error.message});
+    }
+};
+
+exports.getNewWithParams = async (req, res) => {
+    try {
+        const query = {
+            employeeId: parseInt(req.query.employeeId, 10),
+            date: {
+                gte: formatDate(req.query.startDate),
+                lte: formatDate(req.query.endDate)
+            },
+        }
+        if (req.query.conceptType === 'DEVENGADO') {
+            query.conceptId = {
+                lte: 40
+            }
+        }
+        if (req.query.conceptType === 'DEDUCCION') {
+            query.conceptId = {
+                gte: 40
+            }
+        }
+        const settlementNews = await settlementNewService.query(query);
+        res.json(settlementNews);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 };

@@ -1,14 +1,13 @@
 /**
  * @fileoverview Servicio para la gestión de novedades de nómina
- * @module services/payrollNewService
+ * @module services/settlementNewervice
  */
 
 const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
 const { NotFoundError } = require('../utils/appError');
-
-const {formatDate} = require('../utils/formatDate')
+const { verifyId } = require('../utils/verifyId');
 
 /**
  * Obtiene todas las novedades de nómina con sus relaciones
@@ -18,13 +17,15 @@ const {formatDate} = require('../utils/formatDate')
  * @returns {Array<Object>} Lista de todas las novedades de nómina con sus conceptos, empleados y liquidaciones asociadas
  */
 exports.getAll = async () => {
-    return await prisma.payrollNews.findMany({
+    const settlementNews = await prisma.settlementNew.findMany({
         include: {
-            payrollConcept: true,
+            concept: true,
             employee: true,
-            employeeSettlement: true
+            
         }
     });
+    if(!settlementNews) throw new Error('Error al consultar las Novedades');
+    return settlementNews;
 };
 
 /**
@@ -37,12 +38,12 @@ exports.getAll = async () => {
  * @throws {NotFoundError} Si la novedad no existe
  */
 exports.getById = async (id) => {
-    const news = await prisma.payrollNews.findUnique({
-        where: { id: parseInt(id) },
+    const news = await prisma.settlementNew.findUnique({
+        where: { id: id },
         include: {
-            payrollConcept: true,
+            concept: true,
             employee: true,
-            employeeSettlement: true
+            
         }
     });
     if (!news) throw new NotFoundError('Novedad de nómina no encontrada');
@@ -63,30 +64,15 @@ exports.getById = async (id) => {
  * @returns {Object} Datos de la novedad creada con sus relaciones
  */
 exports.create = async (data) => {
-    
-
-    return await prisma.payrollNews.create({
-        data: {
-            newsDate: formatDate(data.newsDate),
-            newsQuantity: data.newsQuantity,
-            newsValue: data.newsValue,
-            payrollConcept: {
-                connect: {
-                    id: data.payrollConceptId
-                }
-            },
-            employee: {
-                connect: {
-                    id: data.employeeId
-                }
-            },
-            status: 'OPEN'
-        },
+    const newsettlementNew = await prisma.settlementNew.create({
+        data,
         include: {
-            payrollConcept: true,
-            employee: true
+            employee: true,
+            concept: true
         }
     });
+    if (!newsettlementNew) throw new Error('No se pudo crear la Novedad');
+    return newsettlementNew;
 };
 
 /**
@@ -101,26 +87,23 @@ exports.create = async (data) => {
  * @param {number} [data.newsValue] - Valor de la novedad
  * @param {number} [data.payrollConceptId] - ID del concepto de nómina
  * @param {number} [data.employeeId] - ID del empleado
- * @param {number} [data.employeeSettlementId] - ID de la liquidación del empleado
+ * @param {number} [data. - ID de la liquidación del empleado
  * @returns {Object} Datos de la novedad actualizada con sus relaciones
  */
 exports.update = async (id, data) => {
-    return await prisma.payrollNews.update({
-        where: { id: parseInt(id) },
-        data: {
-            newsDate: data.newsDate ? new Date(data.newsDate) : undefined,
-            newsQuantity: data.newsQuantity,
-            newsValue: data.newsValue,
-            payrollConceptId: data.payrollConceptId,
-            employeeId: data.employeeId,
-            employeeSettlementId: data.employeeSettlementId
-        },
+    const verified = await verifyId(id, 'settlementNew');
+    if (!verified) throw new NotFoundError('Novedad no se encuentra registrada en la base de datos');
+    const updatedsettlementNew = await prisma.settlementNew.update({
+        where: { id: id },
+        data,
         include: {
-            payrollConcept: true,
+            concept: true,
             employee: true,
-            employeeSettlement: true
+            
         }
     });
+    if (!updatedsettlementNew) throw new Error('No se pudo realizar al actualización a la Novedad');
+    return updatedsettlementNew;
 };
 
 /**
@@ -132,7 +115,24 @@ exports.update = async (id, data) => {
  * @returns {Object} Resultado de la operación de eliminación
  */
 exports.remove = async (id) => {
-    return await prisma.payrollNews.delete({
-        where: { id: parseInt(id) }
-    });
+    const verified = await verifyId(id, 'settlementNew');
+    if (!verified) throw new NotFoundError('Novedad no se encuentra registrada en la base de datos');
+    return await prisma.settlementNew.delete({where: { id: id}});
 };
+
+exports.query = async (query) => {
+    const settlementNews = await prisma.settlementNew.findMany({where: query});
+    if (!settlementNews) throw new Error('No se encontraron novedades con los parámetros específicados');
+    return settlementNews;
+}
+
+exports.toAdd = async (query) => {
+    const sum = await prisma.settlementNew.aggregate({
+        _sum: {
+            value: true
+        },
+        where: query
+    })
+    if(!sum) throw new Error('Error al sumar las novedades de nómina');
+    return sum;
+}

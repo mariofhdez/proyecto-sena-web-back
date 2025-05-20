@@ -6,17 +6,20 @@
 const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
-const { NotFoundError, ValidationError } = require('../utils/appError');
+const { ValidationError } = require('../utils/appError');
+const { verifyId } = require('../utils/verifyId');
 
 /**
  * Obtiene todos los devengos de liquidación
- * 
+ * p
  * @async
  * @function getAll
  * @returns {Array<Object>} Lista de todos los devengos
  */
 exports.getAll = async () => {
-  return await prisma.settlementEarning.findMany();
+  const earnings = await prisma.settlementEarning.findMany();
+  if (!earnings) throw new Error('No se encontraron Devengados');
+  return earnings;
 };
 
 /**
@@ -30,10 +33,12 @@ exports.getAll = async () => {
  */
 exports.getById = async (id) => {
   const earning = await prisma.settlementEarning.findUnique({
-    where: { id: parseInt(id) }
+    where: { id: id },
+    include: {
+      news: true
+    }
   });
-  
-  if (!earning) throw new NotFoundError('Devengo no encontrado');
+  if (!earning) throw new Error('Devengados no encontrados');
   return earning;
 };
 
@@ -59,22 +64,11 @@ exports.getById = async (id) => {
  * @returns {Object} Datos del devengo creado
  */
 exports.create = async (data) => {
-  // Verificar que el PayrollNews existe
-  const payrollNews = await prisma.payrollNews.findUnique({
-    where: { id: data.payrollNewId }
+  const newEarning = await prisma.settlementEarning.create({
+    data: data
   });
-
-  if (!payrollNews) {
-    throw new NotFoundError('La novedad de nómina no existe');
-  }
-
-  return await prisma.settlementEarning.create({
-    data: {
-      earningValue: data.earningValue,
-      payrollNewsId: data.payrollNewId,
-      settlementId: parseInt(data.settlementId)
-    }
-  });
+  if (!newEarning) throw new Error('No se pudo crear el Devengado');
+  return newEarning;
 };
 
 /**
@@ -87,12 +81,15 @@ exports.create = async (data) => {
  * @returns {Object} Datos del devengo actualizado
  */
 exports.update = async (id, data) => {
-  return await prisma.settlementEarning.update({
-    where: { id: parseInt(id) },
-    data: {
-      settlementId: parseInt(data.settlementId,10)
-    }
+  const isValidId = await verifyId(id, 'settlementEarning');
+  if (!isValidId) throw new ValidationError('El Devengado no se encuentra registrado en base de datos');
+
+  const updatedSettlementEarning = await prisma.settlementEarning.update({
+    where: { id: id },
+    data: data
   });
+  if (!updatedSettlementEarning) throw new Error('No se pudo realizar al actualización al Devengado');
+  return updatedSettlementEarning;
 };
 
 /**
@@ -104,7 +101,8 @@ exports.update = async (id, data) => {
  * @returns {Object} Datos del devengo eliminado
  */
 exports.remove = async (id) => {
-  return await prisma.settlementEarning.delete({
-    where: { id: parseInt(id) }
+  const isValidId = await verifyId(id, 'settlementEarning');
+  if (!isValidId) throw new ValidationError('El Devengado no se encuentra registrado en base de datos');
+  return await prisma.settlementEarning.delete({where: { id: parseInt(id) }
   });
 };

@@ -17,7 +17,7 @@ const payrollNewController = require('../controllers/settlementNewController');
  * @param {string} path - Ruta de la API
  * @param {function} controller - Controlador que maneja la lógica para obtener todas las novedades
  */
-payrollNewRouter.get('/', payrollNewController.getNews);
+payrollNewRouter.get('/', payrollNewController.retrieveNews);
 
 /**
  * Ruta para obtener una novedad de nómina por ID
@@ -28,7 +28,7 @@ payrollNewRouter.get('/', payrollNewController.getNews);
  * @param {string} path - Ruta de la API con el ID de la novedad
  * @param {function} controller - Controlador que maneja la lógica para obtener una novedad por ID
  */
-payrollNewRouter.get('/:id', payrollNewController.getNew);
+payrollNewRouter.get('/:id', payrollNewController.getNewById);
 
 /**
  * Ruta para crear una nueva novedad de nómina
@@ -62,5 +62,7 @@ payrollNewRouter.patch('/:id', payrollNewController.updateNew);
  * @param {function} controller - Controlador que maneja la lógica para eliminar una novedad
  */
 payrollNewRouter.delete('/:id', payrollNewController.deleteNew);
+
+payrollNewRouter.get('/query', payrollNewController.getNewWithParams);
 
 module.exports = payrollNewRouter;
