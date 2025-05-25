@@ -6,6 +6,7 @@
 const employeeService = require('../services/employeeService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/userValidation');
+const { validateEmployee } = require('../utils/employeeValidations');
 
 /**
  * Obtiene todos los empleados del sistema
@@ -65,6 +66,10 @@ exports.getEmployee = async (req, res, next) => {
  */
 exports.createEmployee = async (req, res, next) => {
   try {
+    const validation = validateEmployee(req.body);
+    if(!validation.isValid) {
+      throw new ValidationError(validation.errors);
+    }
     const newEmployee = await employeeService.create(req.body);
     res.status(201).json(newEmployee);
   } catch (error) {

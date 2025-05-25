@@ -31,7 +31,6 @@ exports.register = async(req, res, next) => {
         }
         const validation = validateRegister({ email, name, password, role });
         if (!validation.isValid){
-            console.log(validation.error);
             throw new ValidationError(validation.error);
         }
         await registerService(email, name, password, role);
