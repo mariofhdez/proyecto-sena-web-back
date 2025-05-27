@@ -3,6 +3,8 @@
  * @module middlewares/errorHandler
  */
 
+const { isNull } = require('../utils/typeofValidations');
+
 /**
  * Middleware que captura y procesa todos los errores de la aplicación
  * 
@@ -20,6 +22,7 @@
 const errorHandler = (err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Ocurrió un error inesperado';
+    const errors = err.errors || null;
 
     console.error(`[ERROR] ${new Date().toISOString()} - ${statusCode} - ${message}}`);
 
@@ -27,12 +30,13 @@ const errorHandler = (err, req, res, next) => {
         console.error(err.stack);
     }
 
-    res.status(statusCode).json({
-        status: 'error',
-        statusCode,
-        message,
-        // ...err(process.env.NODE_ENV === 'develpoment' && { stack: err.stack })
-    });
+    let errorResponse = {}
+    errorResponse.message = message;
+    if(!isNull(errors)) {
+        errorResponse.errors= errors || []
+    }
+
+    res.status(statusCode).json(errorResponse);
 }
 
 module.exports = errorHandler;

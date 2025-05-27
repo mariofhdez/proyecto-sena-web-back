@@ -6,4 +6,9 @@ async function verifyId(id, model){
   return isVerified? true: false;
 }
 
-module.exports = { verifyId }
+async function verifyIdentification(identification, model){
+  const isVerified = await prisma[model].findUnique({ where: {identification: identification}});
+  return isVerified? true: false;
+}
+
+module.exports = { verifyId, verifyIdentification }

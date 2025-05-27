@@ -61,7 +61,7 @@ enum CalculationType {
 // ------------------ Tablas dinámicas ------------------
 model Employee {
   id                 Int              @id @default(autoincrement())
-  identification     String           @db.VarChar(60)
+  identification     String           @unique @db.VarChar(60)
   firstSurname       String           @map("first_surname") @db.VarChar(60)
   secondSurname      String?          @map("second_surname") @db.VarChar(60)
   firstName          String           @map("first_name") @db.VarChar(60)

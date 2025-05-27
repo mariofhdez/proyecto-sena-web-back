@@ -88,11 +88,6 @@ function validateUser(user) {
     return { isValid: true };
 }
 
-function isValidNumericType(field) {
-    const numberRegex = /^\d+$/;
-    return typeof field === 'number' && numberRegex.test(field);
-}
-
 module.exports = {
-    validateUser, validateRegister, isValidNumericType
+    validateUser, validateRegister
 }

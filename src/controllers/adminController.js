@@ -5,7 +5,7 @@
 
 const { getUsersService, deactivateUser, deleteUser, getUserById } = require('../services/adminService');
 const { ForbiddenError, NotFoundError, ValidationError } = require('../utils/appError');
-const { isValidNumericType } = require('../utils/userValidation');
+const { isValidNumericType } = require('../utils/typeofValidations');
 
 /**
  * Obtiene todos los usuarios del sistema

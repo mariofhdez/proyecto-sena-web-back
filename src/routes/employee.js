@@ -28,7 +28,7 @@ employeeRouter.get('/', employeeController.getEmployees);
  * @param {string} path - Ruta de la API con el ID del empleado
  * @param {function} controller - Controlador que maneja la lógica para obtener un empleado por ID
  */
-employeeRouter.get('/:id', employeeController.getEmployee);
+// employeeRouter.get('/:id', employeeController.getEmployee);
 
 /**
  * Ruta para crear un nuevo empleado
@@ -62,5 +62,16 @@ employeeRouter.patch('/:id', employeeController.updateEmployee);
  * @param {function} controller - Controlador que maneja la lógica para eliminar un empleado
  */
 employeeRouter.delete('/:id', employeeController.deleteEmployee);
+
+/**
+ * Ruta para obtener un empleado por identificación
+ * @name get/employees/identification/:identification
+ * @function
+ * @memberof module:routes/employee~employeeRouter
+ * @inner
+ * @param {string} path - Ruta de la API con la identificación del empleado
+ * @param {function} controller - Controlador que maneja la lógica para obtener un empleado por identificación
+ */
+employeeRouter.get('/query', employeeController.getEmployeeByIdentification);
 
 module.exports = employeeRouter;

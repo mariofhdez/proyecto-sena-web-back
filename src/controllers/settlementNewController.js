@@ -7,7 +7,7 @@ const settlementNewService = require('../services/settlementNewService');
 const conceptService = require('../services/conceptService');
 const employeeService = require('../services/employeeService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
-const { isValidNumericType } = require('../utils/userValidation');
+const { isValidNumericType } = require('../utils/typeofValidations');  
 const {formatDate} = require('../utils/formatDate');
 const { verifyId } = require('../utils/verifyId');
 
@@ -26,7 +26,7 @@ exports.retrieveNews = async (req, res, next) => {
         const settlementNews = await settlementNewService.getAll();
         res.json(settlementNews);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        next(error);
     }
 };
 
@@ -47,13 +47,13 @@ exports.getNewById = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
         if (!isValidNumericType( id)) {
-            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
+            throw new ValidationError('The field id must be a numeric value.');
         }
 
         const settlementNew = await settlementNewService.getById(id);
         res.json(settlementNew);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        next(error);
     }
 };
 
@@ -122,7 +122,7 @@ exports.updateNew = async (req, res, next) => {
         const updatedNews = await settlementNewService.update(id, data);
         res.json(updatedNews);
     } catch (error) {
-        res.status(500).json({error: error.message});
+        next(error);
     }
 };
 
@@ -149,11 +149,11 @@ exports.deleteNew = async (req, res, next) => {
         await settlementNewService.remove(id);
         res.json({ mensaje: 'Novedad de nómina eliminada' });
     } catch (error) {
-        res.status(500).json({error: error.message});
+        next(error);
     }
 };
 
-exports.getNewWithParams = async (req, res) => {
+exports.getNewWithParams = async (req, res, next) => {
     try {
         const query = {
             employeeId: parseInt(req.query.employeeId, 10),
@@ -175,6 +175,6 @@ exports.getNewWithParams = async (req, res) => {
         const settlementNews = await settlementNewService.query(query);
         res.json(settlementNews);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };

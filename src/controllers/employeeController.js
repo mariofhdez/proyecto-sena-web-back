@@ -4,8 +4,10 @@
  */
 
 const employeeService = require('../services/employeeService');
-const { NotFoundError, ValidationError } = require('../utils/appError');
-const { isValidNumericType } = require('../utils/userValidation');
+const { ValidationError, NotFoundError } = require('../utils/appError');
+const { isValidNumericType, isNull } = require('../utils/typeofValidations');
+const { validateNewEmployee, validateUniqueEmployee, validateUpdatedEmployee, employeeData } = require('../utils/employeeValidation');
+const { verifyId, verifyIdentification } = require('../utils/verifyId');
 
 /**
  * Obtiene todos los empleados del sistema
@@ -22,7 +24,7 @@ exports.getEmployees = async (req, res, next) => {
     const employees = await employeeService.getAll();
     res.json(employees);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -42,10 +44,8 @@ exports.getEmployees = async (req, res, next) => {
  */
 exports.getEmployee = async (req, res, next) => {
   try {
-    if (!isValidNumericType(parseInt(req.params.id), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
-
+    if (!isValidNumericType(parseInt(req.params.id))) throw new ValidationError('Field id must be a number type');
     const employee = await employeeService.getById(parseInt(req.params.id));
-    // if (!employee) throw new NotFoundError('Empleado no encontrado' );
     res.json(employee);
   } catch (error) {
     next(error);
@@ -65,6 +65,16 @@ exports.getEmployee = async (req, res, next) => {
  */
 exports.createEmployee = async (req, res, next) => {
   try {
+    const validation = validateNewEmployee(req.body);
+    if(!validation.isValid) {
+      throw new ValidationError('Employee was not created', validation.errors);
+    }
+
+    const isUniqueEmployee = await validateUniqueEmployee(req.body.identification);
+    if(!isUniqueEmployee) {
+      throw new ValidationError('Employee was not created', "The employee with identification \'" + req.body.identification + "\' already exists");
+    }
+
     const data = {
       identification: req.body.identification,
       firstSurname: req.body.firstSurname,
@@ -78,7 +88,7 @@ exports.createEmployee = async (req, res, next) => {
     const newEmployee = await employeeService.create(data);
     res.status(201).json(newEmployee);
   } catch (error) {
-    res.status(400).json({ error: 'Error al crear empleado', detalle: error.message });
+    next(error);
   }
 };
 
@@ -97,12 +107,31 @@ exports.createEmployee = async (req, res, next) => {
  */
 exports.updateEmployee = async (req, res, next) => {
   try {
+    // Convierte el id a un numero
     const id = parseInt(req.params.id);
-    const data = req.body;
+    // Valida que el id sea un numero
+    if (!isValidNumericType(id)) throw new ValidationError('Field id must be a number type');
+    // Valida que el empleado exista
+    const verified = await verifyId(id, "employee");
+    if (!verified) throw new NotFoundError('Employee with id \'' + id + '\' was not found');
+    // Valida que los datos en el request sean correctos
+    const validation = validateUpdatedEmployee(req.body);
+    if(!validation.isValid) {
+      throw new ValidationError('Employee was not updated', validation.errors);
+    }
+
+    // Valida que la identificación no exista
+    if(!isNull(req.body.identification)) {
+      const isUniqueIdentification = await validateUniqueEmployee(req.body.identification);
+      if(!isUniqueIdentification) {
+        throw new ValidationError('Employee was not updated', "The employee with identification \'" + req.body.identification + "\' already exists");
+      }
+    }    
+    const data = employeeData(req.body);
     const updatedEmployee = await employeeService.update(id, data);
     res.json(updatedEmployee);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -120,10 +149,27 @@ exports.updateEmployee = async (req, res, next) => {
  */
 exports.deleteEmployee = async (req, res, next) => {
   try {
+    // Validar que el id sea un numero
     const id = parseInt(req.params.id);
+    if (!isValidNumericType(id)) throw new ValidationError('Field id must be a number type');
+     // Valida que el empleado exista
+     const verified = await verifyId(id, "employee");
+     if (!verified) throw new NotFoundError('Employee with id \'' + id + '\' was not found');
     await employeeService.remove(id);
     res.json({ mensaje: 'Empleado eliminado' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    next(error);
   }
 };
+
+exports.getEmployeeByIdentification = async (req, res, next) => {
+  try {
+    const identification = req.query.identification;
+    if(isNull(identification)) throw new ValidationError('Field identification is required');
+    const employee = await employeeService.getEmployeeByIdentification(identification);
+    res.json(employee);
+  } catch (error) {
+    next(error);
+  }
+};
+

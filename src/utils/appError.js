@@ -19,7 +19,7 @@ class NotFoundError extends AppError {
 class ValidationError extends AppError {
     constructor(message = 'Datos inválidos', errors = []){
         super(message, 400);
-        this.erros = errors;
+        this.errors = Array.isArray(errors) ? errors : [errors];
     }
 }
 

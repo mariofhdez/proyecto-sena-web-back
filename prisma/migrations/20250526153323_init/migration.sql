@@ -16,30 +16,21 @@ CREATE TABLE `user` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `payroll_concept` (
+CREATE TABLE `PayrollConcept` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(3) NOT NULL,
-    `name` VARCHAR(50) NOT NULL,
+    `name` VARCHAR(60) NOT NULL,
     `type` ENUM('DEVENGADO', 'DEDUCCION') NOT NULL,
     `is_salary` BOOLEAN NOT NULL,
     `is_ibc` BOOLEAN NOT NULL,
     `calculation_type` ENUM('LINEAL', 'FACTORIAL', 'NOMINAL') NOT NULL,
 
-    UNIQUE INDEX `payroll_concept_code_key`(`code`),
+    UNIQUE INDEX `PayrollConcept_code_key`(`code`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `employer` (
-    `identification` VARCHAR(10) NOT NULL,
-    `verification_digit` CHAR(1) NULL,
-    `name` VARCHAR(45) NOT NULL,
-
-    PRIMARY KEY (`identification`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `employee` (
+CREATE TABLE `Employee` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `identification` VARCHAR(60) NOT NULL,
     `first_surname` VARCHAR(60) NOT NULL,
@@ -50,51 +41,52 @@ CREATE TABLE `employee` (
     `transport_allowance` BOOLEAN NOT NULL,
     `is_active` BOOLEAN NOT NULL,
 
+    UNIQUE INDEX `Employee_identification_key`(`identification`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `employee_settlement` (
+CREATE TABLE `Settlement` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `start_date` DATETIME(3) NOT NULL,
     `end_date` DATETIME(3) NOT NULL,
+    `status` ENUM('DRAFT', 'OPEN', 'CLOSED', 'VOID') NOT NULL,
+    `earnings_value` DOUBLE NOT NULL,
+    `deductions_value` DOUBLE NOT NULL,
+    `total_value` DOUBLE NOT NULL,
     `employee_id` INTEGER NOT NULL,
-    `stauts` ENUM('DRAFT', 'OPEN', 'CLOSED', 'VOID') NOT NULL,
-    `total_earned` DOUBLE NOT NULL,
-    `total_deduction` DOUBLE NOT NULL,
-    `total_payment` DOUBLE NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `settlement_earning` (
+CREATE TABLE `SettlementEarning` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `value` DOUBLE NOT NULL,
     `settlement_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `settlement_earning_settlement_id_key`(`settlement_id`),
+    UNIQUE INDEX `SettlementEarning_settlement_id_key`(`settlement_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `settlement_deduction` (
+CREATE TABLE `SettlementDeduction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `value` DOUBLE NOT NULL,
     `settlement_id` INTEGER NOT NULL,
 
-    UNIQUE INDEX `settlement_deduction_settlement_id_key`(`settlement_id`),
+    UNIQUE INDEX `SettlementDeduction_settlement_id_key`(`settlement_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `settlement_new` (
+CREATE TABLE `SettlementNew` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATETIME(3) NOT NULL,
-    `quantity` INTEGER NOT NULL,
+    `quantity` DOUBLE NOT NULL,
     `value` DOUBLE NOT NULL,
-    `status` ENUM('OPEN', 'CLOSED', 'IN_PROGRESS') NOT NULL,
-    `payroll_concept_id` INTEGER NOT NULL,
+    `status` ENUM('OPEN', 'IN_DRAFT', 'CLOSED', 'VOID') NOT NULL,
+    `concept_id` INTEGER NOT NULL,
     `employee_id` INTEGER NOT NULL,
     `settlement_earnings_id` INTEGER NULL,
     `settlement_deductions_id` INTEGER NULL,
@@ -103,22 +95,22 @@ CREATE TABLE `settlement_new` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `employee_settlement` ADD CONSTRAINT `employee_settlement_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Settlement` ADD CONSTRAINT `Settlement_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_earning` ADD CONSTRAINT `settlement_earning_settlement_id_fkey` FOREIGN KEY (`settlement_id`) REFERENCES `employee_settlement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SettlementEarning` ADD CONSTRAINT `SettlementEarning_settlement_id_fkey` FOREIGN KEY (`settlement_id`) REFERENCES `Settlement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_deduction` ADD CONSTRAINT `settlement_deduction_settlement_id_fkey` FOREIGN KEY (`settlement_id`) REFERENCES `employee_settlement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SettlementDeduction` ADD CONSTRAINT `SettlementDeduction_settlement_id_fkey` FOREIGN KEY (`settlement_id`) REFERENCES `Settlement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_new` ADD CONSTRAINT `settlement_new_payroll_concept_id_fkey` FOREIGN KEY (`payroll_concept_id`) REFERENCES `payroll_concept`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SettlementNew` ADD CONSTRAINT `SettlementNew_concept_id_fkey` FOREIGN KEY (`concept_id`) REFERENCES `PayrollConcept`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_new` ADD CONSTRAINT `settlement_new_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `SettlementNew` ADD CONSTRAINT `SettlementNew_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_new` ADD CONSTRAINT `settlement_new_settlement_earnings_id_fkey` FOREIGN KEY (`settlement_earnings_id`) REFERENCES `settlement_earning`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SettlementNew` ADD CONSTRAINT `SettlementNew_settlement_earnings_id_fkey` FOREIGN KEY (`settlement_earnings_id`) REFERENCES `SettlementEarning`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `settlement_new` ADD CONSTRAINT `settlement_new_settlement_deductions_id_fkey` FOREIGN KEY (`settlement_deductions_id`) REFERENCES `settlement_deduction`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `SettlementNew` ADD CONSTRAINT `SettlementNew_settlement_deductions_id_fkey` FOREIGN KEY (`settlement_deductions_id`) REFERENCES `SettlementDeduction`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
