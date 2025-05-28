@@ -63,6 +63,4 @@ settlementNewRouter.patch('/:id', payrollNewController.updateNew);
  */
 settlementNewRouter.delete('/:id', payrollNewController.deleteNew);
 
-settlementNewRouter.get('/query', payrollNewController.getNewWithParams);
-
 module.exports = settlementNewRouter;

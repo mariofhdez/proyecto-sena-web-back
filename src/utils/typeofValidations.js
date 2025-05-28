@@ -18,15 +18,77 @@ function isValidStringType(input) {
     return true;
 }
 
-function isBlankField(input) {   
+function isBlankField(input) {
     if (input.trim().length === 0) {
         return false;
     }
     return true;
 }
 
-function isBooleanType(input) { 
+function isBooleanType(input) {
     return typeof input === 'boolean';
 }
 
-module.exports = { isValidNumericType, isNull, isValidStringType, isBlankField, isBooleanType };
+function isValidDateFormat(input) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    // Check if input is a string and matches YYYY-MM-DD pattern
+    if (typeof input !== 'string' || !dateRegex.test(input)) {
+        return false;
+    }
+
+    // Parse the date parts
+    const [year, month, day] = input.split('-').map(Number);
+
+    // Create a date object and verify the date is valid
+    const date = new Date(year, month - 1, day); // month is 0-based
+
+    // Check if the date parts match what we passed in
+    // This catches invalid dates like 2025-02-30
+    return date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day;
+}
+
+function validateRequiredString(input, name, errors) {
+    if (isNull(input)) {
+        return errors.push("The field " + name + " is required");
+    } else {
+        if (!isValidStringType(input)) {
+            return errors.push("The field " + name + " must be a string");
+        }
+        else {
+            if (!isBlankField(input)) {
+                return errors.push("The field " + name + " cannot be empty");
+            }
+        }
+    }
+}
+
+function validateRequiredNumber(input, name, errors) {
+    if (isNull(input)) {
+        return errors.push("The field " + name + " is required");
+    }
+    else {
+        if (!isValidNumericType(input)) {
+            errors.push("The field " + name + " must be a number");
+        }
+    }
+}
+
+function validateDateFormat(input, field, errors) {
+    if (!isValidDateFormat(input)) {
+        errors.push("The field " + field + " must be a valid date");
+    }
+}
+
+module.exports = {
+    isValidNumericType,
+    isNull,
+    isValidStringType,
+    isBlankField,
+    isBooleanType,
+    validateRequiredString,
+    validateRequiredNumber,
+    isValidDateFormat,
+    validateDateFormat
+};

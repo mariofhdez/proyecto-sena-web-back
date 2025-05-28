@@ -1,5 +1,5 @@
 const employeeService = require('../services/employeeService');
-const { isBlankField, isValidStringType, isValidNumericType, isBooleanType, isNull } = require('./typeofValidations');
+const { validateRequiredString, validateRequiredNumber, isBooleanType, isNull } = require('./typeofValidations');
 
 function validateNewEmployee(employee) {
     let errors = [];
@@ -10,7 +10,7 @@ function validateNewEmployee(employee) {
 
     validateRequiredString(employee.firstName, "firstName", errors);
 
-    validateSalary(employee.salary, errors);
+    validateRequiredNumber(employee.salary, "salary", errors);
 
     validateTransportAllowance(employee.transportAllowance, errors);
 
@@ -32,30 +32,6 @@ async function validateUniqueEmployee(identification) {
         return true;
     }
     return false;
-}
-
-function validateRequiredString(input, name, errors) {
-    if (isNull(input)) {
-        return errors.push("The field " + name + " is required");
-    } else {
-        if (!isValidStringType(input)) {
-            return errors.push("The field " + name + " must be a string");
-        }
-        else{
-            if (!isBlankField(input)) {
-                return errors.push("The field " + name + " cannot be empty");
-            }
-        }
-    }
-}
-
-function validateSalary(salary, errors) {
-    if (!isValidNumericType(salary)) {
-        errors.push("The field salary must be a number");
-    }
-    if (salary < 0) {
-        errors.push("The field salary must be a positive number");
-    }
 }
 
 function validateTransportAllowance(transportAllowance, errors) {

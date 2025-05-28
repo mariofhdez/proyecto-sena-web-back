@@ -4,12 +4,11 @@
  */
 
 const settlementNewService = require('../services/settlementNewService');
-const conceptService = require('../services/conceptService');
-const employeeService = require('../services/employeeService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/typeofValidations');  
 const {formatDate} = require('../utils/formatDate');
 const { verifyId } = require('../utils/verifyId');
+const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSettlementNewUpdate, validateSettlementQuery } = require('../utils/settlementNewValidation');
 
 /**
  * Obtiene todas las novedades de nómina
@@ -23,8 +22,17 @@ const { verifyId } = require('../utils/verifyId');
  */
 exports.retrieveNews = async (req, res, next) => {
     try {
-        const settlementNews = await settlementNewService.getAll();
-        res.json(settlementNews);
+        const queryParams = req.query;
+        console.log(typeof(queryParams));
+
+        if(Object.keys(queryParams).length > 0) {
+            console.log('aqui tamo');
+            const settlementNews = await getSettlementNewByParams(queryParams);
+            res.json(settlementNews);
+        } else {
+            const settlementNews = await getAllSettlementNews();
+            res.json(settlementNews);
+        }
     } catch (error) {
         next(error);
     }
@@ -46,9 +54,7 @@ exports.retrieveNews = async (req, res, next) => {
 exports.getNewById = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        if (!isValidNumericType( id)) {
-            throw new ValidationError('The field id must be a numeric value.');
-        }
+        if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
 
         const settlementNew = await settlementNewService.getById(id);
         res.json(settlementNew);
@@ -70,6 +76,23 @@ exports.getNewById = async (req, res, next) => {
  */
 exports.createNew = async (req, res, next) => {
     try {
+        // Valida que los datos de la novedad sean correctos
+        const validationResult = validateSettlementNewCreation(req.body);
+        if (!validationResult.isValid) {
+            throw new ValidationError('Settlement new was not created', validationResult.errors);
+        }
+
+        // Valida que el concepto exista
+        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
+        if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
+        // Valida que el empleado exista
+        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
+        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+
+        // Valida que la novedad no exista en el periodo
+        const isUniqueSettlementNew = await validateUniqueSettlementNew(req.body.employeeId, req.body.conceptId, req.body.date);
+        if (!isUniqueSettlementNew) throw new ValidationError('Settlement new was not created', "The settlement new with the concept id \'" + req.body.conceptId + "\' and the employee id \'" + req.body.employeeId + "\' already exists on period");
+
         const data = {
             date: formatDate(req.body.date),
             quantity: req.body.quantity,
@@ -82,12 +105,6 @@ exports.createNew = async (req, res, next) => {
                 connect: { id: parseInt(req.body.employeeId, 10) }
             }
         }
-
-        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10),'payrollConcept');
-        if(!isValidConcept) throw new ValidationError('El concepto no se encuentra registrado en base de datos');
-
-        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), 'employee');
-        if(!isValidEmployee) throw new ValidationError('El employee no se encuentra registrado en base de datos');
 
         const createdSettlementNew = await settlementNewService.create(data);
         res.status(201).json(createdSettlementNew);
@@ -113,12 +130,27 @@ exports.createNew = async (req, res, next) => {
  */
 exports.updateNew = async (req, res, next) => {
     try {
+        // Convierte el id a un numero
         const id = parseInt(req.params.id);
-        const data = req.body;
-        if (!isValidNumericType( id)) {
-            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
-        }
+        if (!isValidNumericType(id)) throw new ValidationError('Settlement new was not updated', 'The field id must be a numeric value.');
 
+        // Valida que la novedad exista
+        const verified = await verifyId(id, 'settlementNew');
+        if (!verified) throw new NotFoundError('Settlement new with id \'' + id + '\' was not found');
+
+         // Valida que el concepto exista
+         const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
+         if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
+         // Valida que el empleado exista
+         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
+         if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+
+        // Valida que los datos de la novedad sean correctos
+        const validation = validateSettlementNewUpdate(req.body);
+        if (!validation.isValid) throw new ValidationError('Settlement new was not updated', validation.errors);
+        
+        const data = settlementNewData(req.body);
+        
         const updatedNews = await settlementNewService.update(id, data);
         res.json(updatedNews);
     } catch (error) {
@@ -142,39 +174,57 @@ exports.updateNew = async (req, res, next) => {
 exports.deleteNew = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        if (!isValidNumericType( id)) {
-            throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
-        }
+        if (!isValidNumericType( id)) throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
+
+        // Valida que la novedad exista
+        const verified = await verifyId(id, 'settlementNew');
+        if (!verified) throw new NotFoundError('Settlement new with id \'' + id + '\' was not found');
 
         await settlementNewService.remove(id);
-        res.json({ mensaje: 'Novedad de nómina eliminada' });
+        res.json({ mensaje: 'Settlement new was deleted' });
     } catch (error) {
         next(error);
     }
 };
 
-exports.getNewWithParams = async (req, res, next) => {
-    try {
-        const query = {
-            employeeId: parseInt(req.query.employeeId, 10),
-            date: {
-                gte: formatDate(req.query.startDate),
-                lte: formatDate(req.query.endDate)
-            },
-        }
-        if (req.query.conceptType === 'DEVENGADO') {
-            query.conceptId = {
-                lte: 40
-            }
-        }
-        if (req.query.conceptType === 'DEDUCCION') {
-            query.conceptId = {
-                gte: 40
-            }
-        }
-        const settlementNews = await settlementNewService.query(query);
-        res.json(settlementNews);
-    } catch (error) {
-        next(error);
+// exports.getNewWithParams = async (req, res, next) => {
+//     try {
+//         const validation = validateSettlementQuery(req.query);
+//         if (!validation.isValid) throw new ValidationError('Settlement new was not retrieved', validation.errors);
+
+        
+//         res.json(settlementNews);
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
+getAllSettlementNews = async () => {
+    const settlementNews = await settlementNewService.getAll();
+    return settlementNews;
+}
+
+getSettlementNewByParams = async (params) => {
+    const queryValidation = validateSettlementQuery(params);
+    if(!queryValidation.isValid) throw new ValidationError('Settlement new was not retrieved', queryValidation.errors);
+
+    const query = {
+        employeeId: parseInt(params.employeeId, 10),
+        date: {
+            gte: formatDate(params.startDate),
+            lte: formatDate(params.endDate)
+        },
     }
-};
+    if (params.conceptType === 'DEVENGADO') {
+        query.conceptId = {
+            lte: 40
+        }
+    }
+    if (params.conceptType === 'DEDUCCION') {
+        query.conceptId = {
+            gte: 40
+        }
+    }
+    const settlementNews = await settlementNewService.query(query);
+    return settlementNews;
+}
