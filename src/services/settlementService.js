@@ -113,3 +113,14 @@ exports.remove = async (id) => {
     if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
     return await prisma.settlement.delete({where: { id: id }});
 };
+
+exports.query = async (query) => {
+    const settlements = await prisma.settlement.findMany({
+        where: query,
+        include: {
+            earnings: true,
+            deductions: true
+        }
+    });
+    return settlements;
+}

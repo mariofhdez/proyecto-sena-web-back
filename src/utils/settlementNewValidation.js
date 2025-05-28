@@ -1,4 +1,4 @@
-const { validateRequiredString, validateRequiredNumber, isValidDateFormat, validateDateFormat } = require("./typeofValidations");
+const { validateRequiredString, validateRequiredNumber, validateDateFormat } = require("./typeofValidations");
 const settlementNewService = require('../services/settlementNewService');
 
 function validateSettlementNewCreation(settlement) {
@@ -51,6 +51,21 @@ async function validateUniqueSettlementNew(employee, concept, date) {
     return true;
 }
 
+function validateAvailableConcept(conceptId) {
+
+    const unavailableConcepts = [1, 17, 41, 42, 43, 44]
+
+    if(unavailableConcepts.includes(conceptId)) {
+        return {
+            isValid: false,
+            errors: ["The concept is not available for settlements new"]
+        };
+    }
+    return {
+        isValid: true
+    };
+}
+
 function validateSettlementNewUpdate(settlement) {
     let errors = [];
 
@@ -88,7 +103,7 @@ function settlementNewData(data) {
     return settlementNew;
 }
 
-function validateSettlementQuery(query) {
+function validateSettlementNewQuery(query) {
     let errors = [];
 
     if(query.employeeId) {
@@ -125,5 +140,6 @@ module.exports = {
     validateUniqueSettlementNew,
     validateSettlementNewUpdate,
     settlementNewData,
-    validateSettlementQuery
+    validateSettlementNewQuery,
+    validateAvailableConcept
 }

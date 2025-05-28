@@ -8,7 +8,7 @@ const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/typeofValidations');  
 const {formatDate} = require('../utils/formatDate');
 const { verifyId } = require('../utils/verifyId');
-const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSettlementNewUpdate, validateSettlementQuery } = require('../utils/settlementNewValidation');
+const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSettlementNewUpdate, validateSettlementNewQuery, validateAvailableConcept } = require('../utils/settlementNewValidation');
 
 /**
  * Obtiene todas las novedades de nómina
@@ -23,10 +23,8 @@ const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSett
 exports.retrieveNews = async (req, res, next) => {
     try {
         const queryParams = req.query;
-        console.log(typeof(queryParams));
 
         if(Object.keys(queryParams).length > 0) {
-            console.log('aqui tamo');
             const settlementNews = await getSettlementNewByParams(queryParams);
             res.json(settlementNews);
         } else {
@@ -88,6 +86,10 @@ exports.createNew = async (req, res, next) => {
         // Valida que el empleado exista
         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
         if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+
+        // Valida que el concepto sea disponible para novedades
+        const isAvailableConcept = await validateAvailableConcept(req.body.conceptId);
+        if (!isAvailableConcept.isValid) throw new ValidationError('Settlement new was not created', isAvailableConcept.errors);
 
         // Valida que la novedad no exista en el periodo
         const isUniqueSettlementNew = await validateUniqueSettlementNew(req.body.employeeId, req.body.conceptId, req.body.date);
@@ -205,7 +207,7 @@ getAllSettlementNews = async () => {
 }
 
 getSettlementNewByParams = async (params) => {
-    const queryValidation = validateSettlementQuery(params);
+    const queryValidation = validateSettlementNewQuery(params);
     if(!queryValidation.isValid) throw new ValidationError('Settlement new was not retrieved', queryValidation.errors);
 
     const query = {
