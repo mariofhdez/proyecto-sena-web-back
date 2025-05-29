@@ -1,5 +1,6 @@
 const { validateRequiredNumber, validateRequiredString, validateDateFormat } = require("./typeofValidations");
 const settlementService = require("../services/settlementService");
+const { splitDate } = require("./typeofValidations");
 
 function validateSettlementQuery(query) {
     let errors = [];
@@ -41,7 +42,7 @@ function validateSettlementCreation(settlement) {
     validateDateFormat(settlement.endDate, "endDate", errors);
     
     // Valida que la fecha de fin sea mayor que la fecha de inicio
-    if(settlement.endDate < settlement.startDate) {
+    if(settlement.endDate <= settlement.startDate) {
         errors.push("The end date must be greater than the start date");
     }
     validateSettlementPeriod(settlement.startDate, settlement.endDate, errors);
@@ -95,16 +96,14 @@ async function validateUniqueSettlement(employee, startDate, endDate) {
     }
 }
 
-function splitDate(date) {
-    const [year, month, day] = date.split('-').map(Number);
-    return {
-        year: year,
-        month: month,
-        day: day
-    }
+async function verifySettlement(settlementId) {
+    const settlement = await settlementService.getById(settlementId);
+    return settlement;
 }
+
 module.exports = {
     validateSettlementQuery,
     validateSettlementCreation,
-    validateUniqueSettlement
+    validateUniqueSettlement,
+    verifySettlement
 }

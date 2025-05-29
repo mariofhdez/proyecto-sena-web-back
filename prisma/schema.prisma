@@ -97,7 +97,7 @@ model Settlement {
 model SettlementEarning {
   id           Int        @id @default(autoincrement())
   value        Float
-  settlementId Int        @unique@map("settlement_id")
+  settlementId Int        @unique @map("settlement_id")
   settlement   Settlement @relation(fields: [settlementId], references: [id])
   news         SettlementNew[]
 }

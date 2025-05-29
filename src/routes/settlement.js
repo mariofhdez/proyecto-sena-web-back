@@ -8,5 +8,6 @@ settlementRouter.post('/', settlementController.createSettlement);
 settlementRouter.patch('/:id', settlementController.updateSettlement);
 settlementRouter.delete('/:id', settlementController.deleteSettlement);
 settlementRouter.post('/settle', settlementController.settlePayroll);
+settlementRouter.post('/close', settlementController.closePayroll);
 
 module.exports = settlementRouter;

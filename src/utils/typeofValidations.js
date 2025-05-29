@@ -81,6 +81,15 @@ function validateDateFormat(input, field, errors) {
     }
 }
 
+function splitDate(date) {
+    const [year, month, day] = date.split('-').map(Number);
+    return {
+        year: year,
+        month: month,
+        day: day
+    }
+}
+
 module.exports = {
     isValidNumericType,
     isNull,
@@ -90,5 +99,6 @@ module.exports = {
     validateRequiredString,
     validateRequiredNumber,
     isValidDateFormat,
-    validateDateFormat
+    validateDateFormat,
+    splitDate
 };

@@ -1,8 +1,10 @@
 const settlementService = require('../services/settlementService');
 const { formatDate } = require('../utils/formatDate');
 const payrollController = require('./payrollController');
-const { validateSettlementQuery, validateSettlementCreation, validateUniqueSettlement } = require('../utils/settlementValidation');
-const { ValidationError } = require('../utils/appError');
+const { validateSettlementQuery, validateSettlementCreation, validateUniqueSettlement, verifySettlement } = require('../utils/settlementValidation');
+const { ValidationError, NotFoundError } = require('../utils/appError');
+const { verifyId } = require('../utils/verifyId');
+const { validateRequiredNumber, isValidNumericType } = require('../utils/typeofValidations');
 
 exports.retriveSettlements = async (req, res, next) => {
     try {
@@ -42,6 +44,10 @@ exports.createSettlement = async (req, res, next) => {
         const isUniqueSettlement = await validateUniqueSettlement(req.body.employeeId, req.body.startDate, req.body.endDate);
         if (!isUniqueSettlement.isValid) throw new ValidationError('Settlement was not created', isUniqueSettlement.errors);
 
+        // Validar que el empleado exista
+        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
+        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+
         // 1. Crear nómina
         const settlement = await payrollController.createSettlement(employeeId, startDate, endDate);
         await payrollController.createRegularNews(employeeId, endDate);
@@ -64,9 +70,61 @@ exports.deleteSettlement = async (req, res, next) => {
 
 exports.settlePayroll = async (req, res, next) => {
     try {
-        const { startDate, endDate, settlementId } = req.body;
-        const settlement = await payrollController.settlePayroll(settlementId, startDate, endDate);
+        const settlementId = parseInt(req.body.settlementId, 10);
+        let errors = [];
+
+        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
+        if (errors.length > 0) throw new ValidationError('Payroll was not settled', errors);
+        // Validar que el id sea un número
+        if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
+
+
+        // Validar que la liquidación exista
+        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
+        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+
+        // Validar que la liquidación no esté ya liquidada
+        if (isValidSettlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
+
+
+        const settlement = await payrollController.settlePayroll(settlementId);
         if (!settlement) throw new Error('Error al liquidar nómina');
+        res.json(settlement);
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.closePayroll = async (req, res, next) => {
+    try {
+        const settlementId = parseInt(req.body.settlementId, 10);
+        let errors = [];
+
+        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
+        if (errors.length > 0) throw new ValidationError('Payroll was not closed', errors);
+        // Validar que el id sea un número
+        if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
+
+        // Validar que la liquidación exista
+        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
+        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+
+        // Validar que la liquidación no esté ya cerrada
+        switch (isValidSettlement.status) {
+            case 'DRAFT':
+                throw new ValidationError('Payroll was not closed', 'Payroll with id \'' + settlementId + '\' is not calculated');
+                break;
+            case 'CLOSED':
+                throw new ValidationError('Payroll was not closed', 'Payroll with id \'' + settlementId + '\' is already closed');
+                break;
+            case 'VOID':
+                throw new ValidationError('Payroll was not closed', 'Payroll with id \'' + settlementId + '\' is void');
+                break;
+            default:
+                break;
+        }
+        const settlement = await payrollController.closePayroll(settlementId);
+        if (!settlement) throw new Error('Error al cerrar nómina');
         res.json(settlement);
     } catch (error) {
         next(error);

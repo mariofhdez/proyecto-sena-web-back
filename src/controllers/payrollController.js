@@ -111,10 +111,11 @@ async function createNew(data) {
 
 // 2. Liquidar nómina
 
-exports.settlePayroll = async(settlementId, startDate, endDate) => {
+exports.settlePayroll = async(settlementId) => {
     try {
         const settlement = await settlementService.getById(parseInt(settlementId,10));
         const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        if(!concepts) throw new Error('Error al obtener conceptos');
         const updatedConcepts = await updateSettlementNews(concepts, settlement.earnings[0].id, settlement.deductions[0].id);
         
         if(!updatedConcepts) throw new Error('Error al liquidar nómina');
@@ -157,14 +158,13 @@ async function retrieveConcepts (start, end, employee){
     }
 }
 
-async function updateSettlementNews(concepts, earningsId, deductionsId){
-    console.log(concepts);
+async function updateSettlementNews(concepts, earningsId, deductionsId) {
+
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
         const type = c.conceptId;
-        console.log('Updating item with id:', id);
-        
-        if(type < 41){
+
+        if (type < 41) {
             return settlementNewService.update(id, {
                 status: "IN_DRAFT",
                 earnings: {
@@ -172,8 +172,8 @@ async function updateSettlementNews(concepts, earningsId, deductionsId){
                 }
             });
         }
-        
-        if(type > 40){
+
+        if (type > 40) {
             return settlementNewService.update(id, {
                 status: "IN_DRAFT",
                 deductions: {
@@ -181,7 +181,15 @@ async function updateSettlementNews(concepts, earningsId, deductionsId){
                 }
             });
         }
-        
+    }));
+}
+
+async function closeSettlementNews(concepts) {
+    return Promise.all(concepts.map(async c => {
+        const id = parseInt(c.id, 10);
+        return settlementNewService.update(id, {
+            status: "CLOSED"
+        });
     }));
 }
 
@@ -218,4 +226,22 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
     } catch (error) {
         return { error: error.message}
     }
+}
+
+exports.closePayroll = async(settlementId) => {
+    try {
+        const settlement = await settlementService.getById(settlementId);
+        const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        const closedConcepts = await closeSettlementNews(concepts);
+
+        if(!closedConcepts) throw new Error('Error closing concepts');
+
+        const closedSettlement = await settlementService.update(settlementId, {
+            status: 'CLOSED'
+        });
+        if (!closedSettlement) throw new Error('Error al cerrar nómina');
+        return closedSettlement;
+    } catch (error) {
+        return { error: error.message };
+    }   
 }
