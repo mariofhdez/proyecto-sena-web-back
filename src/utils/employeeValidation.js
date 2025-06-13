@@ -65,7 +65,7 @@ function validateUpdatedEmployee(employee) {
     }
 
     if (employee.salary) {
-        validateSalary(employee.salary, errors);
+        validateRequiredNumber(employee.salary, errors);
     }
 
     if (employee.transportAllowance) {

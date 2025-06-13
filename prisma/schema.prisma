@@ -41,10 +41,23 @@ model PayrollConcept {
   code            String             @unique @db.VarChar(3)
   name            String             @db.VarChar(60)
   type            PayrollConceptType
-  isSalary        Boolean            @map("is_salary")
+  base            String?
+  factor          Float?
+  isIncome        Boolean            @map("is_income")
+  isVacation      Boolean            @map("is_vacation")
   isIBC           Boolean            @map("is_ibc")
   calculationType CalculationType    @map("calculation_type")
   news  SettlementNew[]
+}
+
+enum PayrollConceptBase {
+  ALLOWANCE
+  HOURLY
+  IBC
+  INCOME
+  SALARY
+  VACATION
+  ZERO
 }
 
 enum PayrollConceptType {
@@ -113,7 +126,7 @@ model SettlementDeduction {
 model SettlementNew {
   id                     Int                   @id @default(autoincrement())
   date                   DateTime              @map("date")
-  quantity               Float
+  quantity               Float?
   value                  Float
   status                 SettlementNewsStatus  @map("status")
   conceptId              Int                   @map("concept_id")

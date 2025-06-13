@@ -5,7 +5,7 @@
 
 const userService = require ('../services/userService');
 const { ValidationError } = require('../utils/appError');
-const { isValidNumericType } = require('../utils/userValidation');
+const { isValidNumericType } = require('../utils/typeofValidations');
 
 /**
  * Actualiza la información de un usuario

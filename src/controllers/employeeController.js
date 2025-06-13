@@ -25,6 +25,7 @@ exports.getEmployees = async (req, res, next) => {
   
     if(identification) {
       const employee = await getEmployeeByIdentification(identification);
+      if(!employee) throw new NotFoundError('Employee with identification \'' + identification + '\' was not found');
       res.json(employee);
     } else {
       const employees = await getAllEmployees();

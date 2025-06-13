@@ -74,41 +74,45 @@ exports.getNewById = async (req, res, next) => {
  */
 exports.createNew = async (req, res, next) => {
     try {
-        // Valida que los datos de la novedad sean correctos
-        const validationResult = validateSettlementNewCreation(req.body);
-        if (!validationResult.isValid) {
-            throw new ValidationError('Settlement new was not created', validationResult.errors);
-        }
-
-        // Valida que el concepto exista
-        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
-        if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
-        // Valida que el empleado exista
-        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
-
         // Valida que el concepto sea disponible para novedades
-        const isAvailableConcept = await validateAvailableConcept(req.body.conceptId);
-        if (!isAvailableConcept.isValid) throw new ValidationError('Settlement new was not created', isAvailableConcept.errors);
+        // const isAvailableConcept = await validateAvailableConcept(req.body.conceptId);
+        // if (!isAvailableConcept.isValid) throw new ValidationError('Settlement new was not created', isAvailableConcept.errors);
+        
+        const data = await validateSettlementNewCreation(req.body);
+        
+        // Valida que los datos de la novedad sean correctos
+        // const validationResult = validateSettlementNewCreation(req.body);
+        // if (!validationResult.isValid) {
+        //     throw new ValidationError('Settlement new was not created', validationResult.errors);
+        // }
+
+        // // Valida que el concepto exista
+        // const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
+        // if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
+        // Valida que el empleado exista
+        // const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
+        // if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+
 
         // Valida que la novedad no exista en el periodo
-        const isUniqueSettlementNew = await validateUniqueSettlementNew(req.body.employeeId, req.body.conceptId, req.body.date);
-        if (!isUniqueSettlementNew) throw new ValidationError('Settlement new was not created', "The settlement new with the concept id \'" + req.body.conceptId + "\' and the employee id \'" + req.body.employeeId + "\' already exists on period");
+        // const isUniqueSettlementNew = await validateUniqueSettlementNew(req.body.employeeId, req.body.conceptId, req.body.date);
+        // if (!isUniqueSettlementNew) throw new ValidationError('Settlement new was not created', "The settlement new with the concept id \'" + req.body.conceptId + "\' and the employee id \'" + req.body.employeeId + "\' already exists on period");
 
-        const data = {
-            date: formatDate(req.body.date),
-            quantity: req.body.quantity,
-            value: req.body.value,
-            status: 'OPEN',
-            concept: {
-                connect: { id: parseInt(req.body.conceptId, 10) }
-            },
-            employee: {
-                connect: { id: parseInt(req.body.employeeId, 10) }
-            }
-        }
+        // const data = {
+        //     date: formatDate(req.body.date),
+        //     quantity: req.body.quantity,
+        //     value: req.body.value,
+        //     status: 'OPEN',
+        //     concept: {
+        //         connect: { id: parseInt(req.body.conceptId, 10) }
+        //     },
+        //     employee: {
+        //         connect: { id: parseInt(req.body.employeeId, 10) }
+        //     }
+        // }
 
         const createdSettlementNew = await settlementNewService.create(data);
+        if(!createdSettlementNew) throw new Error('Settlement new was not created');
         res.status(201).json(createdSettlementNew);
     } catch (error) {
         // res.status(500).json({error: error.message});

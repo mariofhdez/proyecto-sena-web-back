@@ -49,7 +49,7 @@ async function upsertUnique(model, uniqueField, items) {
  * @function main
  * @returns {Promise<void>}
  */
-async function main() {
+async function createStaticData() {
   // await upsertUnique('state', 'id', data.departamentos);
   // await upsertUnique('city', 'id', data.municipios);
   // await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
@@ -58,12 +58,12 @@ async function main() {
   // await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
   // await upsertUnique('contractType', 'id', data.tiposContrato);
   // await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
-  await upsertUnique('payrollConcept', 'code', data.conceptosNomina); // Si no tiene id
+  await upsertUnique('PayrollConcept', 'code', data.PayrollConcept); // Si no tiene id
   console.log('Tablas estáticas alimentadas correctamente.');
 }
 
 // Ejecuta la función principal y maneja errores
-main()
+createStaticData()
   .catch(e => {
     console.error(e);
     process.exit(1);

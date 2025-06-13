@@ -21,7 +21,10 @@ CREATE TABLE `PayrollConcept` (
     `code` VARCHAR(3) NOT NULL,
     `name` VARCHAR(60) NOT NULL,
     `type` ENUM('DEVENGADO', 'DEDUCCION') NOT NULL,
-    `is_salary` BOOLEAN NOT NULL,
+    `base` VARCHAR(191) NULL,
+    `factor` DOUBLE NULL,
+    `is_income` BOOLEAN NOT NULL,
+    `is_vacation` BOOLEAN NOT NULL,
     `is_ibc` BOOLEAN NOT NULL,
     `calculation_type` ENUM('LINEAL', 'FACTORIAL', 'NOMINAL') NOT NULL,
 
@@ -83,7 +86,7 @@ CREATE TABLE `SettlementDeduction` (
 CREATE TABLE `SettlementNew` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `date` DATETIME(3) NOT NULL,
-    `quantity` DOUBLE NOT NULL,
+    `quantity` DOUBLE NULL,
     `value` DOUBLE NOT NULL,
     `status` ENUM('OPEN', 'IN_DRAFT', 'CLOSED', 'VOID') NOT NULL,
     `concept_id` INTEGER NOT NULL,

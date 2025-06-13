@@ -121,7 +121,9 @@ exports.remove = async (id) => {
 };
 
 exports.query = async (query) => {
-    const settlementNews = await prisma.settlementNew.findMany({where: query});
+    const settlementNews = await prisma.settlementNew.findMany({
+        where: query
+    });
     if (!settlementNews) throw new Error('No se encontraron novedades con los parámetros específicados');
     return settlementNews;
 }
