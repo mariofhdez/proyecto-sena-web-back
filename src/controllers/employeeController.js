@@ -164,7 +164,7 @@ exports.deleteEmployee = async (req, res, next) => {
      const verified = await verifyId(id, "employee");
      if (!verified) throw new NotFoundError('Employee with id \'' + id + '\' was not found');
     await employeeService.remove(id);
-    res.json({ mensaje: 'Employee was deleted' });
+    res.json({ message: 'Employee was deleted' });
   } catch (error) {
     next(error);
   }

@@ -8,6 +8,7 @@ const { formatDate } = require('./formatDate');
 const { getCalculationType, getBaseType, getConceptFactor } = require('../config/payrollConcepts');
 
 async function validateSettlementNewCreation(settlement) {
+    console.log(settlement);
     let errors = [];
     let data = {
         date: null,
@@ -67,6 +68,8 @@ async function validateSettlementNewCreation(settlement) {
     const isUniqueSettlementNew = await validateUniqueSettlementNew(settlement.employeeId, settlement.conceptId, settlement.date);
     if (!isUniqueSettlementNew) throw new ValidationError('Settlement new was not created', "The settlement new with the concept id \'" + settlement.conceptId + "\' and the employee id \'" + settlement.employeeId + "\' already exists on period");
 
+    console.log(data);
+    if(errors.length > 0) return {errors: errors};
     return data;
 }
 
@@ -115,7 +118,6 @@ async function getBase(conceptId, employeeId, date) {
 
 async function getPeriodBase(employeeId, date, type) {
     let periodNews = [];
-    console.log("Aquí colapsa");
     const [year, month, day] = date.split('-').map(Number);
     let query = {
         employeeId: employeeId,

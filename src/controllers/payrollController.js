@@ -2,7 +2,9 @@ const settlementService = require('../services/settlementService');
 const settlementNewService = require('../services/settlementNewService');
 const settlementEarningService = require('../services/settlementEarningService');
 const settlementDeductionService = require('../services/settlementDeductionService');
-const employeeService = require('../services/employeeService')
+const employeeService = require('../services/employeeService');
+const { getConceptByCode } = require('../config/payrollConcepts');
+const { validateSettlementNewCreation } = require('../utils/settlementNewValidation');
 
 const {formatDate} = require('../utils/formatDate')
 
@@ -43,22 +45,22 @@ exports.createRegularNews = async(employeeId, date) =>{
         const salaryValue = employee.salary;
         const hasTransportAllowance = employee.transportAllowance;
 
-        const salaryNew = await processNew(salaryValue, date, employeeId, 'SALARY');
+        const salaryNew = await processNew(salaryValue, date, employeeId, '101');
         if(!salaryNew) throw new Error('Error al crear concepto recurrente: Salario');
 
         regularNews.push(salaryNew);
         
         if(hasTransportAllowance){
-            const transportNew = await processNew(150000, date, employeeId, 'TRANSPORT');
+            const transportNew = await processNew(150000, date, employeeId, '127');
             if(!transportNew) throw new Error('Error al crear concepto recurrente: Auxilio de Tansporte');
             regularNews.push(transportNew);
         }
         
-        const healthNew = await processNew((salaryValue * 0.04), date, employeeId, 'HEALTH');
+        const healthNew = await processNew((salaryValue * 0.04), date, employeeId, '204');
         if(!healthNew) throw new Error('Error al crear concepto recurrente: Salario');
         regularNews.push(healthNew);
         
-        const pensionNew = await processNew((salaryValue * 0.04), date, employeeId, 'PENSION');
+        const pensionNew = await processNew((salaryValue * 0.04), date, employeeId, '208');
         if(!pensionNew) throw new Error('Error al crear concepto recurrente: Salario');
         regularNews.push(pensionNew);
 
@@ -68,41 +70,30 @@ exports.createRegularNews = async(employeeId, date) =>{
     }
 }
 
-async function processNew(value, date, employee, type) {
-    let conceptCode = null;
-    switch(type){
-        case "SALARY":
-            conceptCode = 1;
-            break;
-        case "TRANSPORT":
-            conceptCode = 17;
-            break;
-        case "HEALTH":
-            conceptCode = 41;
-            break;
-        case "PENSION":
-            conceptCode = 42;
-            break;
-        default:
-            throw new Error('Error al crear concepto recurrente')
-    };
-
-    const data = {
-        date: formatDate(date),
+async function processNew(value, date, employee, code) {
+    const concept = getConceptByCode(code);
+    let data = {
+        date: date,
         quantity: 30,
-        value: value,
-        concept: { connect: { id: conceptCode } },
-        employee: { connect: { id: employee } },
-        status: 'OPEN'
+        conceptId:  concept.id,
+        employeeId: employee
     }
+
     const settlementNew = await createNew(data);
     return settlementNew;
 }
 
 async function createNew(data) {
     try {
-        const createdSettlementNew = await settlementNewService.create(data);
-        if (!createdSettlementNew) throw new Error('No se pudo crear la novedad correctamente');
+        console.log("aqui llega createNew")
+
+        const validation = await validateSettlementNewCreation(data);
+
+        const createdSettlementNew = await settlementNewService.create(validation);
+        if (!createdSettlementNew) console.log('No se pudo crear la novedad correctamente');
+
+        console.log(createdSettlementNew);
+
         return createdSettlementNew;
     } catch (error) {
         return{ error: error.message };
@@ -204,7 +195,10 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
     try {
         const earningsValue = earningsSum._sum.value || 0;
         const deductionsValue = deductionsSum._sum.value || 0;
-        const totalValue = earningsValue - deductionsValue;
+        let totalValue = earningsValue - deductionsValue;
+        totalValue = Math.round(totalValue * 100) / 100;
+
+        console.log(earningsValue, "-", deductionsValue, "=", totalValue);
         
         await settlementEarningService.update(earningsId, { 
             value: earningsValue

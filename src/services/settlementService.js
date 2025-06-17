@@ -114,6 +114,13 @@ exports.remove = async (id) => {
     return await prisma.settlement.delete({where: { id: id }});
 };
 
+exports.deleteEarnings = async (id) => {
+    return await prisma.settlementEarning.delete({where: { id: id }});
+}
+exports.deleteDeductions = async (id) => {
+    return await prisma.settlementDeduction.delete({where: { id: id }});
+}
+
 exports.query = async (query) => {
     const settlements = await prisma.settlement.findMany({
         where: query,

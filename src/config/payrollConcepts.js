@@ -41,11 +41,17 @@ function getConceptFactor(conceptId) {
     return payrollConcepts.find(concept => concept.id === conceptId)?.factor;
 }
 
+function getConceptByCode(conceptCode) {
+    return payrollConcepts.find(concept => concept.code === conceptCode);
+}
+
+
 module.exports = {
     loadPayrollConcepts,
     getPayrollConceptById,
     getAllPayrollConcepts,
     getBaseType,
     getCalculationType,
-    getConceptFactor
+    getConceptFactor,
+    getConceptByCode
 }

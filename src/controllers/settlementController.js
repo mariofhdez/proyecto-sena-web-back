@@ -47,10 +47,10 @@ exports.createSettlement = async (req, res, next) => {
         // Validar que el empleado exista
         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
         if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
-
         // 1. Crear nómina
         const settlement = await payrollController.createSettlement(employeeId, startDate, endDate);
-        await payrollController.createRegularNews(employeeId, endDate);
+        const regularNews = await payrollController.createRegularNews(employeeId, endDate);
+        if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
         res.json(settlement);
 
     } catch (error) {
@@ -64,8 +64,29 @@ exports.updateSettlement = async (req, res, next) => {
 }
 
 exports.deleteSettlement = async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id, 10);
+        if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
+
+        const settlement = await settlementService.getById(id);
+        if(!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
+
+        const earnings = await settlementService.deleteEarnings(settlement.earnings[0].id);
+        if(!earnings) throw new Error('Error al eliminar ingresos');
+
+        const deductions = await settlementService.deleteDeductions(settlement.deductions[0].id);
+        if(!deductions) throw new Error('Error al eliminar deducciones');
+
+        const deleteSettlemtent = await settlementService.remove(settlement.id);
+        if(!deleteSettlemtent) throw new Error('Error al eliminar nómina');
+
+        res.json({ message: 'Settlement was deleted' });
+
+    } catch (error) {
+        next(error);
+    }
     //TODO
-    res.status(403).json({ error: "Servicio no disponible" });
+
 }
 
 exports.settlePayroll = async (req, res, next) => {
