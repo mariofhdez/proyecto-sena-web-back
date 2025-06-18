@@ -58,6 +58,7 @@ CREATE TABLE `Settlement` (
     `deductions_value` DOUBLE NOT NULL,
     `total_value` DOUBLE NOT NULL,
     `employee_id` INTEGER NOT NULL,
+    `period_id` INTEGER NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -88,7 +89,7 @@ CREATE TABLE `SettlementNew` (
     `date` DATETIME(3) NOT NULL,
     `quantity` DOUBLE NULL,
     `value` DOUBLE NOT NULL,
-    `status` ENUM('OPEN', 'IN_DRAFT', 'CLOSED', 'VOID') NOT NULL,
+    `status` ENUM('NONE', 'OPEN', 'DRAFT', 'CLOSED', 'VOID') NOT NULL,
     `concept_id` INTEGER NOT NULL,
     `employee_id` INTEGER NOT NULL,
     `settlement_earnings_id` INTEGER NULL,
@@ -97,8 +98,24 @@ CREATE TABLE `SettlementNew` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `Period` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `start_date` DATETIME(3) NOT NULL,
+    `end_date` DATETIME(3) NOT NULL,
+    `payment_date` DATETIME(3) NULL,
+    `status` ENUM('DRAFT', 'OPEN', 'CLOSED', 'VOID') NOT NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Settlement` ADD CONSTRAINT `Settlement_employee_id_fkey` FOREIGN KEY (`employee_id`) REFERENCES `Employee`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Settlement` ADD CONSTRAINT `Settlement_period_id_fkey` FOREIGN KEY (`period_id`) REFERENCES `Period`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SettlementEarning` ADD CONSTRAINT `SettlementEarning_settlement_id_fkey` FOREIGN KEY (`settlement_id`) REFERENCES `Settlement`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

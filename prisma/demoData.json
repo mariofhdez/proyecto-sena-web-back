@@ -1,0 +1,170 @@
+{
+    "employees": [
+        {
+            "identification": "123",
+            "firstSurname": "Gonzalez",
+            "secondSurname": "García",
+            "firstName": "Juan",
+            "otherNames": "Carlos",
+            "salary": 1600000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "456",
+            "firstSurname": "iglesias",
+            "secondSurname": null,
+            "firstName": "julio",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "789",
+            "firstSurname": "Contreras",
+            "secondSurname": "Jimenez",
+            "firstName": "Laura",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "65416561685",
+            "firstSurname": "iglesias",
+            "secondSurname": null,
+            "firstName": "julio",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "963",
+            "firstSurname": "Jaramillo",
+            "secondSurname": null,
+            "firstName": "Sofía",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "147",
+            "firstSurname": "Santos",
+            "secondSurname": "Meza",
+            "firstName": "Leandro",
+            "otherNames": "José",
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "852",
+            "firstSurname": "Valencia",
+            "secondSurname": "García",
+            "firstName": "Ramona",
+            "otherNames": "Valentina",
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "369",
+            "firstSurname": "Mendez",
+            "secondSurname": "Linares",
+            "firstName": "Raul",
+            "otherNames": "Miguel",
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "159",
+            "firstSurname": "Sandoval",
+            "secondSurname": "Martinez",
+            "firstName": "Juan",
+            "otherNames": "Felipe",
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "753",
+            "firstSurname": "Santana",
+            "secondSurname": "Bermudez",
+            "firstName": "Amelia",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        },
+        {
+            "identification": "951",
+            "firstSurname": "Rios",
+            "secondSurname": "Hernandez",
+            "firstName": "Veronica",
+            "otherNames": null,
+            "salary": 1300000,
+            "transportAllowance": true,
+            "isActive": true
+        }
+    ],
+    "news": [
+        {
+            "date": "2025-01-15",
+            "quantity": 8,
+            "conceptId": 4,
+            "employeeId": 1
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 4,
+            "conceptId": 5,
+            "employeeId": 1
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 2,
+            "conceptId": 9,
+            "employeeId": 1
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 6,
+            "conceptId": 6,
+            "employeeId": 6
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 8,
+            "conceptId": 10,
+            "employeeId": 6
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 8,
+            "conceptId": 7,
+            "employeeId": 4
+        },
+        {
+            "date": "2025-01-15",
+            "quantity": 3,
+            "conceptId": 24,
+            "employeeId": 3
+        },
+        {
+            "date": "2025-01-15",
+            "value": 260000,
+            "conceptId": 26,
+            "employeeId": 5
+        },
+        {
+            "date": "2025-01-15",
+            "value": 100000,
+            "conceptId": 48,
+            "employeeId": 6
+        }
+    ]
+}

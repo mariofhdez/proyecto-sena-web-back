@@ -50,15 +50,15 @@ async function upsertUnique(model, uniqueField, items) {
  * @returns {Promise<void>}
  */
 async function createStaticData() {
-  // await upsertUnique('state', 'id', data.departamentos);
-  // await upsertUnique('city', 'id', data.municipios);
+  await upsertUnique('PayrollConcept', 'code', data.PayrollConcept); // Si no tiene id
+  // await upsertUnique('employee', 'identification', demo.employees);
+  // await upsertUnique('settlementNew', 'conceptId', demo.news);
   // await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
   // await upsertUnique('paymentMethod', 'id', data.metodosPago);
   // await upsertUnique('employeeType', 'id', data.tiposTrabajador);
   // await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
   // await upsertUnique('contractType', 'id', data.tiposContrato);
   // await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
-  await upsertUnique('PayrollConcept', 'code', data.PayrollConcept); // Si no tiene id
   console.log('Tablas estáticas alimentadas correctamente.');
 }
 
