@@ -90,6 +90,12 @@ function splitDate(date) {
     }
 }
 
+function fromTimestampToDate(timestamp) {
+    const date = new Date(timestamp);
+    const newDate = date.toISOString().split('T')[0];
+    return newDate;
+}
+
 module.exports = {
     isValidNumericType,
     isNull,
@@ -100,5 +106,6 @@ module.exports = {
     validateRequiredNumber,
     isValidDateFormat,
     validateDateFormat,
-    splitDate
+    splitDate,
+    fromTimestampToDate
 };

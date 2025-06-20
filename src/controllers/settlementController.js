@@ -38,11 +38,11 @@ exports.createSettlement = async (req, res, next) => {
     try {
         const { employeeId, startDate, endDate } = req.body;
 
-        const validationResult = validateSettlementCreation(req.body);
+        const validationResult = await validateSettlementCreation(req.body);
         if (!validationResult.isValid) throw new ValidationError('Settlement was not created', validationResult.errors);
 
-        const isUniqueSettlement = await validateUniqueSettlement(req.body.employeeId, req.body.startDate, req.body.endDate);
-        if (!isUniqueSettlement.isValid) throw new ValidationError('Settlement was not created', isUniqueSettlement.errors);
+        // const isUniqueSettlement = await validateUniqueSettlement(req.body.employeeId, req.body.startDate, req.body.endDate);
+        // if (!isUniqueSettlement.isValid) throw new ValidationError('Settlement was not created', isUniqueSettlement.errors);
 
         // Validar que el empleado exista
         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");

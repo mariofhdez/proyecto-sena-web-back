@@ -5,7 +5,7 @@ const { splitDate } = require("./typeofValidations");
 function validateSettlementQuery(query) {
     let errors = [];
 
-    if(query.employeeId) {
+    if (query.employeeId) {
         const employeeId = parseInt(query.employeeId, 10);
         validateRequiredNumber(employeeId, "employeeId", errors)
     }
@@ -16,7 +16,7 @@ function validateSettlementQuery(query) {
     validateRequiredString(query.endDate, "endDate", errors);
     validateDateFormat(query.endDate, "endDate", errors);
 
-    if(errors.length > 0) {
+    if (errors.length > 0) {
         return {
             isValid: false,
             errors: errors
@@ -27,7 +27,7 @@ function validateSettlementQuery(query) {
     }
 }
 
-function validateSettlementCreation(settlement) {
+async function validateSettlementCreation(settlement) {
     let errors = [];
 
     // Valida que el id del empleado sea un numero
@@ -40,18 +40,20 @@ function validateSettlementCreation(settlement) {
     // Valida que la fecha de fin sea una fecha
     validateRequiredString(settlement.endDate, "endDate", errors);
     validateDateFormat(settlement.endDate, "endDate", errors);
-    
+
     // Valida que la fecha de fin sea mayor que la fecha de inicio
-    if(settlement.endDate <= settlement.startDate) {
+    if (settlement.endDate <= settlement.startDate) {
         errors.push("The end date must be greater than the start date");
     }
     validateSettlementPeriod(settlement.startDate, settlement.endDate, errors);
 
-    if(errors.length > 0) {
+    await validateUniqueSettlement(settlement.employeeId, settlement.startDate, settlement.endDate, errors);
+
+    if (errors.length > 0) {
         return {
             isValid: false,
             errors: errors
-        }   
+        }
     }
     return {
         isValid: true
@@ -61,12 +63,12 @@ function validateSettlementCreation(settlement) {
 function validateSettlementPeriod(startDate, endDate, errors) {
     const splitStartDate = splitDate(startDate);
     const splitEndDate = splitDate(endDate);
-    if(splitStartDate.year !== splitEndDate.year || splitStartDate.month !== splitEndDate.month) {
+    if (splitStartDate.year !== splitEndDate.year || splitStartDate.month !== splitEndDate.month) {
         errors.push("The start date and end date must be in the same period");
     }
 }
 
-async function validateUniqueSettlement(employee, startDate, endDate) {
+async function validateUniqueSettlement(employee, startDate, endDate, errors) {
     const employeeId = parseInt(employee, 10);
     const splitStartDate = splitDate(startDate);
     const splitEndDate = splitDate(endDate);
@@ -86,13 +88,7 @@ async function validateUniqueSettlement(employee, startDate, endDate) {
     const settlement = await settlementService.query(query);
     const lenght = settlement.length;
     if (lenght > 0) {
-        return {
-            isValid: false,
-            errors: ["The settlement for the period already exists"]
-        }
-    }
-    return {
-        isValid: true
+        return errors.push("The settlement for the period already exists")
     }
 }
 

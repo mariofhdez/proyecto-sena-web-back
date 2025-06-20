@@ -1,8 +1,9 @@
 const periodService = require('../services/periodService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/typeofValidations');
-const { formatDate } = require('../utils/formatDate');
-const { validatePeriodCreation } = require('../utils/periodValidation');
+// const { formatDate } = require('../utils/formatDate');
+const { validatePeriodCreation, loadEmployees, createPeriod, settlePeriod } = require('../utils/periodValidation');
+const { verifyId } = require('../utils/verifyId');
 
 exports.retrievePeriods = async (req, res, next) => {
     try {
@@ -37,12 +38,8 @@ exports.createPeriod = async (req, res, next) => {
     try {
         const validation = await validatePeriodCreation(req.body);
         if(!validation.isValid) throw new ValidationError('Period was not created', validation.errors);
-        const data = {
-            startDate: formatDate(req.body.startDate),
-            endDate: formatDate(req.body.endDate),
-            status: 'DRAFT'
-        }
-        const period = await periodService.create(data);
+
+        const period = await createPeriod(req.body);
         res.status(201).json(period);
     } catch (error) {
         next(error);
@@ -54,6 +51,12 @@ exports.settlePeriod = async (req, res, next) => {
         const id = parseInt(req.params.id);
         if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
         
+        const isValidPeriod = await verifyId(id, "period");
+        if (!isValidPeriod) {
+            return next(new NotFoundError('Period with id \'' + id + '\' was not found'));
+        }
+
+        const settlePeriod = await settlePeriod(id);
         // TODO: Implementar la lógica para liquidar el periodo
         res.json({message: 'Period settled'});
 
@@ -80,6 +83,24 @@ exports.deletePeriod = async (req, res, next) => {
         if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
         const period = await periodService.delete(id);
         res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.loadEmployees = async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
+
+        const isValidPeriod = await verifyId(id, "period");
+        if (!isValidPeriod) {
+            return next(new NotFoundError('Period with id \'' + id + '\' was not found'));
+        }
+
+        const employees = req.body.employees;
+        const period = await loadEmployees(id, employees, next);
+        res.json(period);
     } catch (error) {
         next(error);
     }

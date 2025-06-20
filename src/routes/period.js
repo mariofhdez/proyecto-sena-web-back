@@ -8,5 +8,7 @@ periodRouter.post('/', periodController.createPeriod);
 periodRouter.post('/:id/settle', periodController.settlePeriod);
 periodRouter.post('/:id/close', periodController.closePeriod);
 periodRouter.delete('/:id', periodController.deletePeriod);
+periodRouter.post('/:id/loadEmployees', periodController.loadEmployees);
+periodRouter.post('/:id/settle', periodController.settlePeriod);
 
 module.exports = periodRouter;

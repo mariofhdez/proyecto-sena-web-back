@@ -9,16 +9,16 @@ const { validateSettlementNewCreation } = require('../utils/settlementNewValidat
 const {formatDate} = require('../utils/formatDate')
 
 // 1.1. Crear nómina incluyendo sección devengados y deducciones
-exports.createSettlement = async(employee, start, end) => {
-    const data = {
-        startDate: formatDate(start),
-        endDate: formatDate(end),
+exports.createSettlement = async(data) => {
+    const settlementData = {
+        startDate: formatDate(data.startDate),
+        endDate: formatDate(data.endDate),
         status: 'DRAFT',
         earningsValue: 0,
         deductionsValue: 0,
         totalValue: 0,
         employee: {
-            connect: { id: employee }
+            connect: { id: data.employeeId }
         },
         earnings: {
             create: {
@@ -29,9 +29,12 @@ exports.createSettlement = async(employee, start, end) => {
             create: {
                 value: 0
             }
+        },
+        period: {
+            connect: { id: data.periodId }
         }
     }
-    const settlement = await settlementService.create(data);
+    const settlement = await settlementService.create(settlementData);
 
     return settlement;
 }
