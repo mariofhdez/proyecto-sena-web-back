@@ -193,6 +193,26 @@ exports.deleteNew = async (req, res, next) => {
     }
 };
 
+exports.draftNew = async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (!isValidNumericType(id)) throw new ValidationError('Settlement new was not drafted', 'The field id must be a numeric value.');
+
+        const verified = await verifyId(id, 'settlementNew');
+        if (!verified) throw new NotFoundError('Settlement new with id \'' + id + '\' was not found');
+
+        const draftedNew = await settlementNewService.update(id, {
+            status: 'DRAFT',
+            settlementEarningsId: null,
+            settlementDeductionsId: null
+        });
+        if (!draftedNew) throw new Error('Settlement new was not drafted');
+        res.json(draftedNew);
+    } catch (error) {
+        next(error);
+    }
+}
+
 // exports.getNewWithParams = async (req, res, next) => {
 //     try {
 //         const validation = validateSettlementQuery(req.query);

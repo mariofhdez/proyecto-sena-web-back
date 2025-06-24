@@ -50,4 +50,16 @@ exports.query = async (query) => {
     return periods;
 }
 
+exports.update = async (id, data) => {
+    const updatedPeriod = await prisma.period.update({
+        where: { id: id },
+        data: data,
+        include: {
+            settlements: true
+        }
+    });
+    if (!updatedPeriod) throw new Error('Period was not updated');
+    return updatedPeriod;
+}
+
 // TODO: Actualizar, eliminar, y otros metodos

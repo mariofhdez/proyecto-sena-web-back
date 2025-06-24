@@ -16,7 +16,7 @@ async function validateSettlementNewCreation(settlement) {
         concept: {connect:{id: null}},
         quantity: null,
         value: null,
-        status: 'OPEN'
+        status: 'NONE'
     };
 
     // Validar fecha

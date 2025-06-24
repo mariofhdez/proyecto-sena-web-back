@@ -91,6 +91,7 @@ exports.create = async (data) => {
  * @returns {Object} Datos de la novedad actualizada con sus relaciones
  */
 exports.update = async (id, data) => {
+
     const verified = await verifyId(id, 'settlementNew');
     if (!verified) throw new NotFoundError('Novedad no se encuentra registrada en la base de datos');
     const updatedsettlementNew = await prisma.settlementNew.update({
@@ -120,9 +121,12 @@ exports.remove = async (id) => {
     return await prisma.settlementNew.delete({where: { id: id}});
 };
 
-exports.query = async (query) => {
+exports.query = async (query, includes) => {
     const settlementNews = await prisma.settlementNew.findMany({
-        where: query
+        where: query,
+        include: {
+            concept: includes
+        }
     });
     if (!settlementNews) throw new Error('No se encontraron novedades con los parámetros específicados');
     return settlementNews;

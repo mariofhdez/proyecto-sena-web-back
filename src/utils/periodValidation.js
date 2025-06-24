@@ -47,6 +47,9 @@ async function validateUniquePeriod(startDate, endDate, errors) {
         endDate: {
             gte: new Date(splitEndDate.year, splitEndDate.month - 1, '00'),
             lte: new Date(splitEndDate.year, splitEndDate.month - 1, '32')
+        },
+        status: {
+            not: "VOID"
         }
     }
 
@@ -79,6 +82,7 @@ async function loadEmployees(periodId, employees) {
     }
 
     const period = await periodService.getById(periodId);
+    if(period.status !== "DRAFT") throw new Error('Period is not available to load employees');
 
     for (const employee of employees) {
         const data = {
@@ -101,12 +105,80 @@ async function loadEmployees(periodId, employees) {
 }
 
 async function settlePeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status !== "DRAFT") throw new Error('Period is not available to settle');
+    const settlements = period.settlements;
+
+    for(const settlement of settlements){
+        const s = await payrollController.settlePayroll(settlement.id);
+    }
+
+    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
     // TODO: Implementar la lógica para liquidar el periodo
+    return updatedPeriod;
+}
+
+async function closePeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status !== "OPEN") throw new Error('Period is not available to close');
+    const settlements = period.settlements;
+    for(const settlement of settlements){
+        const s = await payrollController.closePayroll(settlement.id);
+    }
+    const updatedPeriod = await periodService.update(periodId, { status: "CLOSED" });
+    return updatedPeriod;
+}
+
+async function deletePeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status === "DRAFT"){
+        const deletedPeriod = await periodService.delete(periodId);
+        return deletedPeriod;
+    }
+    throw new Error('Cannot delete a period with status: \'' + period.status + '\'');
+}
+
+async function openPeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status !== "CLOSED") throw new Error('Period is not available to open');
+    const settlements = period.settlements;
+    for(const settlement of settlements){
+        const s = await payrollController.openPayroll(settlement.id);
+    }
+    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
+    return updatedPeriod;
+}
+
+async function draftPeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status !== "OPEN") throw new Error('Period is not available to draft');
+    const settlements = period.settlements;
+    for(const settlement of settlements){
+        const s = await payrollController.draftPayroll(settlement.id);
+    }
+    const updatedPeriod = await periodService.update(periodId, { status: "DRAFT" });
+    return updatedPeriod;
+}
+
+async function voidPeriod(periodId) {
+    const period = await periodService.getById(periodId);
+    if(period.status !== "DRAFT") throw new Error('Period is not available to void');
+    const settlements = period.settlements;
+    for(const settlement of settlements){
+        const s = await payrollController.voidPayroll(settlement.id);
+    }
+    const updatedPeriod = await periodService.update(periodId, { status: "VOID" });
+    return updatedPeriod;
 }
 
 module.exports = {
     validatePeriodCreation,
     createPeriod,
     loadEmployees,
-    settlePeriod
+    settlePeriod,
+    closePeriod,
+    deletePeriod,
+    openPeriod,
+    draftPeriod,
+    voidPeriod
 }

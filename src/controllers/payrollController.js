@@ -3,10 +3,11 @@ const settlementNewService = require('../services/settlementNewService');
 const settlementEarningService = require('../services/settlementEarningService');
 const settlementDeductionService = require('../services/settlementDeductionService');
 const employeeService = require('../services/employeeService');
-const { getConceptByCode } = require('../config/payrollConcepts');
+const { getConceptByCode, getRegularConcepts } = require('../config/payrollConcepts');
 const { validateSettlementNewCreation } = require('../utils/settlementNewValidation');
 
-const {formatDate} = require('../utils/formatDate')
+const {formatDate} = require('../utils/formatDate');
+const { fromTimeStampToDate } = require('../utils/typeofValidations');
 
 // 1.1. Crear nómina incluyendo sección devengados y deducciones
 exports.createSettlement = async(data) => {
@@ -40,7 +41,6 @@ exports.createSettlement = async(data) => {
 }
 
 // 1.2. Crear conceptos recurrentes
-
 exports.createRegularNews = async(employeeId, date) =>{
     try {
         let regularNews =[]
@@ -73,6 +73,16 @@ exports.createRegularNews = async(employeeId, date) =>{
     }
 }
 
+function deleteRegularNews(concepts) {
+    return Promise.all(concepts.map(async c => {
+        const id = parseInt(c.id, 10);
+        if (getRegularConcepts(c.concept.code)) {
+            console.log('Eliminando concepto recurrente', id);
+            return settlementNewService.remove(id);
+        }
+    }));
+}
+
 async function processNew(value, date, employee, code) {
     const concept = getConceptByCode(code);
     let data = {
@@ -88,14 +98,10 @@ async function processNew(value, date, employee, code) {
 
 async function createNew(data) {
     try {
-        console.log("aqui llega createNew")
-
         const validation = await validateSettlementNewCreation(data);
 
         const createdSettlementNew = await settlementNewService.create(validation);
         if (!createdSettlementNew) console.log('No se pudo crear la novedad correctamente');
-
-        console.log(createdSettlementNew);
 
         return createdSettlementNew;
     } catch (error) {
@@ -104,11 +110,12 @@ async function createNew(data) {
 }
 
 // 2. Liquidar nómina
-
 exports.settlePayroll = async(settlementId) => {
     try {
+        console.log('Está llegando a settlePayroll');
         const settlement = await settlementService.getById(parseInt(settlementId,10));
         const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        console.log(concepts);
         if(!concepts) throw new Error('Error al obtener conceptos');
         const updatedConcepts = await updateSettlementNews(concepts, settlement.earnings[0].id, settlement.deductions[0].id);
         
@@ -143,10 +150,9 @@ async function retrieveConcepts (start, end, employee){
                 lte: formatDate(end)
             }
         };
-        const settlementNews = await settlementNewService.query(query);
-        
+        const includes = true;
+        const settlementNews = await settlementNewService.query(query, includes);
         return settlementNews;
-        
     } catch (error) {
         return{ error: error.message };
     }
@@ -160,7 +166,7 @@ async function updateSettlementNews(concepts, earningsId, deductionsId) {
 
         if (type < 41) {
             return settlementNewService.update(id, {
-                status: "IN_DRAFT",
+                status: "DRAFT",
                 earnings: {
                     connect: { id: earningsId }
                 }
@@ -169,12 +175,47 @@ async function updateSettlementNews(concepts, earningsId, deductionsId) {
 
         if (type > 40) {
             return settlementNewService.update(id, {
-                status: "IN_DRAFT",
+                status: "DRAFT",
                 deductions: {
                     connect: { id: deductionsId }
                 }
             });
         }
+    }));
+}
+
+async function draftSettlementNews(concepts) {
+    return Promise.all(concepts.map(async c => {
+        const id = parseInt(c.id, 10);
+        const type = c.conceptId;
+
+        if (type < 41) {
+            return settlementNewService.update(id, {
+                status: "DRAFT",
+                earnings: {
+                    disconnect: true
+                }
+            });
+        }
+
+        if (type > 40) {
+            return settlementNewService.update(id, {
+                status: "DRAFT",
+                deductions: {
+                    disconnect: true
+                }
+            });
+        }
+    }));
+}
+
+async function voidSettlementNews(concepts) {
+    return Promise.all(concepts.map(async c => {
+        const id = parseInt(c.id, 10);
+
+        return settlementNewService.update(id, {
+            status: "NONE"
+        });
     }));
 }
 
@@ -187,6 +228,14 @@ async function closeSettlementNews(concepts) {
     }));
 }
 
+async function openSettlementNews(concepts) {
+    return Promise.all(concepts.map(async c => {
+        const id = parseInt(c.id, 10);
+        return settlementNewService.update(id, {
+            status: "OPEN"
+        });
+    }));
+}
 async function sumSettlementNews(type, id) {
     let query = {};
     if(type == "EARNINGS") query = {settlementEarningsId: id};
@@ -200,8 +249,6 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
         const deductionsValue = deductionsSum._sum.value || 0;
         let totalValue = earningsValue - deductionsValue;
         totalValue = Math.round(totalValue * 100) / 100;
-
-        console.log(earningsValue, "-", deductionsValue, "=", totalValue);
         
         await settlementEarningService.update(earningsId, { 
             value: earningsValue
@@ -209,8 +256,6 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
         await settlementDeductionService.update(deductionsId, { 
             value: deductionsValue
         });
-        
-        console.log('aqui llega')
         
         const updatedSettlement = await settlementService.update(settlementId, {
             status: 'OPEN',
@@ -220,6 +265,28 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
         });
         return updatedSettlement;
         
+    } catch (error) {
+        return { error: error.message}
+    }
+}
+
+async function draftSettlement(settlementId, earningsId, deductionsId){
+    try {   
+        await settlementEarningService.update(earningsId, { 
+            value: 0
+        });
+        await settlementDeductionService.update(deductionsId, { 
+            value: 0
+        });
+        
+        const updatedSettlement = await settlementService.update(settlementId, {
+            status: 'DRAFT',
+            earningsValue: 0,
+            deductionsValue: 0,
+            totalValue: 0
+        });
+
+        return updatedSettlement;      
     } catch (error) {
         return { error: error.message}
     }
@@ -241,4 +308,64 @@ exports.closePayroll = async(settlementId) => {
     } catch (error) {
         return { error: error.message };
     }   
+}
+
+exports.openPayroll = async(settlementId) => {
+    try {
+        const settlement = await settlementService.getById(settlementId);
+        const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        const openedConcepts = await openSettlementNews(concepts);
+        if(!openedConcepts) throw new Error('Error opening concepts');
+
+        const openedSettlement = await settlementService.update(settlementId, {
+            status: 'OPEN'
+        });
+        if (!openedSettlement) throw new Error('Error al abrir nómina');
+        return openedSettlement;
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+exports.draftPayroll = async(settlementId) => {
+    try {
+        const settlement = await settlementService.getById(parseInt(settlementId,10));
+        const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        if(!concepts) throw new Error('Error al obtener conceptos');
+        const updatedConcepts = await draftSettlementNews(concepts);
+        
+        if(!updatedConcepts) throw new Error('Error al revertir nómina');
+
+        const updatedSettlement = await draftSettlement(settlement.id, settlement.earnings[0].id, settlement.deductions[0].id);
+        if(!updatedSettlement) throw new Error('Error al cargar saldos en nómina');       
+        
+        return updatedSettlement;
+        
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+exports.voidPayroll = async(settlementId) => {
+    try {
+        const settlement = await settlementService.getById(parseInt(settlementId,10));
+        
+        const concepts = await retrieveConcepts(settlement.startDate, settlement.endDate, settlement.employeeId);
+        if(!concepts) throw new Error('Error al obtener conceptos');
+
+        const voidedConcepts = await voidSettlementNews(concepts);
+        if(!voidedConcepts) throw new Error('Error al anular nómina');
+
+        const regularNews = await deleteRegularNews(concepts);
+        if(!regularNews) throw new Error('Error al eliminar conceptos recurrentes');
+
+        const voidedSettlement = await settlementService.update(settlementId, {
+            status: 'VOID'
+        });
+        if(!voidedSettlement) throw new Error('Error al anular nómina');
+
+        return voidedSettlement;
+    } catch (error) {
+        return { error: error.message };
+    }
 }

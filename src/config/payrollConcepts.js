@@ -6,6 +6,7 @@ let payrollConcepts = [];
 let incomeConcepts = [];
 let vacationConcepts = [];
 let ibcConcepts = [];
+let regularConcepts = ['101', '127', '204', '208'];
 
 async function loadPayrollConcepts(next) {
     try {
@@ -15,7 +16,6 @@ async function loadPayrollConcepts(next) {
         incomeConcepts = payrollConcepts.filter(concept => concept.isIncome === true);
         vacationConcepts = payrollConcepts.filter(concept => concept.isVacation === true);
         ibcConcepts = payrollConcepts.filter(concept => concept.isIBC === true);
-
     } catch (error) {
         next(error)
     }
@@ -45,6 +45,12 @@ function getConceptByCode(conceptCode) {
     return payrollConcepts.find(concept => concept.code === conceptCode);
 }
 
+function getRegularConcepts(conceptCode) {
+    const concept = regularConcepts.find(concept => concept === conceptCode);
+    console.log(concept === conceptCode);
+    return concept === conceptCode;
+}
+
 
 module.exports = {
     loadPayrollConcepts,
@@ -53,5 +59,6 @@ module.exports = {
     getBaseType,
     getCalculationType,
     getConceptFactor,
-    getConceptByCode
+    getConceptByCode,
+    getRegularConcepts
 }
