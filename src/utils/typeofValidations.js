@@ -1,6 +1,6 @@
 
 function isValidNumericType(input) {
-    const numberRegex = /^\d+$/;
+    const numberRegex = /^(\d+(\.\d{1,2})?|\.\d{1,2})$/;
     return typeof input === 'number' && numberRegex.test(input);
 }
 
@@ -70,7 +70,7 @@ function validateRequiredNumber(input, name, errors) {
     }
     else {
         if (!isValidNumericType(input)) {
-            errors.push("The field " + name + " must be a number");
+            errors.push("The field " + name + " must be a number with up to 2 decimal places");
         }
     }
 }
