@@ -131,3 +131,10 @@ exports.query = async (query) => {
     });
     return settlements;
 }
+
+exports.count = async (query) => {
+    const count = await prisma.settlement.count({
+        where: query
+    })
+    return count;
+}

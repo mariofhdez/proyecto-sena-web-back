@@ -37,17 +37,18 @@ enum Role {
 // ------------------ Tablas estáticas ------------------
 
 model PayrollConcept {
-  id              Int                @id @default(autoincrement())
-  code            String             @unique @db.VarChar(3)
-  name            String             @db.VarChar(60)
-  type            PayrollConceptType
-  base            String?
-  factor          Float?
-  isIncome        Boolean            @map("is_income")
-  isVacation      Boolean            @map("is_vacation")
-  isIBC           Boolean            @map("is_ibc")
-  calculationType CalculationType    @map("calculation_type")
-  news            SettlementNew[]
+  id               Int                @id @default(autoincrement())
+  code             String             @unique @db.VarChar(3)
+  name             String             @db.VarChar(60)
+  type             PayrollConceptType
+  base             String?
+  factor           Float?
+  isIncome         Boolean            @map("is_income")
+  isVacation       Boolean            @map("is_vacation")
+  isIBC            Boolean            @map("is_ibc")
+  isRegularConcept Boolean            @map("is_regular_concept")
+  calculationType  CalculationType    @map("calculation_type")
+  news             SettlementNew[]
 }
 
 enum PayrollConceptBase {
@@ -82,6 +83,7 @@ model Employee {
   salary             Float
   transportAllowance Boolean         @map("transport_allowance")
   isActive           Boolean         @map("is_active")
+  position           String          @map("position") @db.VarChar(60) @default("Empleado")
   settlements        Settlement[]
   news               SettlementNew[]
 }
@@ -151,6 +153,7 @@ enum SettlementNewsStatus {
 
 model Period {
   id                Int          @id @default(autoincrement())
+  period            String       @map("period") @default("2025-Enero")
   startDate         DateTime     @map("start_date")
   endDate           DateTime     @map("end_date")
   paymentDate       DateTime?    @map("payment_date")

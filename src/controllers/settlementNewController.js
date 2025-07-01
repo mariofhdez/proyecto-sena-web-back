@@ -5,10 +5,10 @@
 
 const settlementNewService = require('../services/settlementNewService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
-const { isValidNumericType } = require('../utils/typeofValidations');  
-const {formatDate} = require('../utils/formatDate');
+const { isValidNumericType } = require('../utils/typeofValidations');
+const { formatDate } = require('../utils/formatDate');
 const { verifyId } = require('../utils/verifyId');
-const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSettlementNewUpdate, validateSettlementNewQuery, validateAvailableConcept } = require('../utils/settlementNewValidation');
+const { validateSettlementNewCreation, validateUniqueSettlementNew, validateSettlementNewUpdate, validateSettlementNewQuery, validateAvailableConcept, validateSettlementNewPreload, settlementNewData } = require('../utils/settlementNewValidation');
 
 /**
  * Obtiene todas las novedades de nómina
@@ -24,7 +24,7 @@ exports.retrieveNews = async (req, res, next) => {
     try {
         const queryParams = req.query;
 
-        if(Object.keys(queryParams).length > 0) {
+        if (Object.keys(queryParams).length > 0) {
             const settlementNews = await getSettlementNewByParams(queryParams);
             res.json(settlementNews);
         } else {
@@ -74,51 +74,26 @@ exports.getNewById = async (req, res, next) => {
  */
 exports.createNew = async (req, res, next) => {
     try {
-        // Valida que el concepto sea disponible para novedades
-        // const isAvailableConcept = await validateAvailableConcept(req.body.conceptId);
-        // if (!isAvailableConcept.isValid) throw new ValidationError('Settlement new was not created', isAvailableConcept.errors);
-        
         const data = await validateSettlementNewCreation(req.body);
-        
-        // Valida que los datos de la novedad sean correctos
-        // const validationResult = validateSettlementNewCreation(req.body);
-        // if (!validationResult.isValid) {
-        //     throw new ValidationError('Settlement new was not created', validationResult.errors);
-        // }
-
-        // // Valida que el concepto exista
-        // const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
-        // if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
-        // Valida que el empleado exista
-        // const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-        // if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
-
-
-        // Valida que la novedad no exista en el periodo
-        // const isUniqueSettlementNew = await validateUniqueSettlementNew(req.body.employeeId, req.body.conceptId, req.body.date);
-        // if (!isUniqueSettlementNew) throw new ValidationError('Settlement new was not created', "The settlement new with the concept id \'" + req.body.conceptId + "\' and the employee id \'" + req.body.employeeId + "\' already exists on period");
-
-        // const data = {
-        //     date: formatDate(req.body.date),
-        //     quantity: req.body.quantity,
-        //     value: req.body.value,
-        //     status: 'OPEN',
-        //     concept: {
-        //         connect: { id: parseInt(req.body.conceptId, 10) }
-        //     },
-        //     employee: {
-        //         connect: { id: parseInt(req.body.employeeId, 10) }
-        //     }
-        // }
+        if(data.errors) throw new ValidationError('Settlement new was not created', data.errors);
 
         const createdSettlementNew = await settlementNewService.create(data);
-        if(!createdSettlementNew) throw new Error('Settlement new was not created');
+        if (!createdSettlementNew) throw new Error('Settlement new was not created');
         res.status(201).json(createdSettlementNew);
     } catch (error) {
-        // res.status(500).json({error: error.message});
         next(error);
     }
 };
+
+exports.preload = async (req, res, next) => {
+    try {
+        const data = await validateSettlementNewPreload(req.body);
+        console.log(data);
+        res.json(data);
+    } catch (error) {
+        next(error);
+    }
+}
 
 /**
  * Actualiza una novedad de nómina existente
@@ -144,19 +119,19 @@ exports.updateNew = async (req, res, next) => {
         const verified = await verifyId(id, 'settlementNew');
         if (!verified) throw new NotFoundError('Settlement new with id \'' + id + '\' was not found');
 
-         // Valida que el concepto exista
-         const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
-         if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
-         // Valida que el empleado exista
-         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-         if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
+        // Valida que el concepto exista
+        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'payrollConcept');
+        if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
+        // Valida que el empleado exista
+        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
+        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
 
         // Valida que los datos de la novedad sean correctos
         const validation = validateSettlementNewUpdate(req.body);
         if (!validation.isValid) throw new ValidationError('Settlement new was not updated', validation.errors);
-        
+
         const data = settlementNewData(req.body);
-        
+
         const updatedNews = await settlementNewService.update(id, data);
         res.json(updatedNews);
     } catch (error) {
@@ -180,7 +155,7 @@ exports.updateNew = async (req, res, next) => {
 exports.deleteNew = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
-        if (!isValidNumericType( id)) throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
+        if (!isValidNumericType(id)) throw new ValidationError('El campo \'id\' debe ser un valor numérico.');
 
         // Valida que la novedad exista
         const verified = await verifyId(id, 'settlementNew');
@@ -218,7 +193,7 @@ exports.draftNew = async (req, res, next) => {
 //         const validation = validateSettlementQuery(req.query);
 //         if (!validation.isValid) throw new ValidationError('Settlement new was not retrieved', validation.errors);
 
-        
+
 //         res.json(settlementNews);
 //     } catch (error) {
 //         next(error);
@@ -232,7 +207,7 @@ getAllSettlementNews = async () => {
 
 getSettlementNewByParams = async (params) => {
     const queryValidation = validateSettlementNewQuery(params);
-    if(!queryValidation.isValid) throw new ValidationError('Settlement new was not retrieved', queryValidation.errors);
+    if (!queryValidation.isValid) throw new ValidationError('Settlement new was not retrieved', queryValidation.errors);
 
     const query = {
         employeeId: parseInt(params.employeeId, 10),

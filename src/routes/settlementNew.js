@@ -65,4 +65,6 @@ settlementNewRouter.delete('/:id', payrollNewController.deleteNew);
 
 settlementNewRouter.post('/:id/draft', payrollNewController.draftNew);
 
+settlementNewRouter.post('/preload', payrollNewController.preload);
+
 module.exports = settlementNewRouter;

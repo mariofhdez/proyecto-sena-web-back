@@ -100,6 +100,12 @@ async function loadEmployees(periodId, employees) {
         const regularNews = await payrollController.createRegularNews(data.employeeId, data.endDate);
         settlements.push(settlement);
     }
+
+    const sumEmployees = await settlementService.count({
+        periodId: periodId
+    });
+    const updatePeriod = await periodService.update(periodId, { employeesQuantity: sumEmployees });
+
     return settlements;
 
 }

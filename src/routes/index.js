@@ -20,6 +20,7 @@ const employeesRouter = require('./employee');
 const settlementNewRouter = require('./settlementNew');
 const settlementRouter = require('./settlement');
 const periodRouter = require('./period');
+const conceptRouter = require('./concept');
 
 /**
  * Montaje de los routers en sus respectivos caminos
@@ -33,5 +34,6 @@ router.use('/employee', employeesRouter);
 router.use('/settlement-news', settlementNewRouter);
 router.use('/settlement', settlementRouter);
 router.use('/period', periodRouter);
+router.use('/concept', conceptRouter);
 
 module.exports = router;

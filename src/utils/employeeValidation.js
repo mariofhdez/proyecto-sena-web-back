@@ -93,18 +93,27 @@ function employeeData(data) {
     }
     if(data.secondSurname) {
         employee.secondSurname = data.secondSurname;
+    } else {
+        employee.secondSurname = "";
     }
     if(data.firstName) {
         employee.firstName = data.firstName;
     }
     if(data.otherNames) {
         employee.otherNames = data.otherNames;
+    } else {
+        employee.otherNames = "";
     }
     if(data.salary) {
         employee.salary = data.salary;
     }
     if(data.transportAllowance) {
         employee.transportAllowance = data.transportAllowance;
+    } else {
+        employee.transportAllowance = false;
+    }
+    if(data.position) {
+        employee.position = data.position;
     }
     return employee;
 }

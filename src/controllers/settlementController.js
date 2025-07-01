@@ -12,7 +12,6 @@ exports.retriveSettlements = async (req, res, next) => {
         if (Object.keys(queryParams).length > 0) {
             const settlements = await getSettlementByParams(queryParams);
             res.json(settlements);
-            console.log('aqui tamo');
         } else {
             const settlements = await getAllSettlements();
             res.json(settlements);

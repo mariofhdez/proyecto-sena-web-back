@@ -137,6 +137,7 @@ exports.updateEmployee = async (req, res, next) => {
     }    
     const data = employeeData(req.body);
     const updatedEmployee = await employeeService.update(id, data);
+    // console.log(res.json(updatedEmployee));
     res.json(updatedEmployee);
   } catch (error) {
     next(error);

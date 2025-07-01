@@ -5,7 +5,13 @@ const { ValidationError } = require('../utils/appError');
 const { verifyId } = require('../utils/verifyId');
 
 exports.getAll = async () => {
-    const periods = await prisma.period.findMany();
+    const periods = await prisma.period.findMany({
+        where: {
+            status: {
+                not: "VOID"
+            }
+        },
+    });
     if (!periods) throw new Error('Periods not found');
     return periods;
 };
