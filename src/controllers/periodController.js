@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Controlador para la gestión de períodos de nómina
+ * @module controllers/periodController
+ */
+
 const periodService = require('../services/periodService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/typeofValidations');
@@ -5,6 +10,18 @@ const { isValidNumericType } = require('../utils/typeofValidations');
 const { validatePeriodCreation, loadEmployees, createPeriod, settlePeriod, closePeriod, deletePeriod, openPeriod, draftPeriod, voidPeriod } = require('../utils/periodValidation');
 const { verifyId } = require('../utils/verifyId');
 
+/**
+ * Obtiene todos los períodos de nómina del sistema
+ * 
+ * @async
+ * @function retrievePeriods
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.query - Parámetros de consulta (opcional)
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con la lista de períodos
+ * @throws {Error} Si ocurre un error al consultar los períodos
+ */
 exports.retrievePeriods = async (req, res, next) => {
     try {
         const queryParams = req.query;
@@ -22,6 +39,19 @@ exports.retrievePeriods = async (req, res, next) => {
     }
 }
 
+/**
+ * Obtiene un período específico por su ID
+ * 
+ * @async
+ * @function getPeriodById
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a consultar
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período
+ * @throws {ValidationError} Si el ID no es válido
+ */
 exports.getPeriodById = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -34,6 +64,18 @@ exports.getPeriodById = async (req, res, next) => {
     }
 }
 
+/**
+ * Crea un nuevo período de nómina
+ * 
+ * @async
+ * @function createPeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.body - Datos del período a crear
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período creado
+ * @throws {ValidationError} Si los datos del período no son válidos
+ */
 exports.createPeriod = async (req, res, next) => {
     try {
         const validation = await validatePeriodCreation(req.body);
@@ -46,6 +88,21 @@ exports.createPeriod = async (req, res, next) => {
     }
 }
 
+/**
+ * Liquida un período de nómina
+ * 
+ * @async
+ * @function settlePeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a liquidar
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período liquidado
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ * @throws {Error} Si el período no se puede liquidar
+ */
 exports.settlePeriod = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -65,6 +122,21 @@ exports.settlePeriod = async (req, res, next) => {
     }
 }
 
+/**
+ * Cierra un período de nómina
+ * 
+ * @async
+ * @function closePeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a cerrar
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período cerrado
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ * @throws {Error} Si el período no se puede cerrar
+ */
 exports.closePeriod = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -81,6 +153,20 @@ exports.closePeriod = async (req, res, next) => {
     }
 }
 
+/**
+ * Elimina un período de nómina
+ * 
+ * @async
+ * @function deletePeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a eliminar
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con mensaje de confirmación
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ */
 exports.deletePeriod = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -97,6 +183,22 @@ exports.deletePeriod = async (req, res, next) => {
     }
 }
 
+/**
+ * Carga empleados a un período específico
+ * 
+ * @async
+ * @function loadEmployees
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período
+ * @param {Object} req.body - Datos de la solicitud
+ * @param {Array} req.body.employees - Lista de empleados a cargar
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período actualizado
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ */
 exports.loadEmployees = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -115,6 +217,21 @@ exports.loadEmployees = async (req, res, next) => {
     }
 }
 
+/**
+ * Abre un período de nómina
+ * 
+ * @async
+ * @function openPeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a abrir
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período abierto
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ * @throws {Error} Si el período no se puede abrir
+ */
 exports.openPeriod = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -131,6 +248,21 @@ exports.openPeriod = async (req, res, next) => {
     }
 }
 
+/**
+ * Revierte la liquidación de un período (lo convierte a borrador)
+ * 
+ * @async
+ * @function reversePeriodSettle
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a revertir
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período en borrador
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ * @throws {Error} Si el período no se puede revertir
+ */
 exports.reversePeriodSettle = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -147,6 +279,21 @@ exports.reversePeriodSettle = async (req, res, next) => {
     }
 }
 
+/**
+ * Anula un período de nómina
+ * 
+ * @async
+ * @function voidPeriod
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID del período a anular
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos del período anulado
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si el período no existe
+ * @throws {Error} Si el período no se puede anular
+ */
 exports.voidPeriod = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);

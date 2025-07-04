@@ -85,6 +85,18 @@ exports.createNew = async (req, res, next) => {
     }
 };
 
+/**
+ * Precarga datos para la creación de novedades de nómina
+ * 
+ * @async
+ * @function preload
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.body - Datos para la precarga
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con los datos precargados
+ * @throws {Error} Si ocurre un error durante la precarga
+ */
 exports.preload = async (req, res, next) => {
     try {
         const data = await validateSettlementNewPreload(req.body);
@@ -168,6 +180,21 @@ exports.deleteNew = async (req, res, next) => {
     }
 };
 
+/**
+ * Convierte una novedad de nómina a estado borrador
+ * 
+ * @async
+ * @function draftNew
+ * @param {Object} req - Objeto de solicitud de Express
+ * @param {Object} req.params - Parámetros de la ruta
+ * @param {string} req.params.id - ID de la novedad a convertir
+ * @param {Object} res - Objeto de respuesta de Express
+ * @param {Function} next - Función para pasar al siguiente middleware
+ * @returns {Object} Respuesta JSON con la novedad convertida a borrador
+ * @throws {ValidationError} Si el ID no es válido
+ * @throws {NotFoundError} Si la novedad no existe
+ * @throws {Error} Si ocurre un error al convertir a borrador
+ */
 exports.draftNew = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id);
@@ -200,11 +227,31 @@ exports.draftNew = async (req, res, next) => {
 //     }
 // };
 
+/**
+ * Obtiene todas las novedades de nómina del sistema
+ * 
+ * @async
+ * @function getAllSettlementNews
+ * @returns {Array} Lista de todas las novedades de nómina
+ */
 getAllSettlementNews = async () => {
     const settlementNews = await settlementNewService.getAll();
     return settlementNews;
 }
 
+/**
+ * Obtiene novedades de nómina filtradas por parámetros
+ * 
+ * @async
+ * @function getSettlementNewByParams
+ * @param {Object} params - Parámetros de consulta
+ * @param {string} params.employeeId - ID del empleado
+ * @param {string} params.startDate - Fecha de inicio
+ * @param {string} params.endDate - Fecha de fin
+ * @param {string} params.conceptType - Tipo de concepto (DEVENGADO/DEDUCCION)
+ * @returns {Array} Lista de novedades filtradas
+ * @throws {ValidationError} Si los parámetros de consulta no son válidos
+ */
 getSettlementNewByParams = async (params) => {
     const queryValidation = validateSettlementNewQuery(params);
     if (!queryValidation.isValid) throw new ValidationError('Settlement new was not retrieved', queryValidation.errors);

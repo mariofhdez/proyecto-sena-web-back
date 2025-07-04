@@ -12,12 +12,37 @@ const cors = require('cors');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/errorHandler');
 const loggerMiddleware = require('./middlewares/logger')
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const swaggerOptions = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API de nómina',
+            version: '1.0.0',
+            description: 'API para la gestión de nómina'
+        },
+        servers: [
+            {
+                url: `http://localhost:${process.env.PORT}`
+            }
+        ],
+        components: {}
+    },
+    apis: ['./src/routes/*.js']
+}
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 
 /**
  * @type {express.Application}
  * Instancia principal de la aplicación Express
- */
+*/
 const app = express();
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Middleware para procesar JSON en las peticiones
 app.use(express.json());

@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Controlador para la gestión de nómina y liquidaciones
+ * @module controllers/payrollController
+ */
+
 const settlementService = require('../services/settlementService');
 const settlementNewService = require('../services/settlementNewService');
 const settlementEarningService = require('../services/settlementEarningService');
@@ -9,7 +14,19 @@ const { validateSettlementNewCreation } = require('../utils/settlementNewValidat
 const {formatDate} = require('../utils/formatDate');
 const { fromTimeStampToDate } = require('../utils/typeofValidations');
 
-// 1.1. Crear nómina incluyendo sección devengados y deducciones
+/**
+ * Crea una nueva liquidación de nómina incluyendo sección de devengados y deducciones
+ * 
+ * @async
+ * @function createSettlement
+ * @param {Object} data - Datos para crear la liquidación
+ * @param {string} data.startDate - Fecha de inicio del período
+ * @param {string} data.endDate - Fecha de fin del período
+ * @param {number} data.employeeId - ID del empleado
+ * @param {number} data.periodId - ID del período
+ * @returns {Object} Liquidación creada
+ * @throws {Error} Si ocurre un error al crear la liquidación
+ */
 exports.createSettlement = async(data) => {
     const settlementData = {
         startDate: formatDate(data.startDate),
@@ -40,7 +57,16 @@ exports.createSettlement = async(data) => {
     return settlement;
 }
 
-// 1.2. Crear conceptos recurrentes
+/**
+ * Crea conceptos recurrentes para un empleado en una fecha específica
+ * 
+ * @async
+ * @function createRegularNews
+ * @param {number} employeeId - ID del empleado
+ * @param {string} date - Fecha para crear los conceptos
+ * @returns {Array} Lista de conceptos recurrentes creados
+ * @throws {Error} Si ocurre un error al crear los conceptos recurrentes
+ */
 exports.createRegularNews = async(employeeId, date) =>{
     try {
         let regularNews =[]
@@ -73,6 +99,13 @@ exports.createRegularNews = async(employeeId, date) =>{
     }
 }
 
+/**
+ * Elimina conceptos recurrentes de una lista de conceptos
+ * 
+ * @function deleteRegularNews
+ * @param {Array} concepts - Lista de conceptos a procesar
+ * @returns {Promise} Promesa que resuelve cuando se eliminan todos los conceptos recurrentes
+ */
 function deleteRegularNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
@@ -83,6 +116,18 @@ function deleteRegularNews(concepts) {
     }));
 }
 
+/**
+ * Procesa la creación de una novedad de liquidación
+ * 
+ * @async
+ * @function processNew
+ * @param {number} value - Valor del concepto
+ * @param {string} date - Fecha del concepto
+ * @param {number} employee - ID del empleado
+ * @param {string} code - Código del concepto
+ * @returns {Object} Novedad de liquidación creada
+ * @throws {Error} Si ocurre un error al procesar la novedad
+ */
 async function processNew(value, date, employee, code) {
     const concept = getConceptByCode(code);
     let data = {
@@ -96,6 +141,19 @@ async function processNew(value, date, employee, code) {
     return settlementNew;
 }
 
+/**
+ * Crea una nueva novedad de liquidación
+ * 
+ * @async
+ * @function createNew
+ * @param {Object} data - Datos para crear la novedad
+ * @param {string} data.date - Fecha de la novedad
+ * @param {number} data.quantity - Cantidad del concepto
+ * @param {number} data.conceptId - ID del concepto
+ * @param {number} data.employeeId - ID del empleado
+ * @returns {Object} Novedad de liquidación creada
+ * @throws {Error} Si ocurre un error al crear la novedad
+ */
 async function createNew(data) {
     try {
         const validation = await validateSettlementNewCreation(data);
@@ -109,7 +167,15 @@ async function createNew(data) {
     }
 }
 
-// 2. Liquidar nómina
+/**
+ * Liquida la nómina de un empleado
+ * 
+ * @async
+ * @function settlePayroll
+ * @param {number} settlementId - ID de la liquidación a procesar
+ * @returns {Object} Liquidación actualizada con totales calculados
+ * @throws {Error} Si ocurre un error durante la liquidación
+ */
 exports.settlePayroll = async(settlementId) => {
     try {
         console.log('Está llegando a settlePayroll');
@@ -137,10 +203,29 @@ exports.settlePayroll = async(settlementId) => {
     
 }
 
+/**
+ * Obtiene los totales de devengados para una liquidación
+ * 
+ * @async
+ * @function totals
+ * @param {number} id - ID de la liquidación
+ * @returns {number} Total de devengados
+ */
 exports.totals = async(id) => {
     return sumSettlementNews("EARNINGS", id);
 }
 
+/**
+ * Recupera los conceptos de liquidación para un empleado en un rango de fechas
+ * 
+ * @async
+ * @function retrieveConcepts
+ * @param {string} start - Fecha de inicio
+ * @param {string} end - Fecha de fin
+ * @param {number} employee - ID del empleado
+ * @returns {Array} Lista de conceptos de liquidación
+ * @throws {Error} Si ocurre un error al consultar los conceptos
+ */
 async function retrieveConcepts (start, end, employee){
     try {
         const query = {
@@ -158,6 +243,16 @@ async function retrieveConcepts (start, end, employee){
     }
 }
 
+/**
+ * Actualiza las novedades de liquidación conectándolas a devengados o deducciones
+ * 
+ * @async
+ * @function updateSettlementNews
+ * @param {Array} concepts - Lista de conceptos a actualizar
+ * @param {number} earningsId - ID de devengados
+ * @param {number} deductionsId - ID de deducciones
+ * @returns {Promise} Promesa que resuelve cuando se actualizan todos los conceptos
+ */
 async function updateSettlementNews(concepts, earningsId, deductionsId) {
 
     return Promise.all(concepts.map(async c => {
@@ -184,6 +279,14 @@ async function updateSettlementNews(concepts, earningsId, deductionsId) {
     }));
 }
 
+/**
+ * Convierte las novedades de liquidación a estado borrador
+ * 
+ * @async
+ * @function draftSettlementNews
+ * @param {Array} concepts - Lista de conceptos a procesar
+ * @returns {Promise} Promesa que resuelve cuando se procesan todos los conceptos
+ */
 async function draftSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
@@ -209,6 +312,14 @@ async function draftSettlementNews(concepts) {
     }));
 }
 
+/**
+ * Anula las novedades de liquidación
+ * 
+ * @async
+ * @function voidSettlementNews
+ * @param {Array} concepts - Lista de conceptos a anular
+ * @returns {Promise} Promesa que resuelve cuando se anulan todos los conceptos
+ */
 async function voidSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
@@ -219,6 +330,14 @@ async function voidSettlementNews(concepts) {
     }));
 }
 
+/**
+ * Cierra las novedades de liquidación
+ * 
+ * @async
+ * @function closeSettlementNews
+ * @param {Array} concepts - Lista de conceptos a cerrar
+ * @returns {Promise} Promesa que resuelve cuando se cierran todos los conceptos
+ */
 async function closeSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
@@ -228,6 +347,14 @@ async function closeSettlementNews(concepts) {
     }));
 }
 
+/**
+ * Abre las novedades de liquidación
+ * 
+ * @async
+ * @function openSettlementNews
+ * @param {Array} concepts - Lista de conceptos a abrir
+ * @returns {Promise} Promesa que resuelve cuando se abren todos los conceptos
+ */
 async function openSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
@@ -236,6 +363,16 @@ async function openSettlementNews(concepts) {
         });
     }));
 }
+
+/**
+ * Suma los valores de las novedades de liquidación por tipo
+ * 
+ * @async
+ * @function sumSettlementNews
+ * @param {string} type - Tipo de concepto ("EARNINGS" o "DEDUCTIONS")
+ * @param {number} id - ID de la liquidación
+ * @returns {Object} Suma de valores de las novedades
+ */
 async function sumSettlementNews(type, id) {
     let query = {};
     if(type == "EARNINGS") query = {settlementEarningsId: id};
@@ -243,6 +380,19 @@ async function sumSettlementNews(type, id) {
     return await settlementNewService.toAdd(query);
 }
 
+/**
+ * Actualiza los totales de una liquidación
+ * 
+ * @async
+ * @function updateSettlementTotals
+ * @param {number} earningsSum - Suma de devengados
+ * @param {number} deductionsSum - Suma de deducciones
+ * @param {number} settlementId - ID de la liquidación
+ * @param {number} earningsId - ID de devengados
+ * @param {number} deductionsId - ID de deducciones
+ * @returns {Object} Liquidación actualizada con totales calculados
+ * @throws {Error} Si ocurre un error al actualizar los totales
+ */
 async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, earningsId, deductionsId){
     try {
         const earningsValue = earningsSum._sum.value || 0;
@@ -270,6 +420,17 @@ async function updateSettlementTotals(earningsSum, deductionsSum, settlementId, 
     }
 }
 
+/**
+ * Convierte una liquidación a estado borrador
+ * 
+ * @async
+ * @function draftSettlement
+ * @param {number} settlementId - ID de la liquidación
+ * @param {number} earningsId - ID de devengados
+ * @param {number} deductionsId - ID de deducciones
+ * @returns {Object} Liquidación convertida a borrador
+ * @throws {Error} Si ocurre un error al convertir a borrador
+ */
 async function draftSettlement(settlementId, earningsId, deductionsId){
     try {   
         await settlementEarningService.update(earningsId, { 
@@ -292,6 +453,15 @@ async function draftSettlement(settlementId, earningsId, deductionsId){
     }
 }
 
+/**
+ * Cierra una liquidación de nómina
+ * 
+ * @async
+ * @function closePayroll
+ * @param {number} settlementId - ID de la liquidación a cerrar
+ * @returns {Object} Liquidación cerrada
+ * @throws {Error} Si ocurre un error al cerrar la liquidación
+ */
 exports.closePayroll = async(settlementId) => {
     try {
         const settlement = await settlementService.getById(settlementId);
@@ -310,6 +480,15 @@ exports.closePayroll = async(settlementId) => {
     }   
 }
 
+/**
+ * Abre una liquidación de nómina
+ * 
+ * @async
+ * @function openPayroll
+ * @param {number} settlementId - ID de la liquidación a abrir
+ * @returns {Object} Liquidación abierta
+ * @throws {Error} Si ocurre un error al abrir la liquidación
+ */
 exports.openPayroll = async(settlementId) => {
     try {
         const settlement = await settlementService.getById(settlementId);
@@ -327,6 +506,15 @@ exports.openPayroll = async(settlementId) => {
     }
 }
 
+/**
+ * Convierte una liquidación de nómina a estado borrador
+ * 
+ * @async
+ * @function draftPayroll
+ * @param {number} settlementId - ID de la liquidación a convertir
+ * @returns {Object} Liquidación convertida a borrador
+ * @throws {Error} Si ocurre un error al convertir la liquidación
+ */
 exports.draftPayroll = async(settlementId) => {
     try {
         const settlement = await settlementService.getById(parseInt(settlementId,10));
@@ -346,6 +534,15 @@ exports.draftPayroll = async(settlementId) => {
     }
 }
 
+/**
+ * Anula una liquidación de nómina
+ * 
+ * @async
+ * @function voidPayroll
+ * @param {number} settlementId - ID de la liquidación a anular
+ * @returns {Object} Liquidación anulada
+ * @throws {Error} Si ocurre un error al anular la liquidación
+ */
 exports.voidPayroll = async(settlementId) => {
     try {
         const settlement = await settlementService.getById(parseInt(settlementId,10));
