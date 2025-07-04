@@ -5,6 +5,7 @@ const { formatDate } = require('./formatDate');
 const { verifyId } = require('./verifyId');
 const { validateSettlementCreation } = require('./settlementValidation');
 const payrollController = require('../controllers/payrollController');
+const settlementService = require('../services/settlementService');
 
 async function validatePeriodCreation(data) {
     let errors = [];
@@ -105,7 +106,7 @@ async function loadEmployees(periodId, employees) {
         periodId: periodId
     });
     const updatePeriod = await periodService.update(periodId, { employeesQuantity: sumEmployees });
-
+    console.log(updatePeriod);
     return settlements;
 
 }

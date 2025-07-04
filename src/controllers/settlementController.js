@@ -161,11 +161,17 @@ getSettlementByParams = async (params) => {
     if (!queryValidation.isValid) throw new ValidationError('Settlement was not retrieved', queryValidation.errors);
 
     let query = {
-        startDate: formatDate(params.startDate),
-        endDate: formatDate(params.endDate)
+        status: { not: 'VOID'}
+    }
+    if (params.startDate || params.endDate) {
+        query.startDate = formatDate(params.startDate);
+        query.endDate = formatDate(params.endDate);
     }
     if (params.employeeId) {
         query.employeeId = parseInt(params.employeeId, 10)
+    }
+    if (params.periodId) {
+        query.periodId = parseInt(params.periodId, 10);
     }
     const settlement = await settlementService.query(query);
     return settlement;

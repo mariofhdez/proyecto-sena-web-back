@@ -22,6 +22,9 @@ exports.getAll = async () => {
             earnings: true,
             deductions: true,
             employee: true
+        },
+        where: {
+            status: { not: 'VOID'}
         }
     });
     if (!settlements) throw new Error('Error al consultar las Nóminas');
@@ -126,7 +129,8 @@ exports.query = async (query) => {
         where: query,
         include: {
             earnings: true,
-            deductions: true
+            deductions: true,
+            employee: true
         }
     });
     return settlements;

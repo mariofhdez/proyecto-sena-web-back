@@ -20,7 +20,8 @@ exports.getById = async (id) => {
     const period = await prisma.period.findUnique({
         where: { id: id },
         include: {
-            settlements: true
+            settlements: {include: {
+            employee: true}}
         }
     });
     if (!period) throw new Error('Period not found');

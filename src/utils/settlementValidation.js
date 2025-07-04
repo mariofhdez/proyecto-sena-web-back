@@ -10,11 +10,18 @@ function validateSettlementQuery(query) {
         validateRequiredNumber(employeeId, "employeeId", errors)
     }
 
-    validateRequiredString(query.startDate, "startDate", errors);
-    validateDateFormat(query.startDate, "startDate", errors);
+    if(query.startDate || query.endDate) {
+        validateRequiredString(query.startDate, "startDate", errors);
+        validateDateFormat(query.startDate, "startDate", errors);
+    
+        validateRequiredString(query.endDate, "endDate", errors);
+        validateDateFormat(query.endDate, "endDate", errors);
+    }
 
-    validateRequiredString(query.endDate, "endDate", errors);
-    validateDateFormat(query.endDate, "endDate", errors);
+    if(query.periodId) {
+        const periodId = parseInt(query.periodId, 10);
+        validateRequiredNumber(periodId, "periodId", errors);
+    }
 
     if (errors.length > 0) {
         return {
