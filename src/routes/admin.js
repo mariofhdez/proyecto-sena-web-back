@@ -5,6 +5,17 @@
  * @requires ../middlewares/auth
  */
 
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: Token JWT de autenticación
+ */
+
 const { Router } = require('express');
 const adminRouter = Router();
 
@@ -12,50 +23,123 @@ const adminController = require('../controllers/adminController');
 const { authenticateToken } = require('../middlewares/auth');
 
 /**
- * Ruta para obtener todos los usuarios
- * @name get/users
- * @function
- * @memberof module:routes/admin~adminRouter
- * @inner
- * @param {string} path - Ruta de la API
- * @param {function} middleware - Middleware para autenticar el token
- * @param {function} controller - Controlador que maneja la lógica para obtener usuarios
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Obtener todos los usuarios
+ *     description: Retorna una lista de todos los usuarios del sistema (solo administradores)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *       403:
+ *         description: Prohibido - Se requieren permisos de administrador
+ *       500:
+ *         description: Error interno del servidor
  */
 adminRouter.get('/users', authenticateToken, adminController.users);
 
 /**
- * Ruta para obtener un usuario por ID
- * @name get/users/:id
- * @function
- * @memberof module:routes/admin~adminRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del usuario
- * @param {function} middleware - Middleware para autenticar el token
- * @param {function} controller - Controlador que maneja la lógica para obtener un usuario por ID
+ * @swagger
+ * /api/admin/users/{id}:
+ *   get:
+ *     summary: Obtener un usuario por ID
+ *     description: Retorna un usuario específico basado en su ID (solo administradores)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Usuario encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *       403:
+ *         description: Prohibido - Se requieren permisos de administrador
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 adminRouter.get('/users/:id', authenticateToken, adminController.getUser);
 
 /**
- * Ruta para desactivar un usuario por ID
- * @name patch/deactivate-user/:id
- * @function
- * @memberof module:routes/admin~adminRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del usuario
- * @param {function} middleware - Middleware para autenticar el token
- * @param {function} controller - Controlador que maneja la lógica para desactivar un usuario
+ * @swagger
+ * /api/admin/deactivate-user/{id}:
+ *   patch:
+ *     summary: Desactivar un usuario
+ *     description: Desactiva un usuario específico del sistema (solo administradores)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a desactivar
+ *     responses:
+ *       200:
+ *         description: Usuario desactivado exitosamente
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *       403:
+ *         description: Prohibido - Se requieren permisos de administrador
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 adminRouter.patch('/deactivate-user/:id', authenticateToken, adminController.deactivateUser);
 
 /**
- * Ruta para eliminar un usuario por ID
- * @name delete/delete/:id
- * @function
- * @memberof module:routes/admin~adminRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del usuario
- * @param {function} middleware - Middleware para autenticar el token
- * @param {function} controller - Controlador que maneja la lógica para eliminar un usuario
+ * @swagger
+ * /api/admin/delete/{id}:
+ *   delete:
+ *     summary: Eliminar un usuario
+ *     description: Elimina un usuario específico del sistema (solo administradores)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a eliminar
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado exitosamente
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *       403:
+ *         description: Prohibido - Se requieren permisos de administrador
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 adminRouter.delete('/delete/:id', authenticateToken, adminController.deleteUser);
 

@@ -4,62 +4,247 @@
  * @requires ../controllers/employeeController
  */
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Employee:
+ *       type: object
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - email
+ *         - position
+ *         - salary
+ *         - startDate
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único del empleado
+ *         firstName:
+ *           type: string
+ *           description: Nombre del empleado
+ *         lastName:
+ *           type: string
+ *           description: Apellido del empleado
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email del empleado
+ *         position:
+ *           type: string
+ *           description: Cargo del empleado
+ *         salary:
+ *           type: number
+ *           description: Salario base del empleado
+ *         startDate:
+ *           type: string
+ *           format: date
+ *           description: Fecha de inicio del empleado
+ *         isActive:
+ *           type: boolean
+ *           description: Estado activo del empleado
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de última actualización
+ */
+
 const express = require('express');
 const employeeRouter = express.Router();
 const employeeController = require('../controllers/employeeController');
 
 /**
- * Ruta para obtener todos los empleados
- * @name get/employees
- * @function
- * @memberof module:routes/employee~employeeRouter
- * @inner
- * @param {string} path - Ruta de la API
- * @param {function} controller - Controlador que maneja la lógica para obtener empleados
+ * @swagger
+ * /api/employee:
+ *   get:
+ *     summary: Obtener todos los empleados
+ *     description: Retorna una lista de todos los empleados del sistema
+ *     tags: [Employees]
+ *     responses:
+ *       200:
+ *         description: Lista de empleados obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Employee'
+ *       500:
+ *         description: Error interno del servidor
  */
 employeeRouter.get('/', employeeController.getEmployees);
 
 /**
- * Ruta para obtener un empleado por ID
- * @name get/employees/:id
- * @function
- * @memberof module:routes/employee~employeeRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del empleado
- * @param {function} controller - Controlador que maneja la lógica para obtener un empleado por ID
+ * @swagger
+ * /api/employee/{id}:
+ *   get:
+ *     summary: Obtener un empleado por ID
+ *     description: Retorna un empleado específico basado en su ID
+ *     tags: [Employees]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del empleado
+ *     responses:
+ *       200:
+ *         description: Empleado encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Employee'
+ *       404:
+ *         description: Empleado no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 employeeRouter.get('/:id', employeeController.getEmployee);
 
 /**
- * Ruta para crear un nuevo empleado
- * @name post/employees
- * @function
- * @memberof module:routes/employee~employeeRouter
- * @inner
- * @param {string} path - Ruta de la API
- * @param {function} controller - Controlador que maneja la lógica para crear un nuevo empleado
+ * @swagger
+ * /api/employee:
+ *   post:
+ *     summary: Crear un nuevo empleado
+ *     description: Crea un nuevo empleado en el sistema
+ *     tags: [Employees]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firstName
+ *               - lastName
+ *               - email
+ *               - position
+ *               - salary
+ *               - startDate
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 description: Nombre del empleado
+ *               lastName:
+ *                 type: string
+ *                 description: Apellido del empleado
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email del empleado
+ *               position:
+ *                 type: string
+ *                 description: Cargo del empleado
+ *               salary:
+ *                 type: number
+ *                 description: Salario base del empleado
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de inicio del empleado
+ *     responses:
+ *       201:
+ *         description: Empleado creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Employee'
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       409:
+ *         description: El email ya está registrado
+ *       500:
+ *         description: Error interno del servidor
  */
 employeeRouter.post('/', employeeController.createEmployee);
 
 /**
- * Ruta para actualizar un empleado por ID
- * @name patch/employees/:id
- * @function
- * @memberof module:routes/employee~employeeRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del empleado
- * @param {function} controller - Controlador que maneja la lógica para actualizar un empleado
+ * @swagger
+ * /api/employee/{id}:
+ *   patch:
+ *     summary: Actualizar un empleado
+ *     description: Actualiza un empleado específico
+ *     tags: [Employees]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del empleado
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 description: Nombre del empleado
+ *               lastName:
+ *                 type: string
+ *                 description: Apellido del empleado
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email del empleado
+ *               position:
+ *                 type: string
+ *                 description: Cargo del empleado
+ *               salary:
+ *                 type: number
+ *                 description: Salario base del empleado
+ *               startDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de inicio del empleado
+ *               isActive:
+ *                 type: boolean
+ *                 description: Estado activo del empleado
+ *     responses:
+ *       200:
+ *         description: Empleado actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Employee'
+ *       404:
+ *         description: Empleado no encontrado
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       500:
+ *         description: Error interno del servidor
  */
 employeeRouter.patch('/:id', employeeController.updateEmployee);
 
 /**
- * Ruta para eliminar un empleado por ID
- * @name delete/employees/:id
- * @function
- * @memberof module:routes/employee~employeeRouter
- * @inner
- * @param {string} path - Ruta de la API con el ID del empleado
- * @param {function} controller - Controlador que maneja la lógica para eliminar un empleado
+ * @swagger
+ * /api/employee/{id}:
+ *   delete:
+ *     summary: Eliminar un empleado
+ *     description: Elimina un empleado específico del sistema
+ *     tags: [Employees]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del empleado a eliminar
+ *     responses:
+ *       200:
+ *         description: Empleado eliminado exitosamente
+ *       404:
+ *         description: Empleado no encontrado
+ *       500:
+ *         description: Error interno del servidor
  */
 employeeRouter.delete('/:id', employeeController.deleteEmployee);
 
