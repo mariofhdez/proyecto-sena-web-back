@@ -178,7 +178,7 @@ Este sistema proporciona una autenticación robusta basada en JWT que permite ma
 ## 📄 Documentación
 
 Documentación técnica de los Endpoints: `http://localhost:${PORT}/api-docs`
-Documentación técnica del código fuente: docs/index.html
+\nDocumentación técnica del código fuente: docs/index.html
 
 ---
 
@@ -201,5 +201,5 @@ Este proyecto está protegido bajo la licencia MIT.
 ## 📬 Contacto
 
 Autor: Mario Flórez
-GitHub: https://github.com/mariofhdez
-Linkedin: https://www.linkedin.com/in/mariofhdez
+\nGitHub: https://github.com/mariofhdez
+\nLinkedin: https://www.linkedin.com/in/mariofhdez
