@@ -71,6 +71,7 @@ Esta API proporciona endpoints para crear, leer, actualizar y eliminar recursos.
 5. Ejecuta los scripts de configuración:
    Desde la línea de comandos ejecuta la siguiente instrucción para crear la base de datos.
    ```
+   npx prisma migrate dev --name init
    npx prisma generate
    ```
    Para cargar las constantes ejecuta la instrucción
