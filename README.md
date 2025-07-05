@@ -33,18 +33,52 @@ Esta API proporciona endpoints para crear, leer, actualizar y eliminar recursos.
    ```
 
 3. Configura las variables de entorno:
-   Crea un archivo .env basado en .env-example
-   Luego define las variables necesarias:
 
-4. Ejecuta los scripts de configuración:
+   Crea un archivo .env
+   ```
+   // En Windows
+   echo > .env
+   // En Linux o Mac
+   touch .env
+   ```
+
+   Luego, basado en .env-example se deben agregar las variables necesarias para configurar el servidor:
+   ```
+   // Configuración del servidor
+   PORT=3000                # Puerto en el que se ejecutará la aplicación
+   NODE_ENV=development     # Entorno de ejecución (development, production, test)   
+   ```
+
+   También las credenciales de conexión a la Base de Datos:
+   ```
+   // Configuración de la base de datos MySQL
+   DB_USER='usuario_db'     # Usuario de la base de datos
+   DB_PASSWORD='contraseña' # Contraseña de la base de datos
+   DB_HOST='localhost'      # Host de la base de datos
+   DB_NAME='nombre_db'      # Nombre de la base de datos
+   DB_PORT='3306'           # Puerto de la base de datos MySQL
+
+   DATABASE_URL="mysql://usuario_db:contraseña@localhost:3306/nombre_db"  # Se compone de los elementos previos
+   ```
+
+   Por último, solo es necesario configurar una clave secreta para la firma del JWT:
+   ```
+   // Configuración de seguridad
+   JWT_SECRET='tu_clave_secreta_jwt' # Clave secreta para firmar los tokens JWT ej. '$3n@'
+   ```
+   
+   
+5. Ejecuta los scripts de configuración:
    Desde la línea de comandos ejecuta la siguiente instrucción para crear la base de datos.
    ```
    npx prisma generate
+   ```
    Para cargar las constantes ejecuta la instrucción
+   ```
    npm run seed:static
    ```
 
-5. Inicia el servidor en desarrollo:
+6. Inicia el servidor en desarrollo:
    ```  
    npm run dev
    ```
