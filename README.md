@@ -8,6 +8,9 @@ Una API RESTful para gestionar el cálculo de los pagos a empleados, que permite
 
 Esta API proporciona endpoints para crear, leer, actualizar y eliminar recursos. Además, incluye autenticación, documentación y próximamente estará incluyendo pruebas automatizadas.
 
+📺 [Introducción a PAYMA: sistema de gestión de nómina](https://www.loom.com/share/8abac3eebd914fd1a2335e0a08a52862?sid=c54fabd5-42bb-4e09-87ab-4e4e7d2384a2)
+▶️ [Demostración del sistema y sus funcionalidades](https://www.loom.com/share/1636e23cd48e4ca0b5c64db31a347d50?sid=f1636c21-1b75-46a3-9b74-50282d5532be)
+
 ---
 
 ## 📋 Requisitos
@@ -187,6 +190,8 @@ Este sistema proporciona una autenticación robusta basada en JWT que permite ma
 ## ✅ Pruebas
 
 🏗️ en proceso de elaboración
+
+🧪 [Configuración de Postman 🚀 para pruebas de la API](https://www.loom.com/share/bb755f19685f4aeb99ae2a9b9bf5a81b?sid=59dd5733-1db7-4057-b83a-b9f9a27e121d)
 
 ---
 
