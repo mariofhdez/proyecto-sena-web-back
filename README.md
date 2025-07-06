@@ -21,6 +21,8 @@ Esta API proporciona endpoints para crear, leer, actualizar y eliminar recursos.
 
 ## 🛠️ Instalación
 
+Aquí puedes ver la ejecución de estos pasos en [video](https://www.loom.com/share/2398a8873b3b4771a36fe52f298513c9?sid=6bc760f1-853e-4e55-9de0-9701cb4d1755)
+
 1. Clona el repositorio:
    ```
    git clone https://github.com/mariofhdez/proyecto-sena-web-back.git
