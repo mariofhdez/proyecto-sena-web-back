@@ -98,7 +98,7 @@ exports.createSettlement = async (req, res, next) => {
         const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
         if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
         // 1. Crear nómina
-        const settlement = await payrollController.createSettlement(employeeId, startDate, endDate);
+        const settlement = await payrollController.createSettlement(req.body);
         const regularNews = await payrollController.createRegularNews(employeeId, endDate);
         if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
         res.json(settlement);

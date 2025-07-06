@@ -77,7 +77,9 @@ exports.update = async (id, data) => {
  * @returns {Object} Datos del empleado eliminado
  */
 exports.remove = async (id) => {
-  return await prisma.employee.delete({ where: { id: id } });
+  const deletedEmployee = await prisma.employee.delete({ where: { id: id } });
+  if (!deletedEmployee) throw new Error('No se pudo eliminar el empleado')
+  return deletedEmployee;
 };
 
 exports.getEmployeeByIdentification = async (identification) => {

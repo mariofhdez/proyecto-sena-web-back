@@ -1,0 +1,1613 @@
+{
+	"info": {
+		"_postman_id": "67a5e510-de48-4655-a71a-2dfabb011bf3",
+		"name": "Nómina",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30338328"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"marioe_4@xample.com\",\r\n    \"name\": \"Andres\",\r\n    \"password\": \"P455w0rd\",\r\n    \"role\": \"ADMIN\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"admin@xample.com\",\r\n    \"name\": \"administrador\",\r\n    \"password\": \"P455w0rd\",\r\n    \"role\": \"ADMIN\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "User role",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"user@xample.com\",\r\n    \"name\": \"Usuario\",\r\n    \"password\": \"P455w0rd\",\r\n    \"role\": \"USER\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Login user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@xample.com\",\r\n    \"password\": \"P455w0rd\"\r\n\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Success",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\": \"admin@xample.com\",\r\n    \"password\": \"P455w0rd\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Retrieve users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwidXNlciI6Im1hcmlvZUB4YW1wbGUuY29tIiwicm9sZSI6IlVTRVIiLCJpc0FjdGl2ZSI6IlRSVUUiLCJpYXQiOjE3NDU5MDY1NTQsImV4cCI6MTc0NTkyMDk1NH0.p8P1Q1sEz8qGtHmXT_XCCwrTKPEUTKnkSwNkf5eYugc",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwidXNlciI6Im1hcmlvZUB4YW1wbGUuY29tIiwicm9sZSI6IlVTRVIiLCJpc0FjdGl2ZSI6IlRSVUUiLCJpYXQiOjE3NDU5MDY1NTQsImV4cCI6MTc0NTkyMDk1NH0.p8P1Q1sEz8qGtHmXT_XCCwrTKPEUTKnkSwNkf5eYugc",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/deactivate-user/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"deactivate-user",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/delete/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"admin",
+								"delete",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Update user",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Jose Felipe Sandoval Sepulveda\",\r\n    \"email\": \"jofeSandoval@mail.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/user/edit",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"edit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employees",
+			"item": [
+				{
+					"name": "Create employee",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "// [\r\n    {\r\n        // \"id\": 1,\r\n        \"identification\": \"98657\",\r\n        \"firstSurname\": \"Gonzalez\",\r\n        \"secondSurname\": \"García\",\r\n        \"firstName\": \"Juan\",\r\n        \"otherNames\": \"Carlos\",\r\n        \"salary\": 1500000,\r\n        \"transportAllowance\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 4,\r\n    //     \"identification\": \"456\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 5,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 6,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 7,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 8,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 9,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 10,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 11,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 12,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 13,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    }\r\n// ]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employee/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve employees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employee",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get employee by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employee/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get employee by identificationNumber",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employee?identification=456",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee"
+							],
+							"query": [
+								{
+									"key": "identification",
+									"value": "456"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update employee",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstSurname\": \"Jaime\",\r\n    \"secondSurname\": \"\",\r\n    \"firstName\": \"Agudelo\",\r\n    \"otherNames\": null,\r\n    \"salary\": 7000000,\r\n    \"transportAllowance\": false,\r\n    \"position\": \"Gerente General\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/employee/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete employee by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employee/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employee",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "17"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "Preload settlement new",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"quantity\": 8,\r\n    \"conceptId\": 4,\r\n    \"employeeId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/preload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								"preload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create settlement new",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2025-02-15\",\r\n    \"quantity\": 8,\r\n    \"conceptId\": 4,\r\n    \"employeeId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Draft settlement new",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/:id/draft",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								":id",
+								"draft"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve settlement news",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve settlement news with params",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news?employeeId=2&startDate=2025-01-01&endDate=2025-01-31",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news"
+							],
+							"query": [
+								{
+									"key": "employeeId",
+									"value": "2"
+								},
+								{
+									"key": "startDate",
+									"value": "2025-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-01-31"
+								},
+								{
+									"key": "conceptType",
+									"value": "DEDUCCION",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlement by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "51"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update settlement new",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    // \"newsDate\": \"2025-05-15\",\r\n    // \"newsQuantity\": 3,\r\n    // \"newsValue\": 28000,\r\n    // \"payrollConceptId\": 6,\r\n    \"employeeId\": 6\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete settlement new by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-news/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-news",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "109"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Settlements",
+			"item": [
+				{
+					"name": "settlementEarnings",
+					"item": [
+						{
+							"name": "Retrieve Settlement Earnings",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employeeId\": 1,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-earnings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-earnings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get by Id",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employeeId\": 1,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-earnings/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-earnings",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "52"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create earning",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"value\": 1000,\r\n    \"settlementId\": 9\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-earnings",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-earnings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Settlement Earnings",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"value\": 1000,\r\n    \"settlementId\": 9\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-earnings/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-earnings",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Settlement Earnings",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/settlement-earnings/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-earnings",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "30"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "settlementDeductions",
+					"item": [
+						{
+							"name": "Retrieve Settlement Deductions",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employeeId\": 1,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-deductions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-deductions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get by Id",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"employeeId\": 1,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-deductions/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-deductions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create earning",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"value\": 1000,\r\n    \"settlementId\": 9\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-deductions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-deductions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update settlement deduction",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"value\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-deductions/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-deductions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete settlement deduction",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"value\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/settlement-deductions/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"settlement-deductions",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "2"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create settlement",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employeeId\": 3,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Settle settlement",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"settlementId\": 30,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement/settle",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement",
+								"settle"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Close settlement",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"settlementId\": 5\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement/draft",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement",
+								"draft"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve settlements",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlements by params",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement?periodId=9",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-01-01",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2025-01-31",
+									"disabled": true
+								},
+								{
+									"key": "periodId",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlement by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "14"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update settlement",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/settlements/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"settlements",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "28"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete settlement",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Period",
+			"item": [
+				{
+					"name": "Create payroll period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Load employees to period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/loadEmployees",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"loadEmployees"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Settle period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/settle",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"settle"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Close period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/close",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"close"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Open period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/open",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"open"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Draft period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/reverse-settlement",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"reverse-settlement"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Void period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/void",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"void"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "6"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Retrieve payroll periods",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/period/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get payroll period by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/period/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete payroll period by id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/period/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Concepts",
+			"item": [
+				{
+					"name": "Retrieve Concepts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/concept",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"concept"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
