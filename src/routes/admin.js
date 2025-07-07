@@ -8,6 +8,28 @@
 /**
  * @swagger
  * components:
+ *   schemas:
+ *      UnauthorizedError:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: Mensaje de error
+ *           example: "La cabecera Authorization no ha sido proporcionada"
+ *      ForbiddenError:
+ *        type: object
+ *        properties:
+ *          message:
+ *            type: string
+ *            description: Mensaje de error
+ *            example: "No tienes permisos para acceder a esta ruta"
+ *      NotFoundError:
+ *        type: object
+ *        properties:
+ *          message:
+ *            type: string
+ *            description: Mensaje de error
+ *            example: "Usuario no encontrado"
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -42,8 +64,16 @@ const { authenticateToken } = require('../middlewares/auth');
  *                 $ref: '#/components/schemas/User'
  *       401:
  *         description: No autorizado - Token inválido o faltante
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnauthorizedError'
  *       403:
  *         description: Prohibido - Se requieren permisos de administrador
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ForbiddenError'
  *       500:
  *         description: Error interno del servidor
  */
@@ -64,7 +94,7 @@ adminRouter.get('/users', authenticateToken, adminController.users);
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del usuario
+ *           description: ID del usuario
  *     responses:
  *       200:
  *         description: Usuario encontrado exitosamente
@@ -74,13 +104,25 @@ adminRouter.get('/users', authenticateToken, adminController.users);
  *               $ref: '#/components/schemas/User'
  *       401:
  *         description: No autorizado - Token inválido o faltante
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnauthorizedError'
  *       403:
  *         description: Prohibido - Se requieren permisos de administrador
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ForbiddenError'
  *       404:
  *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
  *       500:
  *         description: Error interno del servidor
- */
+*/
 adminRouter.get('/users/:id', authenticateToken, adminController.getUser);
 
 /**
@@ -101,16 +143,36 @@ adminRouter.get('/users/:id', authenticateToken, adminController.getUser);
  *         description: ID del usuario a desactivar
  *     responses:
  *       200:
- *         description: Usuario desactivado exitosamente
+ *         description: Usuario encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                message:
+ *                  type: string
+ *                  example: "Usuario desactivado exitosamente"
  *       401:
  *         description: No autorizado - Token inválido o faltante
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnauthorizedError'
  *       403:
  *         description: Prohibido - Se requieren permisos de administrador
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ForbiddenError'
  *       404:
  *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
  *       500:
  *         description: Error interno del servidor
- */
+*/
 adminRouter.patch('/deactivate-user/:id', authenticateToken, adminController.deactivateUser);
 
 /**
@@ -131,13 +193,33 @@ adminRouter.patch('/deactivate-user/:id', authenticateToken, adminController.dea
  *         description: ID del usuario a eliminar
  *     responses:
  *       200:
- *         description: Usuario eliminado exitosamente
+ *         description: Usuario encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                message:
+ *                  type: string
+ *                  example: "Usuario eliminado exitosamente"
  *       401:
  *         description: No autorizado - Token inválido o faltante
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnauthorizedError'
  *       403:
  *         description: Prohibido - Se requieren permisos de administrador
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/ForbiddenError'
  *       404:
  *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
  *       500:
  *         description: Error interno del servidor
  */

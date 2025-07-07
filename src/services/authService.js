@@ -77,7 +77,7 @@ exports.loginService = async (email, password) => {
     });
 
     if (!user) {
-        throw new ValidationError('Usuario o contraseña inválidas');
+        throw new ValidationError("Acceso denegado",'Usuario o contraseña inválidas');
     }
 
     // Verificar intentos de login
@@ -95,7 +95,7 @@ exports.loginService = async (email, password) => {
                 lastLoginAttempt: new Date()
             }
         });
-        throw new ValidationError('Usuario o contraseña inválidas');
+        throw new ValidationError("Acceso denegado",'Usuario o contraseña inválidas');
     }
 
     // Resetear intentos de login

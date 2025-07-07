@@ -32,7 +32,7 @@ exports.register = async(req, res, next) => {
         const validation = validateRegister({ email, name, password, role });
         if (!validation.isValid){
             console.log(validation.error);
-            throw new ValidationError(validation.error);
+            throw new ValidationError("No se pudo crear el usuario",validation.error);
         }
         await registerService(email, name, password, role);
         return res.status(201).json({ message: `User: ${name} was created succesfully!`});

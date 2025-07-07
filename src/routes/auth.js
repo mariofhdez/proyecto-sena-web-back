@@ -12,42 +12,78 @@
  *       type: object
  *       required:
  *         - email
+ *         - name
  *         - password
- *         - firstName
- *         - lastName
- *         - role
  *       properties:
  *         id:
  *           type: string
  *           description: ID único del usuario
+ *           example: "1"
  *         email:
  *           type: string
  *           format: email
  *           description: Email del usuario
- *         password:
- *           type: string
- *           description: Contraseña del usuario
- *         firstName:
+ *           example: "user@example.com"
+ *         name:
  *           type: string
  *           description: Nombre del usuario
- *         lastName:
- *           type: string
- *           description: Apellido del usuario
+ *           example: "John Doe"
  *         role:
  *           type: string
  *           enum: [ADMIN, USER]
  *           description: Rol del usuario
+ *           example: "USER"
  *         isActive:
  *           type: boolean
  *           description: Estado activo del usuario
- *         createdAt:
+ *           example: true
+ *     UserUpdate:
+ *       type: object
+ *       required:
+ *         - email
+ *         - name
+ *         - password
+ *       properties:
+ *         email:
  *           type: string
- *           format: date-time
- *           description: Fecha de creación
- *         updatedAt:
+ *           format: email
+ *           description: Email del usuario
+ *           example: "user@example.com"
+ *         name:
  *           type: string
- *           format: date-time
- *           description: Fecha de última actualización
+ *           description: Nombre del usuario
+ *           example: "John Doe"
+ *         password:
+ *           type: string
+ *           minLength: 8
+ *           description: Nueva contraseña del usuario (mínimo 8 caracteres)
+ *           example: "NewPassword123"
+ *     RegisterRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - name
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: Email del usuario
+ *           example: user@example.com
+ *         password:
+ *           type: string
+ *           minLength: 8
+ *           description: Contraseña del usuario. Debe contener al menos 8 caracteres, una letra y un número.
+ *           example: Password123
+ *         name:
+ *           type: string
+ *           description: Nombre del usuario
+ *           example: John Doe
+ *         role:
+ *           type: string
+ *           enum: [ADMIN, USER]
+ *           description: Rol del usuario
+ *           example: USER
  *     LoginRequest:
  *       type: object
  *       required:
@@ -58,23 +94,18 @@
  *           type: string
  *           format: email
  *           description: Email del usuario
+ *           example: user@example.com
  *         password:
  *           type: string
  *           description: Contraseña del usuario
+ *           example: Password123
  *     AuthResponse:
  *       type: object
  *       properties:
- *         success:
- *           type: boolean
- *           description: Indica si la operación fue exitosa
- *         message:
- *           type: string
- *           description: Mensaje de respuesta
  *         token:
  *           type: string
  *           description: Token JWT de autenticación
- *         user:
- *           $ref: '#/components/schemas/User'
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  */
 
 const { Router } = require('express');
@@ -94,43 +125,36 @@ const { register, login } = require('../controllers/authController');
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - firstName
- *               - lastName
- *               - role
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Email del usuario
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 description: Contraseña del usuario (mínimo 6 caracteres)
- *               firstName:
- *                 type: string
- *                 description: Nombre del usuario
- *               lastName:
- *                 type: string
- *                 description: Apellido del usuario
- *               role:
- *                 type: string
- *                 enum: [ADMIN, USER]
- *                 description: Rol del usuario
+ *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
  *         description: Usuario registrado exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *              type: object
+ *              properties:
+ *               message:
+ *                 type: string
+ *                 description: Mensaje de confirmación de registro
+ *                 example: "User: John Doe was created successfully!"
  *       400:
  *         description: Datos de entrada inválidos
- *       409:
- *         description: El email ya está registrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de error
+ *                   example: "No se pudo crear el usuario"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     description: Mensaje de error específico
+ *                     example: "La contraseña debe tener al menos 8 caracteres, una letra y un número"
  *       500:
  *         description: Error interno del servidor
  */
@@ -158,6 +182,21 @@ authRouter.post('/register', register);
  *               $ref: '#/components/schemas/AuthResponse'
  *       401:
  *         description: Credenciales inválidas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de error
+ *                   example: "Acceso denegado"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     description: Mensaje de error específico
+ *                     example: "Usuario o contraseña inválidos"
  *       500:
  *         description: Error interno del servidor
  */

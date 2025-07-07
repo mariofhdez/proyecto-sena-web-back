@@ -36,35 +36,30 @@ const { authenticateToken } = require('../middlewares/auth');
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               firstName:
- *                 type: string
- *                 description: Nuevo nombre del usuario
- *               lastName:
- *                 type: string
- *                 description: Nuevo apellido del usuario
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Nuevo email del usuario
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 description: Nueva contraseña del usuario (mínimo 6 caracteres)
+ *             $ref: '#/components/schemas/UserUpdate'
  *     responses:
  *       200:
  *         description: Perfil actualizado exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/User'
- *       401:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                  type: string
+ *                  example: Usuario actualizado con éxito!
+*       401:
  *         description: No autorizado - Token inválido o faltante
- *       400:
- *         description: Datos de entrada inválidos
- *       409:
- *         description: El email ya está en uso
+ *         content:
+ *           application/json:
+ *            schema:
+ *              $ref: '#/components/schemas/UnauthorizedError'
+ *       404:
+ *         description: Usuario no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotFoundError'
  *       500:
  *         description: Error interno del servidor
  */

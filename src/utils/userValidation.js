@@ -88,6 +88,49 @@ function validateUser(user) {
     return { isValid: true };
 }
 
+function validateUpdate(user){
+    let errors = [];
+
+    if(user.name) {
+        if(!isValidName(user.name)) {
+            errors.push('El campo \'name\' debe ser igual o mayor a 3 caracteres');
+        }
+    }
+
+    if(user.email) {
+        if(!isValidEmail(user.email)) {
+            errors.push('El campo \'email\' no cumple con la estructura esperada de un correo');
+        }
+    }
+
+    if(user.password) {
+        if(!isValidPassword(user.password)) {
+            errors.push('La contraseña debe tener al menos 8 caracteres, una letra y un número');
+        }
+    }
+
+    if(user.role) {
+        errors.push('Debes contactar al administrador del sistema para actualizar tu \'role\'');
+    }
+
+    if(user.isActive) {
+        if(!isValidStatus(user.isActive)) {
+            errors.push('Debes contactar al administrador del sistema para actualizar el estado \'isActive\' de tu usuario');
+        }
+    }
+
+    return { isValid: errors.length === 0, errors };
+}
+
+function updateData(data){
+    let user = {};
+    if(data.name) user.name = data.name;
+    if(data.email) user.email = data.email;
+    if(data.password) user.password = data.password;
+
+    return user;
+}
+
 module.exports = {
-    validateUser, validateRegister
+    validateUser, validateRegister, validateUpdate, updateData
 }

@@ -23,8 +23,7 @@ const { isValidNumericType } = require('../utils/typeofValidations');
  */
 exports.users = async (req, res, next) => {
     try {
-        console.log('controller')
-        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
+        if (req.user.role !== 'ADMIN') throw new ForbiddenError("No tienes permisos para acceder a esta ruta");
 
         const users = await getUsersService();
         if (!users) throw new NotFoundError('Error consultando datos');
