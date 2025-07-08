@@ -12,36 +12,61 @@
  *     Concept:
  *       type: object
  *       required:
+ *         - id
+ *         - code
  *         - name
  *         - type
- *         - value
- *         - isActive
+ *         - base
+ *         - factor
+ *         - isIncome
+ *         - isVacation
+ *         - isIBC
+ *         - isRegularConcept
+ *         - calculationType
  *       properties:
  *         id:
  *           type: string
  *           description: ID único del concepto
+ *           example: "1"
+ *         code:
+ *           type: string
+ *           description: Código único del concepto
+ *           example: "101"
  *         name:
  *           type: string
  *           description: Nombre del concepto
+ *           example: "Salario Básico"
  *         type:
  *           type: string
- *           enum: [EARNING, DEDUCTION]
- *           description: Tipo de concepto (devengo o deducción)
- *         value:
+ *           enum: [DEVENGADO, DEDUCCION]
+ *           description: Tipo de concepto. 
+ *           example: "DEVENGADO"
+ *         base:
+ *           type: string
+ *           enum: [SALARY, HOURLY, ALLOWANCE, INCOME, VACATION, ZERO, IBC]
+ *           description: Base sobre la cual se calcula el valor del concepto.
+ *         factor:
  *           type: number
- *           description: Valor del concepto
- *         isActive:
+ *           description: Factor de cálculo del concepto.
+ *         isIncome:
  *           type: boolean
- *           description: Estado activo del concepto
- *         createdAt:
+ *           description: Indica si el concepto es considerado base para el cálculo de los conceptos prestacionales
+ *         isVacation:
+ *           type: boolean
+ *           description: Indica si el concepto es considerado base para el cálculo de los conceptos de vacaciones
+ *         isIBC:
+ *           type: boolean
+ *           description: Indica si el concepto es considerado base para el cálculo de los conceptos de seguridad social como salud, pensión y riesgos laborales
+ *         isRegularConcept:
+ *           type: boolean
+ *           description: Indica si el concepto es un concepto regular, es decir, que se aplica de forma recurrente en la nómina del empleado
+ *         calculationType:
  *           type: string
- *           format: date-time
- *           description: Fecha de creación
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           description: Fecha de última actualización
+ *           enum: [LINEAL, FACTORIAL, NOMINAL]
+ *           description: Tipo de cálculo del concepto.
  */
+
+
 
 const express = require('express');
 const conceptRouter = express.Router();
