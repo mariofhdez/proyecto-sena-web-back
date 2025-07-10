@@ -93,4 +93,8 @@ const conceptController = require('../controllers/conceptController');
  */
 conceptRouter.get('/', conceptController.getAllConcepts);
 
+conceptRouter.get('/:id', conceptController.getConceptById);
+conceptRouter.get('/code/:code', conceptController.getConceptByCode);
+
+
 module.exports = conceptRouter;

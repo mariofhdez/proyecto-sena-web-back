@@ -63,6 +63,6 @@ router.use('/period', periodRouter);
  * Configuración de las rutas de conceptos
  * @type {Router}
  */
-router.use('/concept', conceptRouter);
+router.use('/concepts', conceptRouter);
 
 module.exports = router;

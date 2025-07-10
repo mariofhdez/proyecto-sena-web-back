@@ -5,6 +5,8 @@
 
 const { PrismaClient } = require("../../generated/prisma");
 const prisma = new PrismaClient;
+const fs = require('fs');
+const path = require('path');
 
 let payrollConcepts = [];
 
@@ -23,15 +25,42 @@ let regularConcepts = ['101', '127', '204', '208'];
  */
 async function loadPayrollConcepts() {
     try {
-        const conceptsFromDB = await prisma.payrollConcept.findMany();
+        let conceptsFromDB = await prisma.concept.findMany({ orderBy: { code: 'asc' } });
+        if (!conceptsFromDB || conceptsFromDB.length === 0) {
+            // Cargar desde staticData.json
+            const staticPath = path.join(__dirname, '../../prisma/staticData.json');
+            const staticData = JSON.parse(fs.readFileSync(staticPath, 'utf8'));
+            if (!staticData.concept || staticData.concept.length === 0) {
+                throw new Error('No se encontraron conceptos en staticData.json');
+            }
+            // Insertar en la base de datos
+            await prisma.concept.createMany({ data: staticData.payrollConcept });
+            conceptsFromDB = await prisma.concept.findMany({ orderBy: { code: 'asc' } });
+            console.log(`✅ Conceptos de nómina cargados automáticamente desde staticData.json: ${conceptsFromDB.length} conceptos`);
+        } else {
+            console.log(`✅ Conceptos de nómina cargados desde la base de datos: ${conceptsFromDB.length} conceptos`);
+        }
         payrollConcepts = conceptsFromDB;
-
         incomeConcepts = payrollConcepts.filter(concept => concept.isIncome === true);
         vacationConcepts = payrollConcepts.filter(concept => concept.isVacation === true);
         ibcConcepts = payrollConcepts.filter(concept => concept.isIBC === true);
+        console.log(`   - Conceptos de ingreso: ${incomeConcepts.length}`);
+        console.log(`   - Conceptos de vacaciones: ${vacationConcepts.length}`);
+        console.log(`   - Conceptos IBC: ${ibcConcepts.length}`);
     } catch (error) {
+        console.error('❌ Error al cargar los conceptos de nómina:', error.message);
         throw new Error('Error al cargar los conceptos de nómina');
     }
+}
+
+/**
+ * Verifica si los conceptos de nómina están cargados
+ * 
+ * @function areConceptsLoaded
+ * @returns {boolean} true si los conceptos están cargados, false en caso contrario
+ */
+function areConceptsLoaded() {
+    return payrollConcepts.length > 0;
 }
 
 /**
@@ -89,6 +118,17 @@ function getConceptFactor(conceptId) {
 }
 
 /**
+ * Obtiene el divisor de un concepto por su ID
+ * 
+ * @function getConceptDivisor
+ * @param {number} conceptId - ID del concepto
+ * @returns {number|undefined} Divisor del concepto o undefined si no existe
+ */
+function getConceptDivisor(conceptId) {
+    return payrollConcepts.find(concept => concept.id === conceptId)?.divisor;
+}
+
+/**
  * Obtiene un concepto por su código
  * 
  * @function getConceptByCode
@@ -120,5 +160,7 @@ module.exports = {
     getCalculationType,
     getConceptFactor,
     getConceptByCode,
-    getRegularConcepts
+    getRegularConcepts,
+    getConceptDivisor,
+    areConceptsLoaded
 }

@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // Importa la aplicación Express configurada
 const app = require('./app');
-const { loadPayrollConcepts, getAllPayrollConcepts } = require('./utils/payrollConcepts');
+const { loadPayrollConcepts, areConceptsLoaded } = require('./utils/payrollConcepts');
 
 // Define el puerto del servidor, usando el valor de la variable de entorno PORT o 3005 como fallback
 const PORT = process.env.PORT || 3005;
@@ -20,8 +20,9 @@ const PORT = process.env.PORT || 3005;
  */
 async function main() {
     try {
-        // await loadPayrollConcepts();
-        // console.log(getAllPayrollConcepts());
+        if (!areConceptsLoaded()) {
+            await loadPayrollConcepts();
+        }
         app.listen(PORT, () => {
             console.log(`Servidor: http://localhost:${PORT}`);
         });

@@ -17,7 +17,7 @@ const { NotFoundError } = require('../utils/appError');
  * @throws {Error} Si ocurre un error al consultar los conceptos
  */
 exports.getAll = async () => {
-    const settlementNews = await prisma.payrollConcept.findMany({});
+    const settlementNews = await prisma.concept.findMany({});
     if(!settlementNews) throw new Error('Error al consultar las Novedades');
     return settlementNews;
 };
@@ -32,9 +32,24 @@ exports.getAll = async () => {
  * @throws {NotFoundError} Si el concepto no existe
  */
 exports.getById = async (id) => {
-    const news = await prisma.payrollConcept.findUnique({
+    const news = await prisma.concept.findUnique({
         where: { id: id }
     });
     if (!news) throw new NotFoundError('Novedad de nómina no encontrada');
     return news;
+};
+
+/**
+ * Obtiene un concepto específico por su código
+ * 
+ * @async
+ * @function getByCode
+ * @param {string} code - Código del concepto (3 caracteres)
+ * @returns {Object|null} Datos del concepto encontrado o null si no existe
+ */
+exports.getByCode = async (code) => {
+    const concept = await prisma.concept.findUnique({
+        where: { code: code }
+    });
+    return concept;
 };
