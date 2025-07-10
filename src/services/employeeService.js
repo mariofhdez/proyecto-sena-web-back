@@ -6,7 +6,7 @@
 const { PrismaClient } = require('../../generated/prisma');
 const prisma = new PrismaClient();
 
-const { NotFoundError } = require('../utils/appError');
+const { NotFoundError, ValidationError } = require('../utils/appError');
 
 /**
  * Obtiene todos los empleados del sistema
@@ -75,9 +75,36 @@ exports.update = async (id, data) => {
  * @function remove
  * @param {number|string} id - ID del empleado a eliminar
  * @returns {Object} Datos del empleado eliminado
+ * @throws {ValidationError} Si el empleado tiene liquidaciones asociadas
  */
 exports.remove = async (id) => {
-  const deletedEmployee = await prisma.employee.delete({ where: { id: id } });
+  // Verificar si el empleado tiene liquidaciones asociadas
+  const settlements = await prisma.settlement.findMany({
+    where: { employeeId: parseInt(id) }
+  });
+
+  if (settlements.length > 0) {
+    throw new ValidationError('No se puede eliminar el empleado porque tiene liquidaciones asociadas');
+  }
+
+  // Verificar si el empleado tiene detalles de liquidación asociados
+  const settlementDetails = await prisma.settlementDetail.findMany({
+    where: { employeeId: parseInt(id) }
+  });
+
+  if (settlementDetails.length > 0) {
+    throw new ValidationError('No se puede eliminar el empleado porque tiene detalles de liquidación asociados');
+  }
+
+  // Verificar si el empleado tiene novedades asociadas
+  const novelties = await prisma.novelty.findMany({
+    where: { employeeId: parseInt(id) }
+  });
+  if (novelties.length > 0) {
+    throw new ValidationError('No se puede eliminar el empleado porque tiene novedades asociadas');
+  }
+
+  const deletedEmployee = await prisma.employee.delete({ where: { id: parseInt(id) } });
   if (!deletedEmployee) throw new Error('No se pudo eliminar el empleado')
   return deletedEmployee;
 };

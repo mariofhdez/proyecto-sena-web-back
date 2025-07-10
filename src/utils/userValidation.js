@@ -16,7 +16,7 @@ function isValidPassword(password) {
 
 function isValidRole(role){
     const allowedRoles = [ 'ADMIN', 'USER'];
-    return typeof role === 'string' && allowedRoles.includes(role.toUpperCase())
+    return typeof role === 'string' && allowedRoles.includes(role.toUpperCase());
 }
 
 function validateRegister(user){
@@ -52,9 +52,7 @@ function validateRegister(user){
     return { isValid: true };
 }
 
-function isValidRole(role) {
-    return typeof role === 'string' && (role === 'ADMIN' || role === 'USER');
-}
+
 
 function isValidStatus(isActive) {
     return typeof isActive === 'string' && (isActive === 'TRUE' || isActive === 'FALSE');

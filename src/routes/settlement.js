@@ -5,40 +5,46 @@
  *     Settlement:
  *       type: object
  *       required:
- *         - periodId
- *         - employeeId
- *         - totalEarnings
- *         - totalDeductions
- *         - netSalary
+ *         - employee_id
+ *         - start_date
+ *         - end_date
  *         - status
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *           description: ID único de la liquidación
- *         periodId:
- *           type: string
- *           description: ID del período asociado
- *         employeeId:
- *           type: string
+ *         employee_id:
+ *           type: integer
  *           description: ID del empleado
- *         totalEarnings:
- *           type: number
- *           description: Total de devengados
- *         totalDeductions:
- *           type: number
- *           description: Total de deducciones
- *         netSalary:
- *           type: number
- *           description: Salario neto
+ *         period_id:
+ *           type: integer
+ *           description: ID del período asociado (opcional)
+ *         start_date:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de inicio del período
+ *         end_date:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de fin del período
  *         status:
  *           type: string
- *           enum: [DRAFT, SETTLED, CLOSED]
+ *           enum: [DRAFT, OPEN, CLOSED, VOID]
  *           description: Estado de la liquidación
- *         createdAt:
+ *         earnings_value:
+ *           type: number
+ *           description: Total de devengados
+ *         deductions_value:
+ *           type: number
+ *           description: Total de deducciones
+ *         total_value:
+ *           type: number
+ *           description: Valor total de la liquidación
+ *         created_at:
  *           type: string
  *           format: date-time
  *           description: Fecha de creación
- *         updatedAt:
+ *         updated_at:
  *           type: string
  *           format: date-time
  *           description: Fecha de última actualización
@@ -55,6 +61,29 @@ const settlementController = require('../controllers/settlementController');
  *     summary: Obtener todas las liquidaciones
  *     description: Retorna una lista de todas las liquidaciones del sistema
  *     tags: [Settlements]
+ *     parameters:
+ *       - in: query
+ *         name: employee_id
+ *         schema:
+ *           type: integer
+ *         description: Filtrar por empleado
+ *       - in: query
+ *         name: period_id
+ *         schema:
+ *           type: integer
+ *         description: Filtrar por período
+ *       - in: query
+ *         name: start_date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de inicio para filtrar
+ *       - in: query
+ *         name: end_date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Fecha de fin para filtrar
  *     responses:
  *       200:
  *         description: Lista de liquidaciones obtenida exitosamente
@@ -67,7 +96,67 @@ const settlementController = require('../controllers/settlementController');
  *       500:
  *         description: Error interno del servidor
  */
-settlementRouter.get('/', settlementController.retriveSettlements);
+settlementRouter.get('/', settlementController.retrieveSettlements);
+
+/**
+ * @swagger
+ * /api/settlement/employee/{employeeId}:
+ *   get:
+ *     summary: Obtener liquidaciones por empleado
+ *     description: Retorna todas las liquidaciones de un empleado específico
+ *     tags: [Settlements]
+ *     parameters:
+ *       - in: path
+ *         name: employeeId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del empleado
+ *     responses:
+ *       200:
+ *         description: Liquidaciones del empleado obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Settlement'
+ *       400:
+ *         description: ID de empleado inválido
+ *       500:
+ *         description: Error interno del servidor
+ */
+settlementRouter.get('/employee/:employeeId', settlementController.getSettlementsByEmployee);
+
+/**
+ * @swagger
+ * /api/settlement/period/{periodId}:
+ *   get:
+ *     summary: Obtener liquidaciones por período
+ *     description: Retorna todas las liquidaciones de un período específico
+ *     tags: [Settlements]
+ *     parameters:
+ *       - in: path
+ *         name: periodId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del período
+ *     responses:
+ *       200:
+ *         description: Liquidaciones del período obtenidas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Settlement'
+ *       400:
+ *         description: ID de período inválido
+ *       500:
+ *         description: Error interno del servidor
+ */
+settlementRouter.get('/period/:periodId', settlementController.getSettlementsByPeriod);
 
 /**
  * @swagger
@@ -81,7 +170,7 @@ settlementRouter.get('/', settlementController.retriveSettlements);
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: ID de la liquidación
  *     responses:
  *       200:
@@ -111,15 +200,28 @@ settlementRouter.get('/:id', settlementController.getSettlementById);
  *           schema:
  *             type: object
  *             required:
- *               - periodId
- *               - employeeId
+ *               - employee_id
+ *               - start_date
+ *               - end_date
  *             properties:
- *               periodId:
- *                 type: string
- *                 description: ID del período
- *               employeeId:
- *                 type: string
+ *               employee_id:
+ *                 type: integer
  *                 description: ID del empleado
+ *               period_id:
+ *                 type: integer
+ *                 description: ID del período (opcional)
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de inicio del período
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de fin del período
+ *               status:
+ *                 type: string
+ *                 enum: [DRAFT, OPEN, CLOSED, VOID]
+ *                 description: Estado de la liquidación
  *     responses:
  *       201:
  *         description: Liquidación creada exitosamente
@@ -137,7 +239,7 @@ settlementRouter.post('/', settlementController.createSettlement);
 /**
  * @swagger
  * /api/settlement/{id}:
- *   patch:
+ *   put:
  *     summary: Actualizar una liquidación
  *     description: Actualiza una liquidación específica
  *     tags: [Settlements]
@@ -146,7 +248,7 @@ settlementRouter.post('/', settlementController.createSettlement);
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: ID de la liquidación
  *     requestBody:
  *       required: true
@@ -155,15 +257,20 @@ settlementRouter.post('/', settlementController.createSettlement);
  *           schema:
  *             type: object
  *             properties:
- *               totalEarnings:
- *                 type: number
- *                 description: Total de devengados
- *               totalDeductions:
- *                 type: number
- *                 description: Total de deducciones
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de inicio del período
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de fin del período
+ *               period_id:
+ *                 type: integer
+ *                 description: ID del período
  *               status:
  *                 type: string
- *                 enum: [DRAFT, SETTLED, CLOSED]
+ *                 enum: [DRAFT, OPEN, CLOSED, VOID]
  *                 description: Estado de la liquidación
  *     responses:
  *       200:
@@ -172,95 +279,140 @@ settlementRouter.post('/', settlementController.createSettlement);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Settlement'
- *       404:
- *         description: Liquidación no encontrada
  *       400:
  *         description: Datos de entrada inválidos
+ *       404:
+ *         description: Liquidación no encontrada
  *       500:
  *         description: Error interno del servidor
  */
-settlementRouter.patch('/:id', settlementController.updateSettlement);
+settlementRouter.put('/:id', settlementController.updateSettlement);
 
 /**
  * @swagger
- * /api/settlement/{id}:
- *   delete:
- *     summary: Eliminar una liquidación
- *     description: Elimina una liquidación específica del sistema
+ * /api/settlement/{id}/calculate:
+ *   post:
+ *     summary: Calcular una liquidación
+ *     description: Calcula una liquidación usando el motor de cálculo de conceptos
  *     tags: [Settlements]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
+ *         description: ID de la liquidación a calcular
+ *     responses:
+ *       200:
+ *         description: Liquidación calculada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Settlement'
+ *       400:
+ *         description: La liquidación no puede ser calculada
+ *       404:
+ *         description: Liquidación no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+settlementRouter.post('/:id/calculate', settlementController.calculateSettlement);
+
+/**
+ * @swagger
+ * /api/settlement/{id}/status:
+ *   post:
+ *     summary: Cambiar estado de una liquidación
+ *     description: Cambia el estado de una liquidación específica
+ *     tags: [Settlements]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la liquidación
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [DRAFT, OPEN, CLOSED, VOID]
+ *                 description: Nuevo estado de la liquidación
+ *     responses:
+ *       200:
+ *         description: Estado cambiado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Settlement'
+ *       400:
+ *         description: Transición de estado inválida
+ *       404:
+ *         description: Liquidación no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+settlementRouter.post('/:id/status', settlementController.changeStatus);
+
+/**
+ * @swagger
+ * /api/settlement/{id}/totals:
+ *   post:
+ *     summary: Calcular totales de una liquidación
+ *     description: Calcula y actualiza los totales de una liquidación
+ *     tags: [Settlements]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la liquidación
+ *     responses:
+ *       200:
+ *         description: Totales calculados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Settlement'
+ *       404:
+ *         description: Liquidación no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ */
+settlementRouter.post('/:id/totals', settlementController.calculateTotals);
+
+/**
+ * @swagger
+ * /api/settlement/{id}:
+ *   delete:
+ *     summary: Eliminar una liquidación
+ *     description: Elimina una liquidación específica del sistema (solo si está en DRAFT)
+ *     tags: [Settlements]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
  *         description: ID de la liquidación a eliminar
  *     responses:
  *       200:
  *         description: Liquidación eliminada exitosamente
+ *       400:
+ *         description: La liquidación no puede ser eliminada
  *       404:
  *         description: Liquidación no encontrada
  *       500:
  *         description: Error interno del servidor
  */
 settlementRouter.delete('/:id', settlementController.deleteSettlement);
-
-/**
- * @swagger
- * /api/settlement/settle:
- *   post:
- *     summary: Liquidar nómina
- *     description: Realiza la liquidación de la nómina
- *     tags: [Settlements]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - periodId
- *             properties:
- *               periodId:
- *                 type: string
- *                 description: ID del período a liquidar
- *     responses:
- *       200:
- *         description: Nómina liquidada exitosamente
- *       400:
- *         description: No se puede liquidar la nómina
- *       500:
- *         description: Error interno del servidor
- */
-settlementRouter.post('/settle', settlementController.settlePayroll);
-
-/**
- * @swagger
- * /api/settlement/close:
- *   post:
- *     summary: Cerrar nómina
- *     description: Cierra la nómina del período
- *     tags: [Settlements]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - periodId
- *             properties:
- *               periodId:
- *                 type: string
- *                 description: ID del período a cerrar
- *     responses:
- *       200:
- *         description: Nómina cerrada exitosamente
- *       400:
- *         description: No se puede cerrar la nómina
- *       500:
- *         description: Error interno del servidor
- */
-settlementRouter.post('/close', settlementController.closePayroll);
 
 module.exports = settlementRouter;

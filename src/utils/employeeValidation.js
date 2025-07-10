@@ -14,6 +14,10 @@ function validateNewEmployee(employee) {
 
     validateTransportAllowance(employee.transportAllowance, errors);
 
+    if (employee.position) {
+        validateRequiredString(employee.position, "position", errors);
+    }
+
     if (errors.length > 0) {
         return {
             isValid: false,
@@ -72,6 +76,10 @@ function validateUpdatedEmployee(employee) {
         validateTransportAllowance(employee.transportAllowance, errors);
     }
 
+    if (employee.position) {
+        validateRequiredString(employee.position, "position", errors);
+    }
+
     if (errors.length > 0) {
         return {
             isValid: false,
@@ -114,6 +122,8 @@ function employeeData(data) {
     }
     if(data.position) {
         employee.position = data.position;
+    } else {
+        employee.position = "Empleado";
     }
     return employee;
 }

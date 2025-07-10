@@ -1,30 +1,41 @@
-const { validateRequiredString, validateDateFormat, splitDate, fromTimestampToDate } = require('./typeofValidations');
+const { validateRequiredString, validateDateFormat } = require('./typeofValidations');
 const periodService = require('../services/periodService');
 const { NotFoundError, ValidationError } = require('./appError');
-const { formatDate } = require('./formatDate');
 const { verifyId } = require('./verifyId');
-const { validateSettlementCreation } = require('./settlementValidation');
-const payrollController = require('../controllers/payrollController');
-const settlementService = require('../services/settlementService');
 
+/**
+ * Valida la creación de un período
+ */
 async function validatePeriodCreation(data) {
     let errors = [];
 
-    // Valida que la fecha de inicio sea una fecha correcta
+    // Validar campo period
+    if (!data.period || typeof data.period !== 'string') {
+        errors.push('The field period is required and must be a string');
+    }
+
+    // Validar fecha de inicio
     validateRequiredString(data.startDate, "startDate", errors);
     validateDateFormat(data.startDate, "startDate", errors);
 
-    // Valida que la fecha de fin sea una fecha correcta
+    // Validar fecha de fin
     validateRequiredString(data.endDate, "endDate", errors);
     validateDateFormat(data.endDate, "endDate", errors);
 
-    // Valida que la fecha de inicio sea menor a la fecha de fin
-    if (data.startDate > data.endDate) {
+    // Validar que la fecha de inicio sea menor a la fecha de fin
+    if (data.startDate && data.endDate && new Date(data.startDate) >= new Date(data.endDate)) {
         errors.push('The start date must be before the end date');
     }
 
-    // Valida que el periodo no exista
-    await validateUniquePeriod(data.startDate, data.endDate, errors);
+    // Validar que no haya solapamiento con otros períodos
+    if (data.startDate && data.endDate) {
+        await validateNoOverlap(data.startDate, data.endDate, errors);
+    }
+
+    // Validar estado (solo OPEN o CLOSED)
+    if (data.status && !['OPEN', 'CLOSED'].includes(data.status)) {
+        errors.push('Status must be either OPEN or CLOSED');
+    }
 
     if (errors.length > 0) {
         return {
@@ -37,155 +48,145 @@ async function validatePeriodCreation(data) {
     }
 }
 
-async function validateUniquePeriod(startDate, endDate, errors) {
-    const splitStartDate = splitDate(startDate);
-    const splitEndDate = splitDate(endDate);
-    const query = {
-        startDate: {
-            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '00'),
-            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '32')
-        },
-        endDate: {
-            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '00'),
-            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '32')
-        },
-        status: {
-            not: "VOID"
-        }
-    }
+/**
+ * Valida que no haya solapamiento con otros períodos
+ */
+async function validateNoOverlap(startDate, endDate, errors) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    const overlappingPeriods = await periodService.query({
+        OR: [
+            {
+                AND: [
+                    { startDate: { lte: start } },
+                    { endDate: { gte: start } }
+                ]
+            },
+            {
+                AND: [
+                    { startDate: { lte: end } },
+                    { endDate: { gte: end } }
+                ]
+            },
+            {
+                AND: [
+                    { startDate: { gte: start } },
+                    { endDate: { lte: end } }
+                ]
+            }
+        ]
+    });
 
-    const period = await periodService.query(query);
-    const lenght = period.length;
-    if (lenght > 0) {
-        return errors.push('The period already exists')
+    if (overlappingPeriods.length > 0) {
+        errors.push('Period dates overlap with existing periods');
     }
 }
 
+/**
+ * Crea un nuevo período
+ */
 async function createPeriod(data) {
     const periodData = {
-        startDate: formatDate(data.startDate),
-        endDate: formatDate(data.endDate),
-        status: 'DRAFT'
-    }
+        period: data.period,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        paymentDate: data.paymentDate || null,
+        status: data.status || 'OPEN'
+    };
+    
     const period = await periodService.create(periodData);
     return period;
 }
 
-async function loadEmployees(periodId, employees) {
+/**
+ * Actualiza un período
+ */
+async function updatePeriod(id, data) {
+    const period = await periodService.getById(id);
+    if (!period) {
+        throw new NotFoundError('Period not found');
+    }
 
-    let settlements = [];
-
-    for (const employee of employees) {
-        const isValidEmployee = await verifyId(parseInt(employee, 10), "employee");
-        if (!isValidEmployee) {
-            throw new NotFoundError('Employee with id \'' + employee + '\' was not found');
+    // Validar fechas si se están actualizando
+    if (data.start_date || data.end_date) {
+        const startDate = data.start_date || period.start_date;
+        const endDate = data.end_date || period.end_date;
+        
+        if (new Date(startDate) >= new Date(endDate)) {
+            throw new ValidationError('The start date must be before the end date');
         }
     }
 
-    const period = await periodService.getById(periodId);
-    if(period.status !== "DRAFT") throw new Error('Period is not available to load employees');
-
-    for (const employee of employees) {
-        const data = {
-            employeeId: parseInt(employee, 10),
-            startDate: fromTimestampToDate(period.startDate),
-            endDate: fromTimestampToDate(period.endDate),
-            periodId: periodId
-        }
-        const validateSettlement = await validateSettlementCreation(data);
-        if (!validateSettlement.isValid) {
-            throw new ValidationError('Settlement was not created', validateSettlement.errors);
-        }
-
-        const settlement = await payrollController.createSettlement(data);
-        const regularNews = await payrollController.createRegularNews(data.employeeId, data.endDate);
-        settlements.push(settlement);
-    }
-
-    const sumEmployees = await settlementService.count({
-        periodId: periodId
-    });
-    const updatePeriod = await periodService.update(periodId, { employeesQuantity: sumEmployees });
-    console.log(updatePeriod);
-    return settlements;
-
-}
-
-async function settlePeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status !== "DRAFT") throw new Error('Period is not available to settle');
-    const settlements = period.settlements;
-
-    for(const settlement of settlements){
-        const s = await payrollController.settlePayroll(settlement.id);
-    }
-
-    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
-    // TODO: Implementar la lógica para liquidar el periodo
+    const updatedPeriod = await periodService.update(id, data);
     return updatedPeriod;
 }
 
+/**
+ * Cierra un período
+ */
 async function closePeriod(periodId) {
     const period = await periodService.getById(periodId);
-    if(period.status !== "OPEN") throw new Error('Period is not available to close');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.closePayroll(settlement.id);
+    if (!period) {
+        throw new NotFoundError('Period not found');
     }
-    const updatedPeriod = await periodService.update(periodId, { status: "CLOSED" });
-    return updatedPeriod;
+    
+    if (period.status !== 'OPEN') {
+        throw new ValidationError('Only open periods can be closed');
+    }
+
+    const closedPeriod = await periodService.closePeriod(periodId);
+    return closedPeriod;
 }
 
-async function deletePeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status === "DRAFT"){
-        const deletedPeriod = await periodService.delete(periodId);
-        return deletedPeriod;
-    }
-    throw new Error('Cannot delete a period with status: \'' + period.status + '\'');
-}
-
+/**
+ * Abre un período
+ */
 async function openPeriod(periodId) {
     const period = await periodService.getById(periodId);
-    if(period.status !== "CLOSED") throw new Error('Period is not available to open');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.openPayroll(settlement.id);
+    if (!period) {
+        throw new NotFoundError('Period not found');
     }
-    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
-    return updatedPeriod;
+    
+    if (period.status !== 'CLOSED') {
+        throw new ValidationError('Only closed periods can be opened');
+    }
+
+    const openedPeriod = await periodService.openPeriod(periodId);
+    return openedPeriod;
 }
 
-async function draftPeriod(periodId) {
+/**
+ * Elimina un período
+ */
+async function deletePeriod(periodId) {
     const period = await periodService.getById(periodId);
-    if(period.status !== "OPEN") throw new Error('Period is not available to draft');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.draftPayroll(settlement.id);
+    if (!period) {
+        throw new NotFoundError('Period not found');
     }
-    const updatedPeriod = await periodService.update(periodId, { status: "DRAFT" });
-    return updatedPeriod;
+    
+    if (period.status !== 'OPEN') {
+        throw new ValidationError('Only open periods can be deleted');
+    }
+
+    const deletedPeriod = await periodService.delete(periodId);
+    return deletedPeriod;
 }
 
-async function voidPeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status !== "DRAFT") throw new Error('Period is not available to void');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.voidPayroll(settlement.id);
-    }
-    const updatedPeriod = await periodService.update(periodId, { status: "VOID" });
-    return updatedPeriod;
+/**
+ * Obtiene el período abierto actual
+ */
+async function getOpenPeriod() {
+    const openPeriod = await periodService.getOpenPeriod();
+    return openPeriod;
 }
 
 module.exports = {
     validatePeriodCreation,
     createPeriod,
-    loadEmployees,
-    settlePeriod,
+    updatePeriod,
     closePeriod,
-    deletePeriod,
     openPeriod,
-    draftPeriod,
-    voidPeriod
+    deletePeriod,
+    getOpenPeriod
 }

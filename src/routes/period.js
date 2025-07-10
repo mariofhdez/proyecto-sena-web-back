@@ -5,34 +5,50 @@
  *     Period:
  *       type: object
  *       required:
- *         - name
- *         - startDate
- *         - endDate
+ *         - period
+ *         - start_date
+ *         - end_date
  *         - status
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *           description: ID único del período
- *         name:
+ *         period:
  *           type: string
- *           description: Nombre del período
- *         startDate:
+ *           description: Nombre del período (ej 2025-Enero)
+ *         start_date:
  *           type: string
- *           format: date
+ *           format: date-time
  *           description: Fecha de inicio del período
- *         endDate:
+ *         end_date:
  *           type: string
- *           format: date
+ *           format: date-time
  *           description: Fecha de fin del período
+ *         payment_date:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de pago (opcional)
  *         status:
  *           type: string
- *           enum: [OPEN, CLOSED, SETTLED, VOID]
+ *           enum: [OPEN, CLOSED]
  *           description: Estado del período
- *         createdAt:
+ *         employees_quantity:
+ *           type: integer
+ *           description: Cantidad de empleados en el período
+ *         earnings_total:
+ *           type: number
+ *           description: Total de devengados
+ *         deductions_total:
+ *           type: number
+ *           description: Total de deducciones
+ *         total_value:
+ *           type: number
+ *           description: Valor total del período
+ *         created_at:
  *           type: string
  *           format: date-time
  *           description: Fecha de creación
- *         updatedAt:
+ *         updated_at:
  *           type: string
  *           format: date-time
  *           description: Fecha de última actualización
@@ -65,6 +81,27 @@ periodRouter.get('/', periodController.retrievePeriods);
 
 /**
  * @swagger
+ * /api/period/open:
+ *   get:
+ *     summary: Obtener el período abierto actual
+ *     description: Retorna el período que está actualmente abierto
+ *     tags: [Periods]
+ *     responses:
+ *       200:
+ *         description: Período abierto encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Period'
+ *       404:
+ *         description: No hay período abierto
+ *       500:
+ *         description: Error interno del servidor
+ */
+periodRouter.get('/open', periodController.getOpenPeriod);
+
+/**
+ * @swagger
  * /api/period/{id}:
  *   get:
  *     summary: Obtener un período por ID
@@ -75,7 +112,7 @@ periodRouter.get('/', periodController.retrievePeriods);
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: ID del período
  *     responses:
  *       200:
@@ -105,21 +142,29 @@ periodRouter.get('/:id', periodController.getPeriodById);
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - startDate
- *               - endDate
+ *               - period
+ *               - start_date
+ *               - end_date
  *             properties:
- *               name:
+ *               period:
  *                 type: string
  *                 description: Nombre del período
- *               startDate:
+ *               start_date:
  *                 type: string
- *                 format: date
+ *                 format: date-time
  *                 description: Fecha de inicio del período
- *               endDate:
+ *               end_date:
  *                 type: string
- *                 format: date
+ *                 format: date-time
  *                 description: Fecha de fin del período
+ *               payment_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de pago (opcional)
+ *               status:
+ *                 type: string
+ *                 enum: [OPEN, CLOSED]
+ *                 description: Estado del período
  *     responses:
  *       201:
  *         description: Período creado exitosamente
@@ -136,103 +181,89 @@ periodRouter.post('/', periodController.createPeriod);
 
 /**
  * @swagger
- * /api/period/{id}/settle:
- *   post:
- *     summary: Liquidar un período
- *     description: Realiza la liquidación de un período específico
+ * /api/period/{id}:
+ *   put:
+ *     summary: Actualizar un período
+ *     description: Actualiza un período existente
  *     tags: [Periods]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID del período a liquidar
+ *           type: integer
+ *         description: ID del período
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               period:
+ *                 type: string
+ *                 description: Nombre del período
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de inicio del período
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de fin del período
+ *               payment_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha de pago
+ *               status:
+ *                 type: string
+ *                 enum: [OPEN, CLOSED]
+ *                 description: Estado del período
  *     responses:
  *       200:
- *         description: Período liquidado exitosamente
+ *         description: Período actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Period'
+ *       400:
+ *         description: Datos de entrada inválidos
  *       404:
  *         description: Período no encontrado
- *       400:
- *         description: El período no puede ser liquidado
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/settle', periodController.settlePeriod);
+periodRouter.put('/:id', periodController.updatePeriod);
 
 /**
  * @swagger
  * /api/period/{id}/close:
  *   post:
  *     summary: Cerrar un período
- *     description: Cierra un período específico
+ *     description: Cierra un período específico y calcula totales
  *     tags: [Periods]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: ID del período a cerrar
  *     responses:
  *       200:
  *         description: Período cerrado exitosamente
- *       404:
- *         description: Período no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Period'
  *       400:
  *         description: El período no puede ser cerrado
+ *       404:
+ *         description: Período no encontrado
  *       500:
  *         description: Error interno del servidor
  */
 periodRouter.post('/:id/close', periodController.closePeriod);
-
-/**
- * @swagger
- * /api/period/{id}:
- *   delete:
- *     summary: Eliminar un período
- *     description: Elimina un período específico del sistema
- *     tags: [Periods]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del período a eliminar
- *     responses:
- *       200:
- *         description: Período eliminado exitosamente
- *       404:
- *         description: Período no encontrado
- *       500:
- *         description: Error interno del servidor
- */
-periodRouter.delete('/:id', periodController.deletePeriod);
-
-/**
- * @swagger
- * /api/period/{id}/loadEmployees:
- *   post:
- *     summary: Cargar empleados a un período
- *     description: Carga empleados al período especificado
- *     tags: [Periods]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del período
- *     responses:
- *       200:
- *         description: Empleados cargados exitosamente
- *       404:
- *         description: Período no encontrado
- *       500:
- *         description: Error interno del servidor
- */
-periodRouter.post('/:id/loadEmployees', periodController.loadEmployees);
 
 /**
  * @swagger
@@ -246,15 +277,19 @@ periodRouter.post('/:id/loadEmployees', periodController.loadEmployees);
  *         name: id
  *         required: true
  *         schema:
- *           type: string
+ *           type: integer
  *         description: ID del período a abrir
  *     responses:
  *       200:
  *         description: Período abierto exitosamente
- *       404:
- *         description: Período no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Period'
  *       400:
  *         description: El período no puede ser abierto
+ *       404:
+ *         description: Período no encontrado
  *       500:
  *         description: Error interno del servidor
  */
@@ -262,54 +297,28 @@ periodRouter.post('/:id/open', periodController.openPeriod);
 
 /**
  * @swagger
- * /api/period/{id}/reverse-settlement:
- *   post:
- *     summary: Revertir liquidación de un período
- *     description: Revierte la liquidación de un período específico
+ * /api/period/{id}:
+ *   delete:
+ *     summary: Eliminar un período
+ *     description: Elimina un período específico del sistema (solo si está cerrado y no tiene liquidaciones)
  *     tags: [Periods]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
- *           type: string
- *         description: ID del período
+ *           type: integer
+ *         description: ID del período a eliminar
  *     responses:
  *       200:
- *         description: Liquidación revertida exitosamente
+ *         description: Período eliminado exitosamente
+ *       400:
+ *         description: El período no puede ser eliminado
  *       404:
  *         description: Período no encontrado
- *       400:
- *         description: No se puede revertir la liquidación
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/reverse-settlement', periodController.reversePeriodSettle);
-
-/**
- * @swagger
- * /api/period/{id}/void:
- *   post:
- *     summary: Anular un período
- *     description: Anula un período específico
- *     tags: [Periods]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del período a anular
- *     responses:
- *       200:
- *         description: Período anulado exitosamente
- *       404:
- *         description: Período no encontrado
- *       400:
- *         description: El período no puede ser anulado
- *       500:
- *         description: Error interno del servidor
- */
-periodRouter.post('/:id/void', periodController.voidPeriod);
+periodRouter.delete('/:id', periodController.deletePeriod);
 
 module.exports = periodRouter;

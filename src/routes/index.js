@@ -6,10 +6,12 @@
  * @requires ./admin
  * @requires ./user
  * @requires ./employee
- * @requires ./settlementNew
  * @requires ./settlement
  * @requires ./period
  * @requires ./concept
+ * @requires ./settlementCalculation
+ * @requires ./settlementDetail
+ * @requires ./novelty
  */
 
 const { Router } = require('express');
@@ -20,10 +22,12 @@ const authRouter = require('./auth');
 const adminRouter = require('./admin');
 const userRouter = require('./user');
 const employeesRouter = require('./employee');
-const settlementNewRouter = require('./settlementNew');
 const settlementRouter = require('./settlement');
 const periodRouter = require('./period');
 const conceptRouter = require('./concept');
+const settlementCalculationRouter = require('./settlementCalculation');
+const settlementDetailRouter = require('./settlementDetail');
+const noveltyRouter = require('./novelty');
 
 /**
  * Configuración de las rutas de autenticación
@@ -50,12 +54,6 @@ router.use('/user', userRouter);
 router.use('/employee', employeesRouter);
 
 /**
- * Configuración de las rutas de novedades de liquidación
- * @type {Router}
- */
-router.use('/settlement-news', settlementNewRouter);
-
-/**
  * Configuración de las rutas de liquidaciones
  * @type {Router}
  */
@@ -72,5 +70,23 @@ router.use('/period', periodRouter);
  * @type {Router}
  */
 router.use('/concept', conceptRouter);
+
+/**
+ * Configuración de las rutas del motor de cálculo de liquidaciones
+ * @type {Router}
+ */
+router.use('/settlement-calculation', settlementCalculationRouter);
+
+/**
+ * Configuración de las rutas de detalles de liquidación
+ * @type {Router}
+ */
+router.use('/settlement-detail', settlementDetailRouter);
+
+/**
+ * Configuración de las rutas de novedades de nómina
+ * @type {Router}
+ */
+router.use('/novelty', noveltyRouter);
 
 module.exports = router;

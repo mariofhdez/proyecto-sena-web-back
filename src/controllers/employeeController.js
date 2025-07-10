@@ -90,6 +90,7 @@ exports.createEmployee = async (req, res, next) => {
       secondSurname: req.body.secondSurname,
       otherNames: req.body.otherNames,
       salary: req.body.salary,
+      position: req.body.position || 'Empleado',
       transportAllowance: req.body.transportAllowance,
       isActive: true,
     }

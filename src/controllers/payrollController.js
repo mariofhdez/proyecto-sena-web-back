@@ -4,7 +4,7 @@
  */
 
 const settlementService = require('../services/settlementService');
-const settlementNewService = require('../services/settlementNewService');
+const noveltyService = require('../services/noveltyService');
 const settlementEarningService = require('../services/settlementEarningService');
 const settlementDeductionService = require('../services/settlementDeductionService');
 const employeeService = require('../services/employeeService');
@@ -28,30 +28,26 @@ const { fromTimeStampToDate } = require('../utils/typeofValidations');
  * @throws {Error} Si ocurre un error al crear la liquidación
  */
 exports.createSettlement = async(data) => {
+    console.log('Está llegando a payrollController ', data);
+    
+    // Validar que los datos requeridos estén presentes
+    if (!data.employeeId || !data.startDate || !data.endDate) {
+        throw new Error('Missing required data: employeeId, startDate, endDate');
+    }
+    
     const settlementData = {
-        startDate: formatDate(data.startDate),
-        endDate: formatDate(data.endDate),
+        employeeId: parseInt(data.employeeId),
+        periodId: parseInt(data.periodId),
+        startDate: data.startDate,
+        endDate: data.endDate,
         status: 'DRAFT',
         earningsValue: 0,
         deductionsValue: 0,
-        totalValue: 0,
-        employee: {
-            connect: { id: data.employeeId }
-        },
-        earnings: {
-            create: {
-                value: 0
-            }
-        },
-        deductions: {
-            create: {
-                value: 0
-            }
-        },
-        period: {
-            connect: { id: data.periodId }
-        }
-    }
+        totalValue: 0
+    };
+    
+    console.log('📋 Datos procesados para settlementService:', settlementData);
+    
     const settlement = await settlementService.create(settlementData);
 
     return settlement;
@@ -69,32 +65,56 @@ exports.createSettlement = async(data) => {
  */
 exports.createRegularNews = async(employeeId, date) =>{
     try {
-        let regularNews =[]
+        console.log('🔄 Iniciando creación de conceptos regulares para empleado:', employeeId, 'fecha:', date);
+        let regularNews = [];
         const employee = await employeeService.getById(employeeId);
-        const salaryValue = employee.salary;
-        const hasTransportAllowance = employee.transportAllowance;
-
-        const salaryNew = await processNew(salaryValue, date, employeeId, '101');
-        if(!salaryNew) throw new Error('Error al crear concepto recurrente: Salario');
-
-        regularNews.push(salaryNew);
+        console.log('👤 Empleado encontrado:', employee ? employee.id : 'No encontrado');
         
-        if(hasTransportAllowance){
-            const transportNew = await processNew(150000, date, employeeId, '127');
-            if(!transportNew) throw new Error('Error al crear concepto recurrente: Auxilio de Tansporte');
-            regularNews.push(transportNew);
+        const allConcepts = require('../config/payrollConcepts').getAllPayrollConcepts();
+        console.log('📋 Total de conceptos cargados:', allConcepts.length);
+        
+        // Filtrar solo los conceptos regulares
+        const regularConcepts = allConcepts.filter(c => c.isRegularConcept === true);
+        console.log('🔄 Conceptos regulares encontrados:', regularConcepts.length);
+        console.log('📝 Códigos de conceptos regulares:', regularConcepts.map(c => c.code));
+        
+        for (const concept of regularConcepts) {
+            console.log(`🔄 Procesando concepto regular: ${concept.code} - ${concept.name}`);
+            let value = 0;
+            // Lógica de valor por defecto según el concepto
+            if (concept.code === '101') {
+                value = employee.salary;
+                console.log(`💰 Salario básico: ${value}`);
+            } else if (concept.code === '127') {
+                if (!employee.transportAllowance) {
+                    console.log('🚫 Empleado no tiene auxilio de transporte, saltando concepto 127');
+                    continue; // Solo si aplica auxilio
+                }
+                value = 150000;
+                console.log(`🚌 Auxilio de transporte: ${value}`);
+            } else if (concept.code === '204' || concept.code === '208') {
+                value = employee.salary * 0.04;
+                console.log(`🏥 Seguridad social (${concept.code}): ${value}`);
+            } else {
+                // Si hay otros conceptos regulares, definir aquí la lógica de valor por defecto
+                value = 0;
+                console.log(`❓ Concepto regular sin lógica definida: ${concept.code}, valor: ${value}`);
+            }
+            
+            console.log(`📝 Creando novedad para concepto ${concept.code} con valor ${value}`);
+            const news = await processNew(value, date, employeeId, concept.code);
+            if (!news) {
+                console.error(`❌ Error al crear concepto regular: ${concept.name}`);
+                throw new Error(`Error al crear concepto regular: ${concept.name}`);
+            }
+            console.log(`✅ Novedad creada exitosamente:`, news.id);
+            regularNews.push(news);
         }
         
-        const healthNew = await processNew((salaryValue * 0.04), date, employeeId, '204');
-        if(!healthNew) throw new Error('Error al crear concepto recurrente: Salario');
-        regularNews.push(healthNew);
-        
-        const pensionNew = await processNew((salaryValue * 0.04), date, employeeId, '208');
-        if(!pensionNew) throw new Error('Error al crear concepto recurrente: Salario');
-        regularNews.push(pensionNew);
-
+        console.log(`🎉 Proceso completado. Total de novedades creadas: ${regularNews.length}`);
         return regularNews;
     } catch (error) {
+        console.error('❌ Error en createRegularNews:', error);
         return { error: error.message };
     }
 }
@@ -111,7 +131,7 @@ function deleteRegularNews(concepts) {
         const id = parseInt(c.id, 10);
         if (getRegularConcepts(c.concept.code)) {
             console.log('Eliminando concepto recurrente', id);
-            return settlementNewService.remove(id);
+            return noveltyService.deleteNovelty(id);
         }
     }));
 }
@@ -129,14 +149,25 @@ function deleteRegularNews(concepts) {
  * @throws {Error} Si ocurre un error al procesar la novedad
  */
 async function processNew(value, date, employee, code) {
+    console.log(`🔄 Procesando novedad - valor: ${value}, fecha: ${date}, empleado: ${employee}, código: ${code}`);
+    
     const concept = getConceptByCode(code);
+    if (!concept) {
+        console.error(`❌ Concepto no encontrado para código: ${code}`);
+        return null;
+    }
+    console.log(`📋 Concepto encontrado: ${concept.name} (ID: ${concept.id})`);
+    
     let data = {
         date: date,
         quantity: 30,
-        conceptId:  concept.id,
-        employeeId: employee
+        conceptId: concept.id,
+        employeeId: employee,
+        value: value,
+        status: 'PENDING'
     }
-
+    
+    console.log(`📝 Datos preparados para crear novedad:`, data);
     const settlementNew = await createNew(data);
     return settlementNew;
 }
@@ -156,14 +187,22 @@ async function processNew(value, date, employee, code) {
  */
 async function createNew(data) {
     try {
+        console.log('🔍 Validando datos de novedad...');
         const validation = await validateSettlementNewCreation(data);
+        console.log('✅ Datos validados:', validation);
 
-        const createdSettlementNew = await settlementNewService.create(validation);
-        if (!createdSettlementNew) console.log('No se pudo crear la novedad correctamente');
+        console.log('📝 Creando novedad en la base de datos...');
+        const createdSettlementNew = await noveltyService.createNovelty(validation);
+        if (!createdSettlementNew) {
+            console.error('❌ No se pudo crear la novedad correctamente');
+            return null;
+        }
 
+        console.log('✅ Novedad creada exitosamente:', createdSettlementNew.id);
         return createdSettlementNew;
     } catch (error) {
-        return{ error: error.message };
+        console.error('❌ Error en createNew:', error);
+        return { error: error.message };
     }
 }
 
@@ -235,8 +274,7 @@ async function retrieveConcepts (start, end, employee){
                 lte: formatDate(end)
             }
         };
-        const includes = true;
-        const settlementNews = await settlementNewService.query(query, includes);
+        const settlementNews = await noveltyService.getNovelties(query);
         return settlementNews;
     } catch (error) {
         return{ error: error.message };
@@ -260,20 +298,14 @@ async function updateSettlementNews(concepts, earningsId, deductionsId) {
         const type = c.conceptId;
 
         if (type < 41) {
-            return settlementNewService.update(id, {
-                status: "DRAFT",
-                earnings: {
-                    connect: { id: earningsId }
-                }
+            return noveltyService.updateNovelty(id, {
+                status: "DRAFT"
             });
         }
 
         if (type > 40) {
-            return settlementNewService.update(id, {
-                status: "DRAFT",
-                deductions: {
-                    connect: { id: deductionsId }
-                }
+            return noveltyService.updateNovelty(id, {
+                status: "DRAFT"
             });
         }
     }));
@@ -293,20 +325,14 @@ async function draftSettlementNews(concepts) {
         const type = c.conceptId;
 
         if (type < 41) {
-            return settlementNewService.update(id, {
-                status: "DRAFT",
-                earnings: {
-                    disconnect: true
-                }
+            return noveltyService.updateNovelty(id, {
+                status: "DRAFT"
             });
         }
 
         if (type > 40) {
-            return settlementNewService.update(id, {
-                status: "DRAFT",
-                deductions: {
-                    disconnect: true
-                }
+            return noveltyService.updateNovelty(id, {
+                status: "DRAFT"
             });
         }
     }));
@@ -324,8 +350,8 @@ async function voidSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
 
-        return settlementNewService.update(id, {
-            status: "NONE"
+        return noveltyService.updateNovelty(id, {
+            status: "CANCELLED"
         });
     }));
 }
@@ -341,8 +367,8 @@ async function voidSettlementNews(concepts) {
 async function closeSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
-        return settlementNewService.update(id, {
-            status: "CLOSED"
+        return noveltyService.updateNovelty(id, {
+            status: "APPLIED"
         });
     }));
 }
@@ -358,8 +384,8 @@ async function closeSettlementNews(concepts) {
 async function openSettlementNews(concepts) {
     return Promise.all(concepts.map(async c => {
         const id = parseInt(c.id, 10);
-        return settlementNewService.update(id, {
-            status: "OPEN"
+        return noveltyService.updateNovelty(id, {
+            status: "PENDING"
         });
     }));
 }
@@ -375,9 +401,12 @@ async function openSettlementNews(concepts) {
  */
 async function sumSettlementNews(type, id) {
     let query = {};
-    if(type == "EARNINGS") query = {settlementEarningsId: id};
-    if(type == "DEDUCTIONS") query = {settlementDeductionsId: id};
-    return await settlementNewService.toAdd(query);
+    if(type == "EARNINGS") query = {conceptId: { lt: 41 }};
+    if(type == "DEDUCTIONS") query = {conceptId: { gt: 40 }};
+    
+    const novelties = await noveltyService.getNovelties(query);
+    const sum = novelties.reduce((total, novelty) => total + (novelty.value || 0), 0);
+    return { _sum: { value: sum } };
 }
 
 /**

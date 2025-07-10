@@ -80,6 +80,11 @@ exports.loginService = async (email, password) => {
         throw new ValidationError("Acceso denegado",'Usuario o contraseña inválidas');
     }
 
+    // Validar si el usuario está activo
+    if (!user.isActive) {
+        throw new ValidationError('Usuario inactivo. Contacte al administrador.');
+    }
+
     // Verificar intentos de login
     if (user.loginAttempts >= 5 && 
         new Date() - new Date(user.lastLoginAttempt) < 15 * 60 * 1000) {

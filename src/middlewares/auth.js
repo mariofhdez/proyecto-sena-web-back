@@ -62,4 +62,26 @@ function generateToken(user) {
     }
 }
 
-module.exports = { authenticateToken, generateToken };
+/**
+ * Middleware para autorizar el acceso según el rol del usuario
+ * 
+ * @function authorizeRole
+ * @param {...string} roles - Roles permitidos para acceder a la ruta
+ * @returns {Function} Middleware de Express que valida el rol del usuario
+ * @throws {ForbiddenError} Si el usuario no tiene uno de los roles permitidos
+ */
+function authorizeRole(...roles) {
+    return (req, res, next) => {
+        if (!req.user) {
+            return next(new UnauthorizedError('Usuario no autenticado'));
+        }
+        
+        if (!roles.includes(req.user.role)) {
+            return next(new ForbiddenError('No tienes permisos para acceder a esta ruta'));
+        }
+        
+        next();
+    };
+}
+
+module.exports = { authenticateToken, generateToken, authorizeRole };

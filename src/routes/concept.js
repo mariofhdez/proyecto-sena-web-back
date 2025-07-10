@@ -93,4 +93,36 @@ const conceptController = require('../controllers/conceptController');
  */
 conceptRouter.get('/', conceptController.getAllConcepts);
 
+/**
+ * @swagger
+ * /api/concept/{code}:
+ *   get:
+ *     summary: Obtener un concepto por código
+ *     description: Retorna un concepto específico basado en su código de 3 caracteres
+ *     tags: [Concepts]
+ *     parameters:
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *           minLength: 3
+ *           maxLength: 3
+ *         description: Código del concepto (3 caracteres)
+ *     responses:
+ *       200:
+ *         description: Concepto encontrado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Concept'
+ *       404:
+ *         description: Concepto no encontrado
+ *       400:
+ *         description: Código inválido
+ *       500:
+ *         description: Error interno del servidor
+ */
+conceptRouter.get('/:code', conceptController.getConceptByCode);
+
 module.exports = conceptRouter;

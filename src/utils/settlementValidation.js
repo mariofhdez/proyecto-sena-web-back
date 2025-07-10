@@ -1,116 +1,185 @@
 const { validateRequiredNumber, validateRequiredString, validateDateFormat } = require("./typeofValidations");
 const settlementService = require("../services/settlementService");
-const { splitDate } = require("./typeofValidations");
+const { ValidationError, NotFoundError } = require("./appError");
 
+/**
+ * Valida parámetros de consulta de liquidaciones
+ */
 function validateSettlementQuery(query) {
     let errors = [];
 
-    if (query.employeeId) {
-        const employeeId = parseInt(query.employeeId, 10);
-        validateRequiredNumber(employeeId, "employeeId", errors)
+    if (query.employee_id) {
+        const employeeId = parseInt(query.employee_id, 10);
+        validateRequiredNumber(employeeId, "employee_id", errors);
     }
 
-    if(query.startDate || query.endDate) {
-        validateRequiredString(query.startDate, "startDate", errors);
-        validateDateFormat(query.startDate, "startDate", errors);
-    
-        validateRequiredString(query.endDate, "endDate", errors);
-        validateDateFormat(query.endDate, "endDate", errors);
+    if (query.start_date || query.end_date) {
+        if (query.start_date) {
+            validateRequiredString(query.start_date, "start_date", errors);
+            validateDateFormat(query.start_date, "start_date", errors);
+        }
+        
+        if (query.end_date) {
+            validateRequiredString(query.end_date, "end_date", errors);
+            validateDateFormat(query.end_date, "end_date", errors);
+        }
     }
 
-    if(query.periodId) {
-        const periodId = parseInt(query.periodId, 10);
-        validateRequiredNumber(periodId, "periodId", errors);
+    if (query.period_id) {
+        const periodId = parseInt(query.period_id, 10);
+        validateRequiredNumber(periodId, "period_id", errors);
     }
 
     if (errors.length > 0) {
         return {
             isValid: false,
             errors: errors
-        }
+        };
     }
     return {
         isValid: true
-    }
+    };
 }
 
-async function validateSettlementCreation(settlement) {
+/**
+ * Valida la creación de una liquidación
+ */
+async function validateSettlementCreation(data) {
     let errors = [];
 
-    // Valida que el id del empleado sea un numero
-    validateRequiredNumber(settlement.employeeId, "employeeId", errors);
+    // Validar empleado
+    validateRequiredNumber(data.employee_id, "employee_id", errors);
 
-    // Valida que la fecha de inicio sea una fecha
-    validateRequiredString(settlement.startDate, "startDate", errors);
-    validateDateFormat(settlement.startDate, "startDate", errors);
+    // Validar fechas
+    validateRequiredString(data.start_date, "start_date", errors);
+    validateDateFormat(data.start_date, "start_date", errors);
 
-    // Valida que la fecha de fin sea una fecha
-    validateRequiredString(settlement.endDate, "endDate", errors);
-    validateDateFormat(settlement.endDate, "endDate", errors);
+    validateRequiredString(data.end_date, "end_date", errors);
+    validateDateFormat(data.end_date, "end_date", errors);
 
-    // Valida que la fecha de fin sea mayor que la fecha de inicio
-    if (settlement.endDate <= settlement.startDate) {
+    // Validar que la fecha de fin sea mayor que la fecha de inicio
+    if (data.start_date && data.end_date && new Date(data.end_date) <= new Date(data.start_date)) {
         errors.push("The end date must be greater than the start date");
     }
-    validateSettlementPeriod(settlement.startDate, settlement.endDate, errors);
 
-    await validateUniqueSettlement(settlement.employeeId, settlement.startDate, settlement.endDate, errors);
+    // Validar período si se proporciona
+    if (data.period_id) {
+        validateRequiredNumber(data.period_id, "period_id", errors);
+    }
+
+    // Validar estado si se proporciona
+    if (data.status && !['DRAFT', 'OPEN', 'CLOSED', 'VOID'].includes(data.status)) {
+        errors.push("Status must be DRAFT, OPEN, CLOSED, or VOID");
+    }
 
     if (errors.length > 0) {
         return {
             isValid: false,
             errors: errors
-        }
+        };
     }
     return {
         isValid: true
-    }
+    };
 }
 
-function validateSettlementPeriod(startDate, endDate, errors) {
-    const splitStartDate = splitDate(startDate);
-    const splitEndDate = splitDate(endDate);
-    if (splitStartDate.year !== splitEndDate.year || splitStartDate.month !== splitEndDate.month) {
-        errors.push("The start date and end date must be in the same period");
-    }
-}
-
-async function validateUniqueSettlement(employee, startDate, endDate, errors) {
-    const employeeId = parseInt(employee, 10);
-    const splitStartDate = splitDate(startDate);
-    const splitEndDate = splitDate(endDate);
-
+/**
+ * Valida que no haya liquidación duplicada para el mismo empleado y período
+ */
+async function validateUniqueSettlement(employeeId, startDate, endDate, errors) {
     const query = {
-        employeeId: employeeId,
-        startDate: {
-            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '00'),
-            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '32')
+        employee_id: employeeId,
+        start_date: {
+            gte: new Date(startDate)
         },
-        endDate: {
-            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '00'),
-            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '32')
+        end_date: {
+            lte: new Date(endDate)
         },
         status: {
             not: "VOID"
         }
-    }
+    };
 
-    const settlement = await settlementService.query(query);
-    console.log(settlement);
-    const lenght = settlement.length;
-    if (lenght > 0) {
-        return errors.push("The settlement for the period already exists")
+    const settlements = await settlementService.query(query);
+    
+    if (settlements.length > 0) {
+        errors.push("A settlement already exists for this employee and period");
     }
 }
 
+/**
+ * Verifica que una liquidación existe
+ */
 async function verifySettlement(settlementId) {
     const settlement = await settlementService.getById(settlementId);
     return settlement;
 }
 
+/**
+ * Valida la actualización de una liquidación
+ */
+async function validateSettlementUpdate(data) {
+    let errors = [];
+
+    // Validar fechas si se están actualizando
+    if (data.start_date) {
+        validateRequiredString(data.start_date, "start_date", errors);
+        validateDateFormat(data.start_date, "start_date", errors);
+    }
+
+    if (data.end_date) {
+        validateRequiredString(data.end_date, "end_date", errors);
+        validateDateFormat(data.end_date, "end_date", errors);
+    }
+
+    // Validar que las fechas sean coherentes
+    if (data.start_date && data.end_date && new Date(data.end_date) <= new Date(data.start_date)) {
+        errors.push("The end date must be greater than the start date");
+    }
+
+    // Validar estado si se está actualizando
+    if (data.status && !['DRAFT', 'OPEN', 'CLOSED', 'VOID'].includes(data.status)) {
+        errors.push("Status must be DRAFT, OPEN, CLOSED, or VOID");
+    }
+
+    if (errors.length > 0) {
+        return {
+            isValid: false,
+            errors: errors
+        };
+    }
+    return {
+        isValid: true
+    };
+}
+
+/**
+ * Valida el cambio de estado de una liquidación
+ */
+function validateStatusTransition(currentStatus, newStatus) {
+    const validTransitions = {
+        'DRAFT': ['OPEN', 'VOID'],
+        'OPEN': ['CLOSED', 'DRAFT'],
+        'CLOSED': ['OPEN'],
+        'VOID': []
+    };
+
+    if (!validTransitions[currentStatus]) {
+        throw new ValidationError(`Invalid current status: ${currentStatus}`);
+    }
+
+    if (!validTransitions[currentStatus].includes(newStatus)) {
+        throw new ValidationError(`Cannot change status from ${currentStatus} to ${newStatus}`);
+    }
+
+    return true;
+}
+
 module.exports = {
     validateSettlementQuery,
     validateSettlementCreation,
+    validateSettlementUpdate,
     validateUniqueSettlement,
+    validateStatusTransition,
     verifySettlement
-}
+};

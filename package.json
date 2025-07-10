@@ -6,6 +6,10 @@
     "dev": "node --watch ./src/server.js",
     "start": "node ./src/server.js",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
     "seed:static": "node prisma/seedStatic.js",
     "seed:demo": "node prisma/seedDemo.js"
   },
@@ -28,6 +32,7 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "jsdoc": "^4.0.4",
-    "prisma": "^6.6.0"
+    "prisma": "^6.6.0",
+    "supertest": "^6.3.4"
   }
 }

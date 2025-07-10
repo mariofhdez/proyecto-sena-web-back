@@ -42,7 +42,7 @@ const { Router } = require('express');
 const adminRouter = Router();
 
 const adminController = require('../controllers/adminController');
-const { authenticateToken } = require('../middlewares/auth');
+const { authenticateToken, authorizeRole } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -77,7 +77,7 @@ const { authenticateToken } = require('../middlewares/auth');
  *       500:
  *         description: Error interno del servidor
  */
-adminRouter.get('/users', authenticateToken, adminController.users);
+adminRouter.get('/users', authenticateToken, authorizeRole('ADMIN'), adminController.users);
 
 /**
  * @swagger
@@ -123,7 +123,7 @@ adminRouter.get('/users', authenticateToken, adminController.users);
  *       500:
  *         description: Error interno del servidor
 */
-adminRouter.get('/users/:id', authenticateToken, adminController.getUser);
+adminRouter.get('/users/:id', authenticateToken, authorizeRole('ADMIN'), adminController.getUser);
 
 /**
  * @swagger
@@ -173,7 +173,7 @@ adminRouter.get('/users/:id', authenticateToken, adminController.getUser);
  *       500:
  *         description: Error interno del servidor
 */
-adminRouter.patch('/deactivate-user/:id', authenticateToken, adminController.deactivateUser);
+adminRouter.patch('/deactivate-user/:id', authenticateToken, authorizeRole('ADMIN'), adminController.deactivateUser);
 
 /**
  * @swagger
@@ -223,6 +223,6 @@ adminRouter.patch('/deactivate-user/:id', authenticateToken, adminController.dea
  *       500:
  *         description: Error interno del servidor
  */
-adminRouter.delete('/delete/:id', authenticateToken, adminController.deleteUser);
+adminRouter.delete('/users/:id', authenticateToken, authorizeRole('ADMIN'), adminController.deleteUser);
 
 module.exports = adminRouter;

@@ -145,3 +145,6 @@ dist
 
 # Prisma ORM
 generated/prisma/
+
+modelo.sql
+requerimientos.md

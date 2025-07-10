@@ -23,8 +23,6 @@ const { isValidNumericType } = require('../utils/typeofValidations');
  */
 exports.users = async (req, res, next) => {
     try {
-        if (req.user.role !== 'ADMIN') throw new ForbiddenError("No tienes permisos para acceder a esta ruta");
-
         const users = await getUsersService();
         if (!users) throw new NotFoundError('Error consultando datos');
 
@@ -52,8 +50,6 @@ exports.users = async (req, res, next) => {
  */
 exports.getUser = async (req, res, next) => {
     try {
-        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
-
         if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en el path.');
         if (!isValidNumericType(parseInt(req.params.id), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
 
@@ -83,8 +79,6 @@ exports.getUser = async (req, res, next) => {
  */
 exports.deactivateUser = async (req, res, next) => {
     try {
-        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
-
         if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en el path.');
         if (!isValidNumericType(parseInt(req.params.id), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
         
@@ -114,8 +108,6 @@ exports.deactivateUser = async (req, res, next) => {
  */
 exports.deleteUser = async (req, res, next) => {
     try {
-        if (req.user.role !== 'ADMIN') throw new ForbiddenError("Acceso denegado");
-        
         if (!req.params.id) throw new ValidationError('Falta el \'id\' en el path.');
         if (!isValidNumericType(parseInt(req.params.id,10), 'number')) throw new ValidationError('El \'id\' debe ser un valor numérico.');
 

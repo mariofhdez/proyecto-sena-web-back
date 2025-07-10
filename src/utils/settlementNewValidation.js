@@ -1,11 +1,11 @@
 const { validateRequiredString, validateRequiredNumber, validateDateFormat, splitDate } = require("./typeofValidations");
-const settlementNewService = require('../services/settlementNewService');
+const noveltyService = require('../services/noveltyService');
 const employeeService = require('../services/employeeService');
 const { verifyId } = require('./verifyId');
 const { NotFoundError, ValidationError } = require('./appError');
 const { formatDate } = require('./formatDate');
 
-const { getCalculationType, getBaseType, getConceptFactor } = require('../config/payrollConcepts');
+const { getCalculationType, getBaseType, getConceptFactor, getConceptDivisor } = require('../config/payrollConcepts');
 
 async function validateSettlementNewCreation(settlement) {
     console.log(settlement);
@@ -139,7 +139,15 @@ async function calculateLinealValue(conceptId, quantity, employeeId) {
 async function calculateFactorialValue(conceptId, quantity, employeeId, date) {
     const base = await getBase(conceptId, employeeId, date);
     const factor = getConceptFactor(conceptId);
-    const value = base * quantity * factor;
+    const divisor = getConceptDivisor(conceptId);
+    
+    // Validar que el divisor no sea 0
+    if (divisor === 0) {
+        throw new Error(`Divisor no puede ser 0 para el concepto ${conceptId}`);
+    }
+    
+    // Fórmula correcta: (base ÷ divisor) × factor × quantity
+    const value = (base / divisor) * factor * quantity;
 
     return Math.round(value * 100) / 100;
 }
@@ -200,7 +208,7 @@ async function getPeriodBase(employeeId, date, type) {
         }
     }
 
-    periodNews = await settlementNewService.query(query);
+    periodNews = await noveltyService.getNovelties(query);
     const base = periodNews.reduce((sum, item) => sum + item.value, 0) / 30;
     return Math.round(base * 100) / 100;
 }
@@ -220,7 +228,7 @@ async function validateUniqueSettlementNew(employee, concept, date) {
         }
     }
 
-    const settlementNew = await settlementNewService.query(query);
+    const settlementNew = await noveltyService.getNovelties(query);
     const lenght = settlementNew.length;
     if (lenght > 0) {
 

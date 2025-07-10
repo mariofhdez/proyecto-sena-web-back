@@ -4,7 +4,9 @@
  */
 
 const { PrismaClient } = require("../../generated/prisma");
-const prisma = new PrismaClient;
+const prisma = new PrismaClient();
+const fs = require('fs');
+const path = require('path');
 
 let payrollConcepts = [];
 
@@ -14,24 +16,49 @@ let ibcConcepts = [];
 let regularConcepts = ['101', '127', '204', '208'];
 
 /**
- * Carga todos los conceptos de nómina desde la base de datos
- * 
+ * Carga todos los conceptos de nómina desde la base de datos o, si no existen, desde el archivo staticData.json
  * @async
  * @function loadPayrollConcepts
- * @param {Function} next - Función para manejar errores (opcional)
  * @throws {Error} Si ocurre un error al cargar los conceptos
  */
 async function loadPayrollConcepts() {
     try {
-        const conceptsFromDB = await prisma.payrollConcept.findMany();
+        let conceptsFromDB = await prisma.payrollConcept.findMany({ orderBy: { code: 'asc' } });
+        if (!conceptsFromDB || conceptsFromDB.length === 0) {
+            // Cargar desde staticData.json
+            const staticPath = path.join(__dirname, '../../prisma/staticData.json');
+            const staticData = JSON.parse(fs.readFileSync(staticPath, 'utf8'));
+            if (!staticData.PayrollConcept || staticData.PayrollConcept.length === 0) {
+                throw new Error('No se encontraron conceptos en staticData.json');
+            }
+            // Insertar en la base de datos
+            await prisma.payrollConcept.createMany({ data: staticData.PayrollConcept });
+            conceptsFromDB = await prisma.payrollConcept.findMany({ orderBy: { code: 'asc' } });
+            console.log(`✅ Conceptos de nómina cargados automáticamente desde staticData.json: ${conceptsFromDB.length} conceptos`);
+        } else {
+            console.log(`✅ Conceptos de nómina cargados desde la base de datos: ${conceptsFromDB.length} conceptos`);
+        }
         payrollConcepts = conceptsFromDB;
-
         incomeConcepts = payrollConcepts.filter(concept => concept.isIncome === true);
         vacationConcepts = payrollConcepts.filter(concept => concept.isVacation === true);
         ibcConcepts = payrollConcepts.filter(concept => concept.isIBC === true);
+        console.log(`   - Conceptos de ingreso: ${incomeConcepts.length}`);
+        console.log(`   - Conceptos de vacaciones: ${vacationConcepts.length}`);
+        console.log(`   - Conceptos IBC: ${ibcConcepts.length}`);
     } catch (error) {
+        console.error('❌ Error al cargar los conceptos de nómina:', error.message);
         throw new Error('Error al cargar los conceptos de nómina');
     }
+}
+
+/**
+ * Verifica si los conceptos de nómina están cargados
+ * 
+ * @function areConceptsLoaded
+ * @returns {boolean} true si los conceptos están cargados, false en caso contrario
+ */
+function areConceptsLoaded() {
+    return payrollConcepts.length > 0;
 }
 
 /**
@@ -89,6 +116,17 @@ function getConceptFactor(conceptId) {
 }
 
 /**
+ * Obtiene el divisor de un concepto por su ID
+ * 
+ * @function getConceptDivisor
+ * @param {number} conceptId - ID del concepto
+ * @returns {number|undefined} Divisor del concepto o undefined si no existe
+ */
+function getConceptDivisor(conceptId) {
+    return payrollConcepts.find(concept => concept.id === conceptId)?.divisor;
+}
+
+/**
  * Obtiene un concepto por su código
  * 
  * @function getConceptByCode
@@ -112,13 +150,67 @@ function getRegularConcepts(conceptCode) {
     return concept === conceptCode;
 }
 
+/**
+ * Valida la integridad de los conceptos de nómina cargados
+ * 
+ * @function validateConceptsIntegrity
+ * @returns {Object} Resultado de la validación con errores si los hay
+ */
+function validateConceptsIntegrity() {
+    const errors = [];
+    const conceptCodes = new Set();
+    
+    // Verificar códigos únicos
+    for (const concept of payrollConcepts) {
+        if (conceptCodes.has(concept.code)) {
+            errors.push(`Código duplicado: ${concept.code}`);
+        }
+        conceptCodes.add(concept.code);
+        
+        // Verificar que el código tenga exactamente 3 caracteres
+        if (concept.code.length !== 3) {
+            errors.push(`Código inválido: ${concept.code} debe tener exactamente 3 caracteres`);
+        }
+    }
+    
+    // Verificar que los conceptos base referenciados existan
+    for (const concept of payrollConcepts) {
+        if (concept.base && concept.base !== 'ZERO') {
+            const baseConcept = payrollConcepts.find(c => c.code === concept.base);
+            if (!baseConcept) {
+                errors.push(`Concepto base no encontrado: ${concept.code} referencia a ${concept.base}`);
+            }
+        }
+    }
+    
+    // Verificar dependencias circulares (simplificado)
+    // Un análisis más complejo requeriría un grafo de dependencias
+    for (const concept of payrollConcepts) {
+        if (concept.base && concept.base !== 'ZERO') {
+            const baseConcept = payrollConcepts.find(c => c.code === concept.base);
+            if (baseConcept && baseConcept.base === concept.code) {
+                errors.push(`Dependencia circular detectada: ${concept.code} ↔ ${baseConcept.code}`);
+            }
+        }
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors: errors,
+        totalConcepts: payrollConcepts.length
+    };
+}
+
 module.exports = {
     loadPayrollConcepts,
+    areConceptsLoaded,
+    validateConceptsIntegrity,
     getPayrollConceptById,
     getAllPayrollConcepts,
     getBaseType,
     getCalculationType,
     getConceptFactor,
+    getConceptDivisor,
     getConceptByCode,
     getRegularConcepts
 }

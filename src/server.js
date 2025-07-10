@@ -9,7 +9,9 @@ require('dotenv').config();
 
 // Importa la aplicación Express configurada
 const app = require('./app');
-const { loadPayrollConcepts, getAllPayrollConcepts } = require('./config/payrollConcepts');
+
+// Importa la función para cargar conceptos de nómina
+const { loadPayrollConcepts } = require('./config/payrollConcepts');
 
 // Define el puerto del servidor, usando el valor de la variable de entorno PORT o 3005 como fallback
 const PORT = process.env.PORT || 3005;
@@ -20,13 +22,15 @@ const PORT = process.env.PORT || 3005;
  */
 async function main() {
     try {
+        // Inicializa conceptos de nómina antes de arrancar el servidor
         await loadPayrollConcepts();
-        // console.log(getAllPayrollConcepts());
+        console.log('✅ Conceptos de nómina inicializados correctamente');
+
         app.listen(PORT, () => {
             console.log(`Servidor: http://localhost:${PORT}`);
         });
     } catch (error) {
-        console.error('Error al iniciar el servidor:', error);
+        console.error('❌ Error al inicializar conceptos de nómina o al iniciar el servidor:', error);
         process.exit(1);
     }
 }

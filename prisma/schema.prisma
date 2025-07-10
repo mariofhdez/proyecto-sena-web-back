@@ -16,9 +16,9 @@ datasource db {
 
 model User {
   id               Int       @id @default(autoincrement())
-  email            String    @unique
-  name             String
-  password         String
+  email            String    @unique @db.VarChar(100)
+  name             String    @db.VarChar(100)
+  password         String    @db.VarChar(255)
   role             Role      @default(USER)
   isActive         Boolean   @default(true) @map("is_active")
   loginAttempts    Int       @default(0) @map("login_attempts")
@@ -34,21 +34,45 @@ enum Role {
   USER
 }
 
-// ------------------ Tablas estáticas ------------------
+model Employee {
+  id                 Int             @id @default(autoincrement())
+  identification     String          @unique @db.VarChar(60)
+  firstName          String          @map("first_name") @db.VarChar(60)
+  firstSurname       String          @map("first_surname") @db.VarChar(60)
+  secondSurname      String?         @map("second_surname") @db.VarChar(60)
+  otherNames         String?         @map("other_names") @db.VarChar(60)
+  salary             Float
+  position           String          @map("position") @db.VarChar(60) @default("Empleado")
+  transportAllowance Boolean         @map("transport_allowance")
+  isActive           Boolean         @default(true) @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+  settlements        Settlement[]
+  settlementDetails  SettlementDetail[]
+  noveties           Novelty[]
+
+  @@map("employee")
+}
 
 model PayrollConcept {
   id               Int                @id @default(autoincrement())
   code             String             @unique @db.VarChar(3)
   name             String             @db.VarChar(60)
   type             PayrollConceptType
-  base             String?
-  factor           Float?
-  isIncome         Boolean            @map("is_income")
-  isVacation       Boolean            @map("is_vacation")
-  isIBC            Boolean            @map("is_ibc")
-  isRegularConcept Boolean            @map("is_regular_concept")
   calculationType  CalculationType    @map("calculation_type")
-  news             SettlementNew[]
+  base             PayrollConceptBase?
+  factor           Float?
+  divisor          Float?
+  isIncome         Boolean            @map("is_income")
+  isRegularConcept Boolean            @map("is_regular_concept")
+  isVacation       Boolean            @default(false) @map("is_vacation")
+  isIBC            Boolean            @default(false) @map("is_ibc")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  settlementDetails SettlementDetail[]
+  noveties          Novelty[]
+  
+  @@map("payroll_concept")
 }
 
 enum PayrollConceptBase {
@@ -72,20 +96,47 @@ enum CalculationType {
   NOMINAL
 }
 
-// ------------------ Tablas dinámicas ------------------
-model Employee {
-  id                 Int             @id @default(autoincrement())
-  identification     String          @unique @db.VarChar(60)
-  firstSurname       String          @map("first_surname") @db.VarChar(60)
-  secondSurname      String?         @map("second_surname") @db.VarChar(60)
-  firstName          String          @map("first_name") @db.VarChar(60)
-  otherNames         String?         @map("other_names") @db.VarChar(60)
-  salary             Float
-  transportAllowance Boolean         @map("transport_allowance")
-  isActive           Boolean         @map("is_active")
-  position           String          @map("position") @db.VarChar(60) @default("Empleado")
-  settlements        Settlement[]
-  news               SettlementNew[]
+model Period {
+  id                Int          @id @default(autoincrement())
+  period            String       @map("period") @default("2025-Enero")
+  startDate         DateTime     @map("start_date")
+  endDate           DateTime     @map("end_date")
+  paymentDate       DateTime?    @map("payment_date")
+  status            PeriodStatus @default(OPEN) @map("status")
+  employeesQuantity Int?         @map("employees_quantity")
+  earningsTotal     Float?       @map("earnings_total")
+  deductionsTotal   Float?       @map("deductions_total")
+  totalValue        Float?       @map("total_value")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+  settlements       Settlement[]
+  noveties           Novelty[]
+
+  @@map("period")
+}
+
+enum PeriodStatus {
+  OPEN
+  CLOSED
+}
+
+model Settlement {
+  id              Int                   @id @default(autoincrement())
+  startDate       DateTime              @map("start_date")
+  endDate         DateTime              @map("end_date")
+  status          SettlementStatus      @default(DRAFT) @map("status")
+  earningsValue   Float                 @default(0) @map("earnings_value")
+  deductionsValue Float                 @default(0) @map("deductions_value")
+  totalValue      Float                 @default(0) @map("total_value")
+  employeeId      Int                   @map("employee_id")
+  periodId        Int?                  @map("period_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  employee        Employee              @relation(fields: [employeeId], references: [id])
+  period          Period?               @relation(fields: [periodId], references: [id])
+  settlementDetails SettlementDetail[]
+
+  @@map("settlement")
 }
 
 enum SettlementStatus {
@@ -93,83 +144,47 @@ enum SettlementStatus {
   OPEN
   CLOSED
   VOID
+  NONE // Agregado para detalles de liquidación
 }
 
-model Settlement {
-  id              Int                   @id @default(autoincrement())
-  startDate       DateTime              @map("start_date")
-  endDate         DateTime              @map("end_date")
-  status          SettlementStatus      @map("status")
-  earningsValue   Float                 @map("earnings_value")
-  deductionsValue Float                 @map("deductions_value")
-  totalValue      Float                 @map("total_value")
-  employeeId      Int                   @map("employee_id")
-  employee        Employee              @relation(fields: [employeeId], references: [id])
-  periodId        Int?                  @map("period_id")
-  earnings        SettlementEarning[]
-  deductions      SettlementDeduction[]
-  period          Period?               @relation(fields: [periodId], references: [id])
-}
-
-model SettlementEarning {
+model SettlementDetail {
   id           Int             @id @default(autoincrement())
+  date         DateTime        @default(now()) @map("date")
+  quantity     Float?
   value        Float
-  settlementId Int             @unique @map("settlement_id")
-  settlement   Settlement      @relation(fields: [settlementId], references: [id])
-  news         SettlementNew[]
+  status       SettlementStatus @default(DRAFT) @map("status")
+  settlementId Int             @map("settlement_id")
+  conceptId    Int             @map("concept_id")
+  employeeId   Int             @map("employee_id")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+  settlement   Settlement      @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  concept      PayrollConcept  @relation(fields: [conceptId], references: [id])
+  employee     Employee        @relation(fields: [employeeId], references: [id])
+
+  @@map("settlement_detail")
 }
 
-model SettlementDeduction {
-  id           Int             @id @default(autoincrement())
-  value        Float
-  settlementId Int             @unique @map("settlement_id")
-  settlement   Settlement      @relation(fields: [settlementId], references: [id])
-  news         SettlementNew[]
+model Novelty {
+  id         Int       @id @default(autoincrement())
+  date       DateTime  @default(now()) @map("date")
+  quantity   Float?
+  value      Float
+  status     NoveltyStatus @default(PENDING) @map("status")
+  employeeId Int       @map("employee_id")
+  conceptId  Int       @map("concept_id")
+  periodId   Int?      @map("period_id")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  concept    PayrollConcept @relation(fields: [conceptId], references: [id])
+  period     Period?   @relation(fields: [periodId], references: [id])
+
+  @@map("novelty")
 }
 
-model SettlementNew {
-  id                     Int                  @id @default(autoincrement())
-  date                   DateTime             @map("date")
-  quantity               Float?
-  value                  Float
-  status                 SettlementNewsStatus @map("status")
-  conceptId              Int                  @map("concept_id")
-  employeeId             Int                  @map("employee_id")
-  settlementEarningsId   Int?                 @map("settlement_earnings_id")
-  settlementDeductionsId Int?                 @map("settlement_deductions_id")
-  concept                PayrollConcept       @relation(fields: [conceptId], references: [id])
-  employee               Employee             @relation(fields: [employeeId], references: [id])
-  earnings               SettlementEarning?   @relation(fields: [settlementEarningsId], references: [id])
-  deductions             SettlementDeduction? @relation(fields: [settlementDeductionsId], references: [id])
-}
-
-enum SettlementNewsStatus {
-  NONE
-  OPEN
-  DRAFT
-  CLOSED
-  VOID
-}
-
-model Period {
-  id                Int          @id @default(autoincrement())
-  period            String       @map("period") @default("2025-Enero")
-  startDate         DateTime     @map("start_date")
-  endDate           DateTime     @map("end_date")
-  paymentDate       DateTime?    @map("payment_date")
-  status            PeriodStatus @map("status")
-  employeesQuantity Int?         @map("employees_quantity")
-  earningsTotal     Float?       @map("earnings_total")
-  deductionsTotal   Float?       @map("deductions_total")
-  totalValue        Float?       @map("total_value")
-  settlements       Settlement[]
-  createdAt         DateTime     @default(now()) @map("created_at")
-  updatedAt         DateTime     @updatedAt @map("updated_at")
-}
-
-enum PeriodStatus {
-  DRAFT
-  OPEN
-  CLOSED
-  VOID
+enum NoveltyStatus {
+  PENDING
+  APPLIED
+  CANCELLED
 }

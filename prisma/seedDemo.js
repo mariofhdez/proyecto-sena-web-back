@@ -1,6 +1,6 @@
 const { PrismaClient } = require('../generated/prisma');
 const fs = require('fs');
-const settlementNewService = require('../src/services/settlementNewService');
+const noveltyService = require('../src/services/noveltyService');
 const { validateSettlementNewCreation } = require('../src/utils/settlementNewValidation');
 
 const prisma = new PrismaClient();
@@ -22,7 +22,7 @@ async function insertEmployees(model, uniqueField, items) {
 async function insertNews(items) {
     for (const item of items) {
         const data = await validateSettlementNewCreation(item);
-        const createdSettlementNew = await settlementNewService.create(data);
+        const createdSettlementNew = await noveltyService.createNovelty(data);
         if (!createdSettlementNew) throw new Error('Settlement new was not created');
     }
 }
