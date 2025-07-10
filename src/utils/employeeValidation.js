@@ -93,27 +93,26 @@ function employeeData(data) {
     }
     if(data.secondSurname) {
         employee.secondSurname = data.secondSurname;
-    } else {
-        employee.secondSurname = "";
     }
     if(data.firstName) {
         employee.firstName = data.firstName;
     }
     if(data.otherNames) {
         employee.otherNames = data.otherNames;
-    } else {
-        employee.otherNames = "";
     }
     if(data.salary) {
         employee.salary = data.salary;
     }
-    if(data.transportAllowance) {
+    if(data.transportAllowance == true || data.transportAllowance == false) {
         employee.transportAllowance = data.transportAllowance;
     } else {
         employee.transportAllowance = false;
     }
     if(data.position) {
         employee.position = data.position;
+    }
+    if(data.isActive == true || data.isActive == false) {
+        employee.isActive = data.isActive;
     }
     return employee;
 }

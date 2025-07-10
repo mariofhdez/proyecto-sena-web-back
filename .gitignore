@@ -145,3 +145,9 @@ dist
 
 # Prisma ORM
 generated/prisma/
+
+requerimientos.md
+estructura-carpetas.txt
+esquema-endpoints.md
+cronograma.md
+utilidades-comunes.md

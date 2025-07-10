@@ -171,6 +171,15 @@ exports.deleteEmployee = async (req, res, next) => {
   }
 };
 
+exports.getActiveEmployees = async (req, res, next) => {
+  try {
+    const employees = await employeeService.getAll({ where: { isActive: true } });
+    res.json(employees);
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 getAllEmployees = async () => {
   const employees = await employeeService.getAll();

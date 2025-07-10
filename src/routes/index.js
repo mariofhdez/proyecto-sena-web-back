@@ -39,7 +39,7 @@ router.use('/users', userRouter);
  * Configuración de las rutas de empleados
  * @type {Router}
  */
-router.use('/employee', employeesRouter);
+router.use('/employees', employeesRouter);
 
 /**
  * Configuración de las rutas de novedades de liquidación

@@ -15,8 +15,8 @@ const { NotFoundError } = require('../utils/appError');
  * @function getAll
  * @returns {Array<Object>} Lista de todos los empleados
  */
-exports.getAll = async () => {
-  const employees = await prisma.employee.findMany();
+exports.getAll = async (data) => {
+  const employees = await prisma.employee.findMany(data);
   if (!employees) throw NotFoundError('Error al consultar empleados');
   return employees;
 };

@@ -76,8 +76,10 @@ const employeeController = require('../controllers/employeeController');
  *                 $ref: '#/components/schemas/Employee'
  *       500:
  *         description: Error interno del servidor
- */
+*/
 employeeRouter.get('/', employeeController.getEmployees);
+
+employeeRouter.get('/active', employeeController.getActiveEmployees);
 
 /**
  * @swagger
@@ -247,5 +249,6 @@ employeeRouter.patch('/:id', employeeController.updateEmployee);
  *         description: Error interno del servidor
  */
 employeeRouter.delete('/:id', employeeController.deleteEmployee);
+
 
 module.exports = employeeRouter;
