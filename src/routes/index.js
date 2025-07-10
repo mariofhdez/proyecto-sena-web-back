@@ -3,7 +3,6 @@
  * @module routes/index
  * @requires express
  * @requires ./auth
- * @requires ./admin
  * @requires ./user
  * @requires ./employee
  * @requires ./settlementNew
@@ -17,7 +16,6 @@ const router = Router();
 
 // Importación de los routers específicos de cada módulo
 const authRouter = require('./auth');
-const adminRouter = require('./admin');
 const userRouter = require('./user');
 const employeesRouter = require('./employee');
 const settlementNewRouter = require('./settlementNew');
@@ -32,16 +30,10 @@ const conceptRouter = require('./concept');
 router.use('/auth', authRouter);
 
 /**
- * Configuración de las rutas de administración
- * @type {Router}
- */
-router.use('/admin', adminRouter);
-
-/**
  * Configuración de las rutas de usuarios
  * @type {Router}
  */
-router.use('/user', userRouter);
+router.use('/users', userRouter);
 
 /**
  * Configuración de las rutas de empleados

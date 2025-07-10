@@ -7,6 +7,7 @@
 
 const { PrismaClient } = require('../generated/prisma');
 const fs = require('fs');
+const bcrypt = require('bcryptjs');
 
 /**
  * Instancia del cliente Prisma para interactuar con la base de datos
@@ -40,6 +41,7 @@ async function upsertUnique(model, uniqueField, items) {
       create: item,
     });
   }
+  console.log(`${model} alimentadas correctamente.`);
 }
 
 /**
@@ -49,21 +51,44 @@ async function upsertUnique(model, uniqueField, items) {
  * @function main
  * @returns {Promise<void>}
  */
-async function createStaticData() {
-  await upsertUnique('PayrollConcept', 'code', data.PayrollConcept); // Si no tiene id
-  // await upsertUnique('employee', 'identification', demo.employees);
-  // await upsertUnique('settlementNew', 'conceptId', demo.news);
-  // await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
-  // await upsertUnique('paymentMethod', 'id', data.metodosPago);
-  // await upsertUnique('employeeType', 'id', data.tiposTrabajador);
-  // await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
-  // await upsertUnique('contractType', 'id', data.tiposContrato);
-  // await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
-  console.log('Tablas estáticas alimentadas correctamente.');
+// async function createStaticData() {
+//   // await upsertUnique('employee', 'identification', demo.employees);
+//   // await upsertUnique('settlementNew', 'conceptId', demo.news);
+//   // await upsertUnique('identificationType', 'id', data.tiposIdentificacion);
+//   // await upsertUnique('paymentMethod', 'id', data.metodosPago);
+//   // await upsertUnique('employeeType', 'id', data.tiposTrabajador);
+//   // await upsertUnique('EmployeeSubtype', 'id', data.subtiposTrabajador);
+//   // await upsertUnique('contractType', 'id', data.tiposContrato);
+//   // await upsertUnique('inabilityType', 'id', data.tiposIncapacidad); // Si no tiene id
+// }
+
+async function createUser() {
+  const adminExists = await prisma.user.findUnique({
+    where: {
+      email: 'admin@admin.com',
+    },
+  });
+  if (adminExists) return;
+  const hashedPassword = await bcrypt.hash('admin123', 10);
+  await prisma.user.create({
+    data: {
+      email: 'admin@admin.com',
+      password: hashedPassword,
+      name: 'Admin',
+      role: 'ADMIN',
+      isActive: true,
+    },
+  });
+  console.log('Usuario administrador creado correctamente.');
+}
+
+async function main() {
+  await createUser();
+  await upsertUnique('Concept', 'code', data.PayrollConcept); // Si no tiene id
 }
 
 // Ejecuta la función principal y maneja errores
-createStaticData()
+main()
   .catch(e => {
     console.error(e);
     process.exit(1);

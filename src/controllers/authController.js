@@ -3,7 +3,7 @@
  * @module controllers/authController
  */
 
-const { registerService, loginService } = require('../services/authService');
+const { registerService, loginService, getMeService } = require('../services/authService');
 const { ValidationError } = require('../utils/appError');
 const { validateRegister, validateUser } = require('../utils/userValidation');
 
@@ -63,6 +63,16 @@ exports.login = async (req, res, next) => {
         }
         const token = await loginService(email, password);
         return res.status(200).json({ token: token });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getMe = async (req, res, next) => {
+    try {
+        const { id } = parseInt(req.user.id, 10);
+        const user = await getMeService(id);
+        return res.status(200).json({ user: user });
     } catch (error) {
         next(error);
     }

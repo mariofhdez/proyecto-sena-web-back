@@ -5,7 +5,7 @@ const { verifyId } = require('./verifyId');
 const { NotFoundError, ValidationError } = require('./appError');
 const { formatDate } = require('./formatDate');
 
-const { getCalculationType, getBaseType, getConceptFactor } = require('../config/payrollConcepts');
+const { getCalculationType, getBaseType, getConceptFactor } = require('../utils/payrollConcepts');
 
 async function validateSettlementNewCreation(settlement) {
     console.log(settlement);

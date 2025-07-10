@@ -17,12 +17,12 @@ const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
  * @throws {ForbiddenError} Si el token es inválido
  */
 function authenticateToken(req, res, next) {
-    if (!req.header('Authorization')) throw new UnauthorizedError('La cabecera Authorization no ha sido proporcionada');
+    if (!req.header('Authorization')) throw new UnauthorizedError('The headers \'Authorization\' has not been provided');
 
     const token = req.header('Authorization').split(' ')[1];
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return next(new ForbiddenError('Token inválido'));
+        if (err) return next(new ForbiddenError('Invalid token'));
         req.user = user;
         next();
     });
@@ -62,4 +62,24 @@ function generateToken(user) {
     }
 }
 
-module.exports = { authenticateToken, generateToken };
+function requireRole(role) {
+    return (req, res, next) => {
+        if (req.user.role !== role) return next(new ForbiddenError('You are not authorized to access this resource'));
+        next();
+    }
+}
+
+function authorizeRole(allowedRoles = []) {
+    try {
+        
+    } catch (error) {
+        
+    }
+    return (req, res, next) => {
+        if (!req.user) return next(new UnauthorizedError('You are not authenticated'));
+        if (!allowedRoles.includes(req.user.role)) return next(new ForbiddenError('You are not authorized to access this resource'));
+        next();
+    }
+}
+
+module.exports = { authenticateToken, generateToken, requireRole, authorizeRole };

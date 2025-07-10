@@ -14,6 +14,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// GESTIÓN DE USUARIOS Y AUTENTICACIÓN
+// ============================================================
+
 model User {
   id               Int       @id @default(autoincrement())
   email            String    @unique
@@ -26,7 +30,7 @@ model User {
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  @@map("user")
+  @@map("users")
 }
 
 enum Role {
@@ -34,24 +38,64 @@ enum Role {
   USER
 }
 
-// ------------------ Tablas estáticas ------------------
+// ============================================================
+// GESTIÓN DE EMPLEADOS
+// ============================================================
 
-model PayrollConcept {
+model Employee {
+  id                 Int             @id @default(autoincrement())
+  identification     String          @unique @db.VarChar(60)
+  firstSurname       String          @map("first_surname") @db.VarChar(60)
+  secondSurname      String?         @map("second_surname") @db.VarChar(60)
+  firstName          String          @map("first_name") @db.VarChar(60)
+  otherNames         String?         @map("other_names") @db.VarChar(60)
+  salary             Float
+  position           String          @map("position") @db.VarChar(60) @default("Empleado")
+  transportAllowance Boolean         @map("transport_allowance")
+  isActive           Boolean         @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  settlements        Settlement[]
+  novelties               Novelty[]
+  setllementDetails       SettlementDetail[]
+
+  @@map("employees")
+
+  // Índices
+  @@index([identification])
+  @@index([isActive])
+}
+
+// ============================================================
+// GESTIÓN DE CONCEPTOS DE NÓMINA
+// ============================================================
+
+model Concept {
   id               Int                @id @default(autoincrement())
   code             String             @unique @db.VarChar(3)
   name             String             @db.VarChar(60)
-  type             PayrollConceptType
-  base             String?
+  type             ConceptType
+  calculationType  CalculationType    @map("calculation_type")
+  base             ConceptBase?
   factor           Float?
+  divisor          Float?
   isIncome         Boolean            @map("is_income")
   isVacation       Boolean            @map("is_vacation")
   isIBC            Boolean            @map("is_ibc")
   isRegularConcept Boolean            @map("is_regular_concept")
-  calculationType  CalculationType    @map("calculation_type")
-  news             SettlementNew[]
+
+  novelties             Novelty[]
+  settlementDetails     SettlementDetail[]
+
+  @@map("concepts")
+
+  // Índices
+  @@index([code])
+  @@index([isRegularConcept])
 }
 
-enum PayrollConceptBase {
+enum ConceptBase {
   ALLOWANCE
   HOURLY
   IBC
@@ -61,7 +105,7 @@ enum PayrollConceptBase {
   ZERO
 }
 
-enum PayrollConceptType {
+enum ConceptType {
   DEVENGADO
   DEDUCCION
 }
@@ -72,20 +116,97 @@ enum CalculationType {
   NOMINAL
 }
 
-// ------------------ Tablas dinámicas ------------------
-model Employee {
-  id                 Int             @id @default(autoincrement())
-  identification     String          @unique @db.VarChar(60)
-  firstSurname       String          @map("first_surname") @db.VarChar(60)
-  secondSurname      String?         @map("second_surname") @db.VarChar(60)
-  firstName          String          @map("first_name") @db.VarChar(60)
-  otherNames         String?         @map("other_names") @db.VarChar(60)
-  salary             Float
-  transportAllowance Boolean         @map("transport_allowance")
-  isActive           Boolean         @map("is_active")
-  position           String          @map("position") @db.VarChar(60) @default("Empleado")
-  settlements        Settlement[]
-  news               SettlementNew[]
+// ============================================================
+// GESTIÓN DE PERÍODOS
+// ============================================================
+
+model Period {
+  id                Int          @id @default(autoincrement())
+  period            String       @map("period")
+  startDate         DateTime     @map("start_date")
+  endDate           DateTime     @map("end_date")
+  paymentDate       DateTime?    @map("payment_date")
+  status            PeriodStatus @map("status")
+  employeesQuantity Int?         @map("employees_quantity")
+  earningsTotal     Float?       @map("earnings_total")
+  deductionsTotal   Float?       @map("deductions_total")
+  totalValue        Float?       @map("total_value")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  settlements       Settlement[]
+  novelties         Novelty[]
+
+  @@map("periods")
+
+  // Índices
+  @@index([startDate, endDate])
+  @@index([status])
+}
+
+enum PeriodStatus {
+  OPEN
+  CLOSED
+}
+
+// ============================================================
+// GESTIÓN DE NOVEDADES
+// ============================================================
+
+model Novelty {
+  id                     Int                  @id @default(autoincrement())
+  date                   DateTime             @map("date")
+  quantity               Float?
+  value                  Float
+  status                 NoveltyStatus        @map("status")
+  conceptId              Int                  @map("concept_id")
+  employeeId             Int                  @map("employee_id")
+  periodId               Int?                  @map("period_id")
+
+  //Relaciones
+  concept                Concept              @relation(fields: [conceptId], references: [id])
+  employee               Employee             @relation(fields: [employeeId], references: [id])
+  period                 Period?              @relation(fields: [periodId], references: [id])
+
+	@@map("novelties")
+
+  // Índices
+  @@index([date])
+  @@index([status])
+  @@index([employeeId, periodId])
+}
+
+enum NoveltyStatus {
+  PENDING
+  APPLIED
+  CANCELLED
+}
+
+// ============================================================
+// GESTIÓN DE LIQUIDACIONES
+// ============================================================
+
+model Settlement {
+  id              Int                   @id @default(autoincrement())
+  employeeId      Int                   @map("employee_id")
+  periodId        Int?                  @map("period_id")
+  startDate       DateTime              @map("start_date")
+  endDate         DateTime              @map("end_date")
+  status          SettlementStatus      @map("status")
+  earningsValue   Float                 @map("earnings_value") @db.Double
+  deductionsValue Float                 @map("deductions_value") @db.Double
+  totalValue      Float                 @map("total_value") @db.Double
+
+  //Relaciones
+  employee        Employee              @relation(fields: [employeeId], references: [id])
+  period          Period?               @relation(fields: [periodId], references: [id])
+  details         SettlementDetail[]
+
+  @@map("settlements")
+
+  // Índices
+  @@index([employeeId, periodId])
+  @@index([status])
 }
 
 enum SettlementStatus {
@@ -95,55 +216,34 @@ enum SettlementStatus {
   VOID
 }
 
-model Settlement {
+// ============================================================
+// DETALLE DE LIQUIDACIONES
+// ============================================================
+
+model SettlementDetail {
   id              Int                   @id @default(autoincrement())
-  startDate       DateTime              @map("start_date")
-  endDate         DateTime              @map("end_date")
-  status          SettlementStatus      @map("status")
-  earningsValue   Float                 @map("earnings_value")
-  deductionsValue Float                 @map("deductions_value")
-  totalValue      Float                 @map("total_value")
+  settlementId    Int                   @map("settlement_id")
+  conceptId       Int                   @map("concept_id")
   employeeId      Int                   @map("employee_id")
+  date            DateTime              @map("date")
+  quantity        Int?                  @map("quantity")
+  value           Float                 @map("value") @db.Double
+  status          SettlementDetailStatus @map("status")
+
+  //Relaciones
+  settlement      Settlement            @relation(fields: [settlementId], references: [id])
+  concept         Concept               @relation(fields: [conceptId], references: [id])
   employee        Employee              @relation(fields: [employeeId], references: [id])
-  periodId        Int?                  @map("period_id")
-  earnings        SettlementEarning[]
-  deductions      SettlementDeduction[]
-  period          Period?               @relation(fields: [periodId], references: [id])
+
+  @@map("settlement_details")
+
+  // Índices
+  @@index([settlementId])
+  @@index([conceptId])
+  @@index([employeeId])
 }
 
-model SettlementEarning {
-  id           Int             @id @default(autoincrement())
-  value        Float
-  settlementId Int             @unique @map("settlement_id")
-  settlement   Settlement      @relation(fields: [settlementId], references: [id])
-  news         SettlementNew[]
-}
-
-model SettlementDeduction {
-  id           Int             @id @default(autoincrement())
-  value        Float
-  settlementId Int             @unique @map("settlement_id")
-  settlement   Settlement      @relation(fields: [settlementId], references: [id])
-  news         SettlementNew[]
-}
-
-model SettlementNew {
-  id                     Int                  @id @default(autoincrement())
-  date                   DateTime             @map("date")
-  quantity               Float?
-  value                  Float
-  status                 SettlementNewsStatus @map("status")
-  conceptId              Int                  @map("concept_id")
-  employeeId             Int                  @map("employee_id")
-  settlementEarningsId   Int?                 @map("settlement_earnings_id")
-  settlementDeductionsId Int?                 @map("settlement_deductions_id")
-  concept                PayrollConcept       @relation(fields: [conceptId], references: [id])
-  employee               Employee             @relation(fields: [employeeId], references: [id])
-  earnings               SettlementEarning?   @relation(fields: [settlementEarningsId], references: [id])
-  deductions             SettlementDeduction? @relation(fields: [settlementDeductionsId], references: [id])
-}
-
-enum SettlementNewsStatus {
+enum SettlementDetailStatus {
   NONE
   OPEN
   DRAFT
@@ -151,25 +251,3 @@ enum SettlementNewsStatus {
   VOID
 }
 
-model Period {
-  id                Int          @id @default(autoincrement())
-  period            String       @map("period") @default("2025-Enero")
-  startDate         DateTime     @map("start_date")
-  endDate           DateTime     @map("end_date")
-  paymentDate       DateTime?    @map("payment_date")
-  status            PeriodStatus @map("status")
-  employeesQuantity Int?         @map("employees_quantity")
-  earningsTotal     Float?       @map("earnings_total")
-  deductionsTotal   Float?       @map("deductions_total")
-  totalValue        Float?       @map("total_value")
-  settlements       Settlement[]
-  createdAt         DateTime     @default(now()) @map("created_at")
-  updatedAt         DateTime     @updatedAt @map("updated_at")
-}
-
-enum PeriodStatus {
-  DRAFT
-  OPEN
-  CLOSED
-  VOID
-}

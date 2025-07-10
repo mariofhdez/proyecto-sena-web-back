@@ -215,17 +215,14 @@ exports.draftNew = async (req, res, next) => {
     }
 }
 
-// exports.getNewWithParams = async (req, res, next) => {
-//     try {
-//         const validation = validateSettlementQuery(req.query);
-//         if (!validation.isValid) throw new ValidationError('Settlement new was not retrieved', validation.errors);
-
-
-//         res.json(settlementNews);
-//     } catch (error) {
-//         next(error);
-//     }
-// };
+exports.retrieveNoRegularNews = async (req, res, next) => {
+    try {
+        const settlementNews = await getNoRegularNews();
+        res.json(settlementNews);
+    } catch (error) {
+        next(error);
+    }
+};
 
 /**
  * Obtiene todas las novedades de nómina del sistema
@@ -274,5 +271,20 @@ getSettlementNewByParams = async (params) => {
         }
     }
     const settlementNews = await settlementNewService.query(query);
+    return settlementNews;
+}
+/**
+ * Obtiene novedades de nómina excluyendo las novedades regulares
+ * 
+ * @async
+ * @function getNoRegularNews
+ * @returns {Array} Lista de novedades no regulares
+ */
+getNoRegularNews = async () => {
+    const settlementNews = await settlementNewService.query({
+        conceptId: {
+            notIn: [1, 17, 41, 42]
+        }
+    }, true, true);
     return settlementNews;
 }

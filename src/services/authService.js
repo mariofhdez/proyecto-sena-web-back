@@ -35,17 +35,18 @@ exports.registerService = async (email, name, password, role) => {
             name,
             password: hashedPassword,
             role,
-            isActive: true,
+            isActive: false,
             createdAt: new Date(),
             updatedAt: new Date(),
         },
         select: {
-            id: true,
             email: true,
             name: true,
             role: true,
             isActive: true,
-            createdAt: true
+            password: false,
+            createdAt: false,
+            updatedAt: false,
         }
     });
     return newUser;
@@ -108,4 +109,16 @@ exports.loginService = async (email, password) => {
     });
 
     return generateToken(user);
+}
+
+exports.getMeService = async (userId) => {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+        }
+    })
 }

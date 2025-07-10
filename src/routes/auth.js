@@ -111,7 +111,8 @@
 const { Router } = require('express');
 const authRouter = Router();
 
-const { register, login } = require('../controllers/authController');
+const { register, login, getMe } = require('../controllers/authController');
+const { authenticateToken } = require('../middlewares/auth');
 
 /**
  * @swagger
@@ -201,5 +202,7 @@ authRouter.post('/register', register);
  *         description: Error interno del servidor
  */
 authRouter.post('/login', login);
+
+authRouter.get('/me', authenticateToken, getMe);
 
 module.exports = authRouter;

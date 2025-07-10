@@ -101,7 +101,7 @@ settlementNewRouter.get('/', payrollNewController.retrieveNews);
  *       500:
  *         description: Error interno del servidor
  */
-settlementNewRouter.get('/:id', payrollNewController.getNewById);
+settlementNewRouter.get('/id/:id', payrollNewController.getNewById);
 
 /**
  * @swagger
@@ -277,5 +277,7 @@ settlementNewRouter.post('/:id/draft', payrollNewController.draftNew);
  *         description: Error interno del servidor
  */
 settlementNewRouter.post('/preload', payrollNewController.preload);
+
+settlementNewRouter.get('/news', payrollNewController.retrieveNoRegularNews);
 
 module.exports = settlementNewRouter;
