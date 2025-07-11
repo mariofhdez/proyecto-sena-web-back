@@ -64,13 +64,6 @@ exports.updateNovelty = async (req, res, next) => {
         const verified = await verifyId(id, 'novelty');
         if (!verified) throw new NotFoundError('Novelty with id \'' + id + '\' was not found');
 
-        // Valida que el concepto exista
-        const isValidConcept = await verifyId(parseInt(req.body.conceptId, 10,), 'concept');
-        if (!isValidConcept) throw new NotFoundError('Concept with id \'' + req.body.conceptId + '\' was not found');
-        // Valida que el empleado exista
-        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
-
         // Valida que los datos de la novedad sean correctos
         const data = await validateNoveltyBody(id, req.body);
         if (data.errors) throw new ValidationError('Novelty was not updated', data.errors);

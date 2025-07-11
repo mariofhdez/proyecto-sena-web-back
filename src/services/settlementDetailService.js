@@ -27,7 +27,13 @@ exports.create = async(data) => {
 }
 
 exports.update = async(id, data) => {
-
+    const settlementDetail = await prisma.settlementDetail.update({
+        where: {
+            id: id
+        },
+        data: data
+    });
+    return settlementDetail;
 }
 
 exports.remove = async(id) => {

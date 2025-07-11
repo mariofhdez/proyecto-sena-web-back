@@ -109,9 +109,7 @@ async function validateUniqueSettlement(employee, startDate, endDate, errors) {
             not: "VOID"
         }
     }
-    console.log(query);
     const settlement = await settlementService.getAll(query);
-    console.log(settlement);
     const lenght = settlement.length;
     if (lenght > 0) {
         return errors.push("The settlement for the period already exists")

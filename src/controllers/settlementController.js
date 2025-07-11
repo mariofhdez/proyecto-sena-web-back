@@ -92,11 +92,6 @@ exports.createSettlement = async (req, res, next) => {
 
         const data = await validateSettlementCreation(req.body);
         if (data.errors) throw new ValidationError('Settlement was not created', data.errors);
-
-        // 1. Crear nómina
-        // const settlement = await payrollController.createSettlement(req.body);
-        // const regularNews = await payrollController.createRegularNews(employeeId, endDate);
-        // if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
         
         const settlement = await settlementService.create(data);
         if(!settlement) throw new Error('Error al crear nómina');
@@ -194,7 +189,7 @@ exports.settlePayroll = async (req, res, next) => {
         if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
 
 
-        let settlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
+        let settlement = await settlementService.getById(settlementId);
         // Validar que la liquidación exista
         if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
 
@@ -243,17 +238,17 @@ exports.closePayroll = async (req, res, next) => {
         const settlementId = parseInt(req.body.settlementId, 10);
         let errors = [];
 
-        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
+        validateRequiredNumber(req.body.settlementId, "settlementId", errors);
         if (errors.length > 0) throw new ValidationError('Payroll was not closed', errors);
         // Validar que el id sea un número
         if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
 
         // Validar que la liquidación exista
-        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
-        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+        let settlement = await settlementService.getById(settlementId);
+        if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
 
         // Validar que la liquidación no esté ya cerrada
-        switch (isValidSettlement.status) {
+        switch (settlement.status) {
             case 'DRAFT':
                 throw new ValidationError('Payroll was not closed', 'Payroll with id \'' + settlementId + '\' is not calculated');
                 break;
@@ -266,11 +261,28 @@ exports.closePayroll = async (req, res, next) => {
             default:
                 break;
         }
-        const settlement = await payrollController.closePayroll(settlementId);
+        
+        settlement = await closeSettlement(settlementId);
         if (!settlement) throw new Error('Error al cerrar nómina');
         res.json(settlement);
     } catch (error) {
         next(error);
+    }
+}
+
+async function closeSettlement(settlementId){
+    try {
+        const settlement = await settlementService.getById(settlementId);
+        
+        for(const detail of settlement.details){
+            await settlementDetailService.update(detail.id, {status: 'CLOSED'});
+        }
+
+        const updatedSettlement = await settlementService.update(settlementId, {status: 'CLOSED'});
+        if (!updatedSettlement) throw new Error('Error al cerrar nómina');
+        return updatedSettlement;
+    } catch (error) {
+        console.error(error);
     }
 }
 

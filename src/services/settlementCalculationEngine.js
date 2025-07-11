@@ -186,6 +186,7 @@ function getCalculationOrder(concepts) {
 
 async function generateSettlement(employeeId, periodId, startDate, endDate) {
     // Cargar conceptos si no están cargados
+    const [year,month] = endDate.split('-').map(Number);
     if (!areConceptsLoaded()) {
         await loadPayrollConcepts();
     }
@@ -242,7 +243,8 @@ async function generateSettlement(employeeId, periodId, startDate, endDate) {
         if (concept.calculationType === 'LINEAL') {
             // Para conceptos regulares, usar días del período
             if (concept.isRegularConcept) {
-                const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1 ;
+                const opEndDate = month === 2 ? new Date(year, month, 30) : new Date(endDate);
+                const daysDiff =  Math.ceil((opEndDate - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1 ;
                 quantity = daysDiff>30 ? 30 : daysDiff;
             }
         }
@@ -285,7 +287,17 @@ async function generateSettlement(employeeId, periodId, startDate, endDate) {
         
         // Actualizar estado de novedad si existe
         if (novelty) {
-            await noveltyService.update(novelty.id ,{ status: 'APPLIED' });
+            await noveltyService.update(
+                novelty.id,
+                { 
+                    status: 'APPLIED', 
+                    period: {
+                        connect: {
+                            id: periodId
+                        }
+                    } 
+                }
+            );
         }
     }
     
