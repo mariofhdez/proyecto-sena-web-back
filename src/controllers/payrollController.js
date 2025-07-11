@@ -5,8 +5,8 @@
 
 const settlementService = require('../services/settlementService');
 // const settlementNewService = require('../services/settlementNewService');
-const settlementEarningService = require('../services/settlementEarningService');
-const settlementDeductionService = require('../services/settlementDeductionService');
+// const settlementEarningService = require('../services/settlementEarningService');
+// const settlementDeductionService = require('../services/settlementDeductionService');
 const employeeService = require('../services/employeeService');
 const { getConceptByCode, getRegularConcepts } = require('../utils/payrollConcepts');
 // const { validateSettlementNewCreation } = require('../utils/settlementNewValidation');

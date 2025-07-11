@@ -1,4 +1,4 @@
-const { calculateLinealValue, calculateFactorialValue } = require("../services/settlementCalculationEngine");
+const { calculateConceptValue } = require("../services/settlementCalculationEngine");
 const { NotFoundError } = require("./appError");
 const { formatDate } = require("./formatDate");
 const { getCalculationType, getRegularConcepts } = require("./payrollConcepts");
@@ -45,12 +45,7 @@ async function validateNoveltyBody(noveltyId, novelty) {
         validateRequiredNumber(novelty.quantity, 'quantity', errors);
         data.quantity = novelty.quantity;
 
-        if (getCalculationType(novelty.conceptId) === 'LINEAL') {
-            data.value = await calculateLinealValue(novelty.conceptId, novelty.quantity, novelty.employeeId);
-        }
-        if (getCalculationType(novelty.conceptId) === 'FACTORIAL') {
-            data.value = await calculateFactorialValue(novelty.conceptId, novelty.quantity, novelty.employeeId, novelty.date);
-        }
+        data.value = await calculateConceptValue(novelty.conceptId, novelty.employeeId, novelty.quantity, novelty.date);
     }
 
     if(!noveltyId){
