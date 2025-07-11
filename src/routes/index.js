@@ -5,7 +5,6 @@
  * @requires ./auth
  * @requires ./user
  * @requires ./employee
- * @requires ./settlementNew
  * @requires ./settlement
  * @requires ./period
  * @requires ./concept
@@ -18,10 +17,10 @@ const router = Router();
 const authRouter = require('./auth');
 const userRouter = require('./user');
 const employeesRouter = require('./employee');
-const settlementNewRouter = require('./settlementNew');
 const settlementRouter = require('./settlement');
 const periodRouter = require('./period');
 const conceptRouter = require('./concept');
+const noveltyRouter = require('./novelty');
 
 /**
  * Configuración de las rutas de autenticación
@@ -45,7 +44,7 @@ router.use('/employees', employeesRouter);
  * Configuración de las rutas de novedades de liquidación
  * @type {Router}
  */
-router.use('/settlement-news', settlementNewRouter);
+router.use('/novelties', noveltyRouter);
 
 /**
  * Configuración de las rutas de liquidaciones
