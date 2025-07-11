@@ -51,7 +51,7 @@ router.use('/novelties', noveltyRouter);
  * Configuración de las rutas de liquidaciones
  * @type {Router}
  */
-router.use('/settlement', settlementRouter);
+router.use('/settlements', settlementRouter);
 
 /**
  * Configuración de las rutas de períodos

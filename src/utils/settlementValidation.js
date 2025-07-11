@@ -1,6 +1,9 @@
 const { validateRequiredNumber, validateRequiredString, validateDateFormat } = require("./typeofValidations");
 const settlementService = require("../services/settlementService");
 const { splitDate } = require("./typeofValidations");
+const { NotFoundError } = require("./appError");
+const { verifyId } = require("./verifyId");
+const { formatDate } = require("./formatDate");
 
 function validateSettlementQuery(query) {
     let errors = [];
@@ -36,17 +39,31 @@ function validateSettlementQuery(query) {
 
 async function validateSettlementCreation(settlement) {
     let errors = [];
+    let data = {
+        employee: {connect: {id: null}},
+        startDate: null,
+        endDate: null,
+        status: 'DRAFT',
+        earningsValue: 0,
+        deductionsValue: 0,
+        totalValue: 0
+    }
 
     // Valida que el id del empleado sea un numero
     validateRequiredNumber(settlement.employeeId, "employeeId", errors);
+    const isValidEmployee = await verifyId(parseInt(settlement.employeeId, 10), "employee");
+    if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + settlement.employeeId + '\' was not found');
+    data.employee.connect.id = settlement.employeeId;
 
     // Valida que la fecha de inicio sea una fecha
     validateRequiredString(settlement.startDate, "startDate", errors);
     validateDateFormat(settlement.startDate, "startDate", errors);
+    data.startDate = formatDate(settlement.startDate);
 
     // Valida que la fecha de fin sea una fecha
     validateRequiredString(settlement.endDate, "endDate", errors);
     validateDateFormat(settlement.endDate, "endDate", errors);
+    data.endDate = formatDate(settlement.endDate);
 
     // Valida que la fecha de fin sea mayor que la fecha de inicio
     if (settlement.endDate <= settlement.startDate) {
@@ -62,9 +79,7 @@ async function validateSettlementCreation(settlement) {
             errors: errors
         }
     }
-    return {
-        isValid: true
-    }
+    return data;
 }
 
 function validateSettlementPeriod(startDate, endDate, errors) {
@@ -95,7 +110,7 @@ async function validateUniqueSettlement(employee, startDate, endDate, errors) {
         }
     }
 
-    const settlement = await settlementService.query(query);
+    const settlement = await settlementService.getAll({where: query});
     console.log(settlement);
     const lenght = settlement.length;
     if (lenght > 0) {

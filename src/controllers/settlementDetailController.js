@@ -1,6 +1,7 @@
 const settlementDetailService = require("../services/settlementDetailService");
 const { NotFoundError } = require("../utils/appError");
 const { ValidationError } = require("../utils/appError");
+const { formatDate } = require("../utils/formatDate");
 const { isValidNumericType } = require("../utils/typeofValidations");
 const { verifyId } = require("../utils/verifyId");
 
@@ -31,7 +32,21 @@ exports.getSettlementDetailById = async(req, res, next) => {
 }
 exports.createSettlementDetail = async(req, res, next) => {
     try {
-        
+        let data = {
+            settlement: {connect: {id: null}},
+            concept: {connect: {id: null}},
+            employee: {connect: {id: null}},
+        };
+        data.settlement.connect.id = parseInt(req.body.settlementId, 10);
+        data.concept.connect.id = parseInt(req.body.conceptId, 10);
+        data.employee.connect.id = parseInt(req.body.employeeId, 10);
+        data.date = formatDate(req.body.date);
+        data.quantity = parseInt(req.body.quantity, 10);
+        data.value = parseFloat(req.body.value);
+        data.status = 'DRAFT';
+
+        const settlementDetail = await settlementDetailService.create(data);
+        res.json(settlementDetail);
     } catch (error) {
         next(error)
     }

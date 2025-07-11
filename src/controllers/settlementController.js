@@ -31,10 +31,10 @@ exports.retriveSettlements = async (req, res, next) => {
     try {
         const queryParams = req.query;
         if (Object.keys(queryParams).length > 0) {
-            const settlements = await getSettlementByParams(queryParams);
+            const settlements = await settlementService.getAll({where: queryParams});
             res.json(settlements);
         } else {
-            const settlements = await getAllSettlements();
+            const settlements = await settlementService.getAll();
             res.json(settlements);
         }
     } catch (error) {
@@ -88,19 +88,17 @@ exports.createSettlement = async (req, res, next) => {
     try {
         const { employeeId, startDate, endDate } = req.body;
 
-        const validationResult = await validateSettlementCreation(req.body);
-        if (!validationResult.isValid) throw new ValidationError('Settlement was not created', validationResult.errors);
+        const data = await validateSettlementCreation(req.body);
+        if (data.errors) throw new ValidationError('Settlement was not created', data.errors);
 
-        // const isUniqueSettlement = await validateUniqueSettlement(req.body.employeeId, req.body.startDate, req.body.endDate);
-        // if (!isUniqueSettlement.isValid) throw new ValidationError('Settlement was not created', isUniqueSettlement.errors);
-
-        // Validar que el empleado exista
-        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
         // 1. Crear nómina
-        const settlement = await payrollController.createSettlement(req.body);
-        const regularNews = await payrollController.createRegularNews(employeeId, endDate);
-        if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
+        // const settlement = await payrollController.createSettlement(req.body);
+        // const regularNews = await payrollController.createRegularNews(employeeId, endDate);
+        // if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
+        
+        const settlement = await settlementService.create(data);
+        if(!settlement) throw new Error('Error al crear nómina');
+        
         res.json(settlement);
 
     } catch (error) {

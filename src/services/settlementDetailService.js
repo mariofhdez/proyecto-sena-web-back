@@ -19,7 +19,11 @@ exports.getById = async(id) => {
 }
 
 exports.create = async(data) => {
-
+    const settlementDetail = await prisma.settlementDetail.create({
+        data: data
+    });
+    if(!settlementDetail) throw new Error('Settlement detail was not created');
+    return settlementDetail;
 }
 
 exports.update = async(id, data) => {

@@ -4,7 +4,7 @@
  */
 
 const { PrismaClient } = require('../../generated/prisma');
-const { ValidationError } = require('../utils/appError');
+const { ValidationError, NotFoundError } = require('../utils/appError');
 const prisma = new PrismaClient();
 
 const { verifyId } = require('../utils/verifyId');
@@ -19,15 +19,14 @@ const { verifyId } = require('../utils/verifyId');
 exports.getAll = async () => {
     const settlements = await prisma.settlement.findMany({
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         },
         where: {
             status: { not: 'VOID'}
         }
     });
-    if (!settlements) throw new Error('Error al consultar las Nóminas');
+    if (!settlements) throw new NotFoundError('Settlements were not found');
     return settlements;
 };
 
@@ -44,12 +43,11 @@ exports.getById = async (id) => {
     const settlement = await prisma.settlement.findUnique({
         where: { id: id },
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         }
     });
-    if (!settlement) throw new Error('Nómina no encontrada');
+    if (!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
     return settlement;
 };
 
@@ -70,11 +68,10 @@ exports.create = async (data) => {
     const newSettlement = await prisma.settlement.create({
         data,
         include: {
-            earnings: true,
-            deductions: true
+            details: true
         }
     });
-    if (!newSettlement) throw new Error('No se pudo crear la Nómina');
+    if (!newSettlement) throw new Error('Settlement was not created');
     return newSettlement;
 };
 
@@ -89,17 +86,16 @@ exports.create = async (data) => {
  */
 exports.update = async (id, data) => {
     const isValidId = await verifyId(id, 'settlement');
-    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
+    if (!isValidId) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
     const updatedSettlement = await prisma.settlement.update({
         where: { id: id },
         data,
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         }
     });
-    if (!updatedSettlement) throw new Error('No se pudo actualizar la Nómina');
+    if (!updatedSettlement) throw new Error('Settlement was not updated');
     return updatedSettlement;
 };
 
@@ -113,28 +109,9 @@ exports.update = async (id, data) => {
  */
 exports.remove = async (id) => {
     const isValidId = await verifyId(id, 'settlement');
-    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
+    if (!isValidId) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
     return await prisma.settlement.delete({where: { id: id }});
 };
-
-exports.deleteEarnings = async (id) => {
-    return await prisma.settlementEarning.delete({where: { id: id }});
-}
-exports.deleteDeductions = async (id) => {
-    return await prisma.settlementDeduction.delete({where: { id: id }});
-}
-
-exports.query = async (query) => {
-    const settlements = await prisma.settlement.findMany({
-        where: query,
-        include: {
-            earnings: true,
-            deductions: true,
-            employee: true
-        }
-    });
-    return settlements;
-}
 
 exports.count = async (query) => {
     const count = await prisma.settlement.count({
