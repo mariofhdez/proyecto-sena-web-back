@@ -9,7 +9,7 @@ exports.retrieveNovelties = async (req, res, next) => {
         const query = req.query;
 
         if (Object.keys(query).length > 0) {
-            const novelties = await noveltyService.getAllNovelties(query);
+            const novelties = await noveltyService.getAllNovelties({where: query});
             res.json(novelties);
         } else {
             const novelties = await noveltyService.getAllNovelties();

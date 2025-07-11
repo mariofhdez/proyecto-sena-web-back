@@ -268,5 +268,6 @@ module.exports = {
     calculateLinealValue,
     calculateFactorialValue,
     getBaseValue,
-    getPeriodBase
+    getPeriodBase,
+    generateSettlement
 }

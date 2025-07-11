@@ -17,10 +17,11 @@ const router = Router();
 const authRouter = require('./auth');
 const userRouter = require('./user');
 const employeesRouter = require('./employee');
-const settlementRouter = require('./settlement');
-const periodRouter = require('./period');
 const conceptRouter = require('./concept');
 const noveltyRouter = require('./novelty');
+const settlementDetailRouter = require('./settlementDetail');
+const settlementRouter = require('./settlement');
+const periodRouter = require('./period');
 
 /**
  * Configuración de las rutas de autenticación
@@ -63,5 +64,11 @@ router.use('/period', periodRouter);
  * @type {Router}
  */
 router.use('/concepts', conceptRouter);
+
+/**
+ *  Configuración de las rutas de detalles de liquidaciones
+ * @type {Router}
+ */
+router.use('/settlement-details', settlementDetailRouter);
 
 module.exports = router;
