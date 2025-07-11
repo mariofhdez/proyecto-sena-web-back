@@ -16,8 +16,8 @@ const { NotFoundError } = require('../utils/appError');
  * @returns {Array<Object>} Lista de todos los conceptos de nómina
  * @throws {Error} Si ocurre un error al consultar los conceptos
  */
-exports.getAll = async () => {
-    const settlementNews = await prisma.concept.findMany({});
+exports.getAll = async (query) => {
+    const settlementNews = await prisma.concept.findMany(query);
     if(!settlementNews) throw new Error('Error al consultar las Novedades');
     return settlementNews;
 };

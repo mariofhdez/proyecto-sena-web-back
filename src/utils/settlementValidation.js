@@ -98,19 +98,19 @@ async function validateUniqueSettlement(employee, startDate, endDate, errors) {
     const query = {
         employeeId: employeeId,
         startDate: {
-            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '00'),
-            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '32')
+            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '01'),
+            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '31')
         },
         endDate: {
-            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '00'),
-            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '32')
+            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '01'),
+            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '31')
         },
         status: {
             not: "VOID"
         }
     }
-
-    const settlement = await settlementService.getAll({where: query});
+    console.log(query);
+    const settlement = await settlementService.getAll(query);
     console.log(settlement);
     const lenght = settlement.length;
     if (lenght > 0) {

@@ -151,3 +151,5 @@ estructura-carpetas.txt
 esquema-endpoints.md
 cronograma.md
 utilidades-comunes.md
+test-mock.js
+test-settlement.js

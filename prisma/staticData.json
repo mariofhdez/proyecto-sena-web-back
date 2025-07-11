@@ -16,7 +16,7 @@
 {"code":"124","name":"Incapacidades","type":"DEVENGADO","base":"SALARY", "divisor": 30,"factor":1,"isIncome":false,"isVacation":false,"isIBC":false,"calculationType":"FACTORIAL", "isRegularConcept": false},
 {"code":"125","name":"Licencia Materna","type":"DEVENGADO","base":"SALARY", "divisor": 30,"factor":null,"isIncome":false,"isVacation":false,"isIBC":false,"calculationType":"LINEAL", "isRegularConcept": false},
 {"code":"126","name":"Licencia Paterna","type":"DEVENGADO","base":"SALARY", "divisor": 30,"factor":null,"isIncome":true,"isVacation":true,"isIBC":true,"calculationType":"LINEAL", "isRegularConcept": false},
-{"code":"127","name":"Auxilio de transporte","type":"DEVENGADO","base":"ALLOWANCE","factor":null,"isIncome":true,"isVacation":false,"isIBC":false,"calculationType":"LINEAL", "isRegularConcept": true},
+{"code":"127","name":"Auxilio de transporte","type":"DEVENGADO","base":"ALLOWANCE","divisor":30,"factor":null,"isIncome":true,"isVacation":false,"isIBC":false,"calculationType":"LINEAL", "isRegularConcept": true},
 {"code":"130","name":"Cesantías","type":"DEVENGADO","base":"INCOME","factor":0.0833333333333333,"isIncome":false,"isVacation":false,"isIBC":false,"calculationType":"FACTORIAL", "isRegularConcept": false},
 {"code":"133","name":"Intereses a las Cesantías","type":"DEVENGADO","base":"INCOME","factor":0.01,"isIncome":false,"isVacation":false,"isIBC":false,"calculationType":"FACTORIAL", "isRegularConcept": false},
 {"code":"136","name":"Prima Salarial","type":"DEVENGADO","base":"INCOME","factor":0.0833333333333333,"isIncome":false,"isVacation":false,"isIBC":false,"calculationType":"FACTORIAL", "isRegularConcept": false},

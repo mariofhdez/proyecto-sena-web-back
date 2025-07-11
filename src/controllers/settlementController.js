@@ -9,7 +9,9 @@ const payrollController = require('./payrollController');
 const { validateSettlementQuery, validateSettlementCreation, validateUniqueSettlement, verifySettlement } = require('../utils/settlementValidation');
 const { ValidationError, NotFoundError } = require('../utils/appError');
 const { verifyId } = require('../utils/verifyId');
-const { validateRequiredNumber, isValidNumericType } = require('../utils/typeofValidations');
+const { validateRequiredNumber, isValidNumericType, fromTimestampToDate } = require('../utils/typeofValidations');
+const settlementCalculationEngine = require('../services/settlementCalculationEngine');
+const settlementDetailService = require('../services/settlementDetailService');
 
 /**
  * Obtiene todas las liquidaciones del sistema o filtra por parámetros
@@ -31,7 +33,7 @@ exports.retriveSettlements = async (req, res, next) => {
     try {
         const queryParams = req.query;
         if (Object.keys(queryParams).length > 0) {
-            const settlements = await settlementService.getAll({where: queryParams});
+            const settlements = await settlementService.getAll(queryParams);
             res.json(settlements);
         } else {
             const settlements = await settlementService.getAll();
@@ -143,11 +145,13 @@ exports.deleteSettlement = async (req, res, next) => {
         const settlement = await settlementService.getById(id);
         if(!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
 
-        const earnings = await settlementService.deleteEarnings(settlement.earnings[0].id);
-        if(!earnings) throw new Error('Error al eliminar ingresos');
-
-        const deductions = await settlementService.deleteDeductions(settlement.deductions[0].id);
-        if(!deductions) throw new Error('Error al eliminar deducciones');
+        if(settlement.details.length > 0){
+            for(const detail of settlement.details  ){
+                console.log('eliminando detalle')
+                const deletedDetail = await settlementDetailService.remove(detail.id);
+                if(!deletedDetail) throw new Error('Error al eliminar detalle');
+            }
+        }
 
         const deleteSettlemtent = await settlementService.remove(settlement.id);
         if(!deleteSettlemtent) throw new Error('Error al eliminar nómina');
@@ -180,6 +184,9 @@ exports.settlePayroll = async (req, res, next) => {
     try {
         const settlementId = parseInt(req.body.settlementId, 10);
         let errors = [];
+        let data ={
+            details: {create: []}
+        }
 
         const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
         if (errors.length > 0) throw new ValidationError('Payroll was not settled', errors);
@@ -187,17 +194,30 @@ exports.settlePayroll = async (req, res, next) => {
         if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
 
 
+        let settlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
         // Validar que la liquidación exista
-        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
-        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+        if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
 
         // Validar que la liquidación no esté ya liquidada
-        if (isValidSettlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
+        if (settlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
 
+        const settlementCalculated = await settlementCalculationEngine.generateSettlement(settlement.employeeId, settlement.periodId, fromTimestampToDate(settlement.startDate), fromTimestampToDate(settlement.endDate));
+        if (!settlementCalculated) throw new Error('Error al liquidar nómina');
 
-        const settlement = await payrollController.settlePayroll(settlementId);
-        if (!settlement) throw new Error('Error al liquidar nómina');
-        res.json(settlement);
+        data.employeeId = settlementCalculated.employeeId;
+        data.periodId = settlementCalculated.periodId;
+        data.startDate = settlementCalculated.startDate;
+        data.endDate = settlementCalculated.endDate;
+        data.status = settlementCalculated.status;
+        data.earningsValue = settlementCalculated.earningsValue;
+        data.deductionsValue = settlementCalculated.deductionsValue;
+        data.totalValue = settlementCalculated.totalValue;
+        data.details.create = settlementCalculated.details;
+
+        console.log(settlementCalculated.details);
+        const updatedSettlement = await settlementService.update(settlement.id, data);
+        if (!updatedSettlement) throw new Error('Error al crear nómina');
+        res.json(updatedSettlement);
     } catch (error) {
         next(error);
     }
@@ -254,48 +274,14 @@ exports.closePayroll = async (req, res, next) => {
     }
 }
 
-/**
- * Obtiene todas las liquidaciones del sistema
- * 
- * @async
- * @function getAllSettlements
- * @returns {Array} Lista de todas las liquidaciones
- */
-getAllSettlements = async () => {
-    const settlements = await settlementService.getAll();
-    return settlements;
-}
+exports.getSettlementsByEmployeeId = async (req, res, next) => {
+    try {
+        const employeeId = parseInt(req.params.employeeId, 10);
+        if (!isValidNumericType(employeeId)) throw new ValidationError('The field employeeId must be a numeric value.');
 
-/**
- * Obtiene liquidaciones filtradas por parámetros
- * 
- * @async
- * @function getSettlementByParams
- * @param {Object} params - Parámetros de consulta
- * @param {string} params.startDate - Fecha de inicio para filtrar
- * @param {string} params.endDate - Fecha de fin para filtrar
- * @param {string} params.employeeId - ID del empleado para filtrar
- * @param {string} params.periodId - ID del período para filtrar
- * @returns {Array} Lista de liquidaciones filtradas
- * @throws {ValidationError} Si los parámetros de consulta no son válidos
- */
-getSettlementByParams = async (params) => {
-    const queryValidation = validateSettlementQuery(params);
-    if (!queryValidation.isValid) throw new ValidationError('Settlement was not retrieved', queryValidation.errors);
-
-    let query = {
-        status: { not: 'VOID'}
+        const settlements = await settlementService.getAll({employeeId: employeeId});
+        res.json(settlements);
+    } catch (error) {
+        next(error);
     }
-    if (params.startDate || params.endDate) {
-        query.startDate = formatDate(params.startDate);
-        query.endDate = formatDate(params.endDate);
-    }
-    if (params.employeeId) {
-        query.employeeId = parseInt(params.employeeId, 10)
-    }
-    if (params.periodId) {
-        query.periodId = parseInt(params.periodId, 10);
-    }
-    const settlement = await settlementService.query(query);
-    return settlement;
 }

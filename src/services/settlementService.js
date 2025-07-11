@@ -16,15 +16,17 @@ const { verifyId } = require('../utils/verifyId');
  * @function getAll
  * @returns {Array<Object>} Lista de todas las liquidaciones
  */
-exports.getAll = async () => {
+exports.getAll = async (query) => {
+    let where = {
+        status: { not: 'VOID'},
+        ...query
+    }
     const settlements = await prisma.settlement.findMany({
         include: {
             details: true,
             employee: true
         },
-        where: {
-            status: { not: 'VOID'}
-        }
+        where: where
     });
     if (!settlements) throw new NotFoundError('Settlements were not found');
     return settlements;

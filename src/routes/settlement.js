@@ -263,4 +263,6 @@ settlementRouter.post('/settle', settlementController.settlePayroll);
  */
 settlementRouter.post('/close', settlementController.closePayroll);
 
+settlementRouter.get('/employeeId/:employeeId', settlementController.getSettlementsByEmployeeId);
+
 module.exports = settlementRouter;
