@@ -3,6 +3,8 @@
  * @module utils/formatDate
  */
 
+const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
 /**
  * Convierte una cadena de fecha a formato ISO
  * 
@@ -16,4 +18,8 @@ function formatDate(dateStr) {
     return date.toISOString();
 };
 
-module.exports = { formatDate };
+function getMonthName(month) {
+    return months[month - 1];
+}
+
+module.exports = { formatDate, getMonthName };

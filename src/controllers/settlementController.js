@@ -6,7 +6,7 @@
 const settlementService = require('../services/settlementService');
 const { formatDate } = require('../utils/formatDate');
 const payrollController = require('./payrollController');
-const { validateSettlementQuery, validateSettlementCreation, validateUniqueSettlement, verifySettlement } = require('../utils/settlementValidation');
+const { validateSettlementQuery, validateSettlementCreation } = require('../utils/settlementValidation');
 const { ValidationError, NotFoundError } = require('../utils/appError');
 const { verifyId } = require('../utils/verifyId');
 const { validateRequiredNumber, isValidNumericType, fromTimestampToDate } = require('../utils/typeofValidations');
@@ -33,7 +33,7 @@ exports.retriveSettlements = async (req, res, next) => {
     try {
         const queryParams = req.query;
         if (Object.keys(queryParams).length > 0) {
-            const settlements = await settlementService.getAll(queryParams);
+            const settlements = await settlementService.getAll(validateSettlementQuery(queryParams));
             res.json(settlements);
         } else {
             const settlements = await settlementService.getAll();

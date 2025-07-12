@@ -158,7 +158,7 @@ periodRouter.post('/', periodController.createPeriod);
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/settle', periodController.settlePeriod);
+// periodRouter.post('/:id/settle', periodController.settlePeriod);
 
 /**
  * @swagger
@@ -184,7 +184,7 @@ periodRouter.post('/:id/settle', periodController.settlePeriod);
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/close', periodController.closePeriod);
+// periodRouter.post('/:id/close', periodController.closePeriod);
 
 /**
  * @swagger
@@ -232,7 +232,7 @@ periodRouter.delete('/:id', periodController.deletePeriod);
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/loadEmployees', periodController.loadEmployees);
+// periodRouter.post('/:id/loadEmployees', periodController.loadEmployees);
 
 /**
  * @swagger
@@ -284,7 +284,7 @@ periodRouter.post('/:id/open', periodController.openPeriod);
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/reverse-settlement', periodController.reversePeriodSettle);
+// periodRouter.post('/:id/reverse-settlement', periodController.reversePeriodSettle);
 
 /**
  * @swagger
@@ -310,6 +310,6 @@ periodRouter.post('/:id/reverse-settlement', periodController.reversePeriodSettl
  *       500:
  *         description: Error interno del servidor
  */
-periodRouter.post('/:id/void', periodController.voidPeriod);
+// periodRouter.post('/:id/void', periodController.voidPeriod);
 
 module.exports = periodRouter;

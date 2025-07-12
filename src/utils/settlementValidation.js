@@ -5,25 +5,42 @@ const { NotFoundError } = require("./appError");
 const { verifyId } = require("./verifyId");
 const { formatDate } = require("./formatDate");
 
-function validateSettlementQuery(query) {
+function validateSettlementQuery(params) {
     let errors = [];
+    let query = {
+        employeeId: null,
+        startDate: null,
+        endDate: null,
+        periodId: null
+    }
 
-    if (query.employeeId) {
-        const employeeId = parseInt(query.employeeId, 10);
+    if (params.employeeId) {
+        const employeeId = parseInt(params.employeeId, 10);
         validateRequiredNumber(employeeId, "employeeId", errors)
+        query.employeeId = employeeId;
+    } else {
+        delete query.employeeId;
     }
 
-    if(query.startDate || query.endDate) {
-        validateRequiredString(query.startDate, "startDate", errors);
-        validateDateFormat(query.startDate, "startDate", errors);
+    if(params.startDate || params.endDate) {
+        validateRequiredString(params.startDate, "startDate", errors);
+        validateDateFormat(params.startDate, "startDate", errors);
     
-        validateRequiredString(query.endDate, "endDate", errors);
-        validateDateFormat(query.endDate, "endDate", errors);
+        validateRequiredString(params.endDate, "endDate", errors);
+        validateDateFormat(params.endDate, "endDate", errors);
+        query.startDate = formatDate(params.startDate);
+        query.endDate = formatDate(params.endDate);
+    } else {
+        delete query.startDate;
+        delete query.endDate;
     }
 
-    if(query.periodId) {
-        const periodId = parseInt(query.periodId, 10);
+    if(params.periodId) {
+        const periodId = parseInt(params.periodId, 10);
         validateRequiredNumber(periodId, "periodId", errors);
+        query.periodId = periodId;
+    } else {
+        delete query.periodId;
     }
 
     if (errors.length > 0) {
@@ -32,13 +49,12 @@ function validateSettlementQuery(query) {
             errors: errors
         }
     }
-    return {
-        isValid: true
-    }
+    return query;
 }
 
 async function validateSettlementCreation(settlement) {
     let errors = [];
+    console.log(settlement);
     let data = {
         employee: {connect: {id: null}},
         startDate: null,
@@ -46,7 +62,8 @@ async function validateSettlementCreation(settlement) {
         status: 'DRAFT',
         earningsValue: 0,
         deductionsValue: 0,
-        totalValue: 0
+        totalValue: 0,
+        period: {connect: {id: null}}
     }
 
     // Valida que el id del empleado sea un numero
@@ -71,8 +88,17 @@ async function validateSettlementCreation(settlement) {
     }
     validateSettlementPeriod(settlement.startDate, settlement.endDate, errors);
 
+    if(settlement.periodId) {
+        const isValidPeriod = await verifyId(parseInt(settlement.periodId, 10), "period");
+        if(!isValidPeriod) throw new NotFoundError('Period with id \'' + settlement.periodId + '\' was not found');
+        data.period.connect.id = settlement.periodId;
+    } else {
+        delete data.period;
+    }
+
     await validateUniqueSettlement(settlement.employeeId, settlement.startDate, settlement.endDate, errors);
 
+    console.log(errors);
     if (errors.length > 0) {
         return {
             isValid: false,
@@ -92,28 +118,24 @@ function validateSettlementPeriod(startDate, endDate, errors) {
 
 async function validateUniqueSettlement(employee, startDate, endDate, errors) {
     const employeeId = parseInt(employee, 10);
-    const splitStartDate = splitDate(startDate);
-    const splitEndDate = splitDate(endDate);
 
     const query = {
         employeeId: employeeId,
         startDate: {
-            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '01'),
-            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '31')
+            gte: formatDate(startDate),
+            lte: formatDate(endDate)
         },
         endDate: {
-            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '01'),
-            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '31')
+            gte: formatDate(endDate),
+            lte: formatDate(endDate)
         },
-        status: {
-            not: "VOID"
-        }
     }
     const settlement = await settlementService.getAll(query);
     const lenght = settlement.length;
     if (lenght > 0) {
         return errors.push("The settlement for the period already exists")
     }
+    console.log('unique: ',settlement)
 }
 
 async function verifySettlement(settlementId) {

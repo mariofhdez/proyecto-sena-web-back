@@ -21,6 +21,7 @@ exports.getAll = async (query) => {
         status: { not: 'VOID'},
         ...query
     }
+    console.log('where: ',where)
     const settlements = await prisma.settlement.findMany({
         include: {
             details: true,
