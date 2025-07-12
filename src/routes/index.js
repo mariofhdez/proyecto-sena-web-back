@@ -57,7 +57,7 @@ router.use('/settlements', settlementRouter);
  * Configuración de las rutas de períodos
  * @type {Router}
  */
-router.use('/period', periodRouter);
+router.use('/periods', periodRouter);
 
 /**
  * Configuración de las rutas de conceptos

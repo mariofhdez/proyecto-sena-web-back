@@ -4,13 +4,13 @@ const prisma = new PrismaClient();
 const { ValidationError } = require('../utils/appError');
 const { verifyId } = require('../utils/verifyId');
 
-exports.getAll = async () => {
+exports.getAll = async (query) => {
+    let where = {
+        // status: { not: 'VOID'},
+        ...query
+    }
     const periods = await prisma.period.findMany({
-        where: {
-            status: {
-                not: "VOID"
-            }
-        },
+        where: where
     });
     if (!periods) throw new Error('Periods not found');
     return periods;

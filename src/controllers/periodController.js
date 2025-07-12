@@ -26,9 +26,7 @@ exports.retrievePeriods = async (req, res, next) => {
     try {
         const queryParams = req.query;
         if(Object.keys(queryParams).length > 0) {
-            // TODO: Implementar query en periodService
-            // const periods = await periodService.query(queryParams);
-            const periods = [];
+            const periods = await periodService.getAll(queryParams);
             res.json(periods);
         } else {
             const periods = await periodService.getAll();

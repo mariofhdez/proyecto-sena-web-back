@@ -52,10 +52,6 @@ function validateRegister(user){
     return { isValid: true };
 }
 
-function isValidRole(role) {
-    return typeof role === 'string' && (role === 'ADMIN' || role === 'USER');
-}
-
 function isValidStatus(isActive) {
     return typeof isActive === 'string' && (isActive === 'TRUE' || isActive === 'FALSE');
 }
