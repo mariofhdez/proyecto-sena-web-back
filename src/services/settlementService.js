@@ -113,7 +113,9 @@ exports.update = async (id, data) => {
 exports.remove = async (id) => {
     const isValidId = await verifyId(id, 'settlement');
     if (!isValidId) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
-    return await prisma.settlement.delete({where: { id: id }});
+    const deletedSettlement = await prisma.settlement.delete({where: { id: id }});
+    if (!deletedSettlement) throw new Error('Settlement was not deleted');
+    return deletedSettlement;
 };
 
 exports.count = async (query) => {

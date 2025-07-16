@@ -6,9 +6,9 @@
 const periodService = require('../services/periodService');
 const { NotFoundError, ValidationError } = require('../utils/appError');
 const { isValidNumericType } = require('../utils/typeofValidations');
-// const { formatDate } = require('../utils/formatDate');
-const { validatePeriodCreation, loadEmployees, createPeriod, settlePeriod, closePeriod, deletePeriod, openPeriod, draftPeriod, voidPeriod } = require('../utils/periodValidation');
+const { validatePeriodCreation, loadEmployees, settlePeriod, closePeriod, deletePeriod, openPeriod } = require('../utils/periodValidation');
 const { verifyId } = require('../utils/verifyId');
+const settlementValidation = require('../utils/settlementValidation');
 
 /**
  * Obtiene todos los períodos de nómina del sistema
@@ -152,36 +152,6 @@ exports.closePeriod = async (req, res, next) => {
 }
 
 /**
- * Elimina un período de nómina
- * 
- * @async
- * @function deletePeriod
- * @param {Object} req - Objeto de solicitud de Express
- * @param {Object} req.params - Parámetros de la ruta
- * @param {string} req.params.id - ID del período a eliminar
- * @param {Object} res - Objeto de respuesta de Express
- * @param {Function} next - Función para pasar al siguiente middleware
- * @returns {Object} Respuesta JSON con mensaje de confirmación
- * @throws {ValidationError} Si el ID no es válido
- * @throws {NotFoundError} Si el período no existe
- */
-exports.deletePeriod = async (req, res, next) => {
-    try {
-        const id = parseInt(req.params.id);
-        if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
-        
-        const isValidPeriod = await verifyId(id, "period");
-        if (!isValidPeriod) throw new NotFoundError('Period with id \'' + id + '\' was not found');
-        
-        const period = await deletePeriod(id);
-
-        res.json('The period was deleted successfully');
-    } catch (error) {
-        next(error);
-    }
-}
-
-/**
  * Carga empleados a un período específico
  * 
  * @async
@@ -215,95 +185,33 @@ exports.openPeriod = async (req, res, next) => {
     }
 }
 
-// /**
-//  * Abre un período de nómina
-//  * 
-//  * @async
-//  * @function openPeriod
-//  * @param {Object} req - Objeto de solicitud de Express
-//  * @param {Object} req.params - Parámetros de la ruta
-//  * @param {string} req.params.id - ID del período a abrir
-//  * @param {Object} res - Objeto de respuesta de Express
-//  * @param {Function} next - Función para pasar al siguiente middleware
-//  * @returns {Object} Respuesta JSON con los datos del período abierto
-//  * @throws {ValidationError} Si el ID no es válido
-//  * @throws {NotFoundError} Si el período no existe
-//  * @throws {Error} Si el período no se puede abrir
-//  */
-// exports.openPeriod = async (req, res, next) => {
-//     try {
-//         const id = parseInt(req.params.id);
-//         if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
 
-//         const isValidPeriod = await verifyId(id, "period");
-//         if (!isValidPeriod) throw new NotFoundError('Period with id \'' + id + '\' was not found');
+exports.deletePeriod = async (req, res, next) => {
+    try {
+        const id = parseInt(req.params.id);
 
-//         const openedPeriod = await openPeriod(id);
-//         if(!openedPeriod) throw new Error('Period was not opened');
-//         res.json(openedPeriod);
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+        await removePeriod(id);
+        res.json({message: 'The period was deleted successfully'});
+    } catch (error) {
+        next(error);
+    }
+}
 
-// /**
-//  * Revierte la liquidación de un período (lo convierte a borrador)
-//  * 
-//  * @async
-//  * @function reversePeriodSettle
-//  * @param {Object} req - Objeto de solicitud de Express
-//  * @param {Object} req.params - Parámetros de la ruta
-//  * @param {string} req.params.id - ID del período a revertir
-//  * @param {Object} res - Objeto de respuesta de Express
-//  * @param {Function} next - Función para pasar al siguiente middleware
-//  * @returns {Object} Respuesta JSON con los datos del período en borrador
-//  * @throws {ValidationError} Si el ID no es válido
-//  * @throws {NotFoundError} Si el período no existe
-//  * @throws {Error} Si el período no se puede revertir
-//  */
-// exports.reversePeriodSettle = async (req, res, next) => {
-//     try {
-//         const id = parseInt(req.params.id);
-//         if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
+async function removePeriod(id) {
+    if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
 
-//         const isValidPeriod = await verifyId(id, "period");
-//         if (!isValidPeriod) throw new NotFoundError('Period with id \'' + id + '\' was not found');
+    const period = await periodService.getById(id);
+    if (!period) throw new NotFoundError('Period with id \'' + id + '\' was not found');
 
-//         const draftedPeriod = await draftPeriod(id);
-//         if(!draftedPeriod) throw new Error('Period was not drafted');
-//         res.json(draftedPeriod);
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+    if (period.settlements.length > 0) {
+        for (const settlement of period.settlements) {
+            const deletedSettlement = await settlementValidation.removeSettlement(settlement.id);
+            if(!deletedSettlement) throw new Error('Error al eliminar nómina');
+            console.log({message: 'Period controller: remove settlement'});
+        }
+    }
 
-// /**
-//  * Anula un período de nómina
-//  * 
-//  * @async
-//  * @function voidPeriod
-//  * @param {Object} req - Objeto de solicitud de Express
-//  * @param {Object} req.params - Parámetros de la ruta
-//  * @param {string} req.params.id - ID del período a anular
-//  * @param {Object} res - Objeto de respuesta de Express
-//  * @param {Function} next - Función para pasar al siguiente middleware
-//  * @returns {Object} Respuesta JSON con los datos del período anulado
-//  * @throws {ValidationError} Si el ID no es válido
-//  * @throws {NotFoundError} Si el período no existe
-//  * @throws {Error} Si el período no se puede anular
-//  */
-// exports.voidPeriod = async (req, res, next) => {
-//     try {
-//         const id = parseInt(req.params.id);
-//         if(!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
-
-//         const isValidPeriod = await verifyId(id, "period");
-//         if (!isValidPeriod) throw new NotFoundError('Period with id \'' + id + '\' was not found');
-
-//         const voidedPeriod = await voidPeriod(id);
-//         if(!voidedPeriod) throw new Error('Period was not voided');
-//         res.json(voidedPeriod);
-//     } catch (error) {
-//         next(error);
-//     }
-// }
+    const deletedPeriod = await periodService.delete(id);
+    if (!deletedPeriod) throw new Error('Error al eliminar período');
+    return deletedPeriod;
+}

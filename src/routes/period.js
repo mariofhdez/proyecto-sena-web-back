@@ -158,7 +158,7 @@ periodRouter.post('/', periodController.createPeriod);
  *       500:
  *         description: Error interno del servidor
  */
-// periodRouter.post('/:id/settle', periodController.settlePeriod);
+periodRouter.post('/:id/settle', periodController.settlePeriod);
 
 /**
  * @swagger

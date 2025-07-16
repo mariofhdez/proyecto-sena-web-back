@@ -3,8 +3,7 @@ const periodService = require('../services/periodService');
 const { NotFoundError, ValidationError } = require('./appError');
 const { formatDate, getMonthName } = require('./formatDate');
 const { verifyId } = require('./verifyId');
-const { validateSettlementCreation } = require('./settlementValidation');
-const payrollController = require('../controllers/payrollController');
+const { validateSettlementCreation, calculateSettlement, closeSettlement } = require('./settlementValidation');
 const settlementService = require('../services/settlementService');
 
 async function validatePeriodCreation(data) {
@@ -106,15 +105,26 @@ async function loadEmployees(periodId, employees) {
 
 async function settlePeriod(periodId) {
     const period = await periodService.getById(periodId);
-    if(period.status !== "DRAFT") throw new Error('Period is not available to settle');
+    // if(period.status !== "DRAFT") throw new Error('Period is not available to settle');
     const settlements = period.settlements;
 
+    let earningsTotal = 0;
+    let deductionsTotal = 0;
+    let totalValue = 0;
+
     for(const settlement of settlements){
-        const s = await payrollController.settlePayroll(settlement.id);
+        const s = await calculateSettlement(settlement.id);
+        earningsTotal += s.earningsValue;
+        deductionsTotal += s.deductionsValue;
+        totalValue += s.totalValue;
     }
 
-    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
-    // TODO: Implementar la lógica para liquidar el periodo
+    const updatedPeriod = await periodService.update(periodId, { 
+        status: "OPEN", 
+        earningsTotal: earningsTotal, 
+        deductionsTotal: deductionsTotal, 
+        totalValue: totalValue 
+    });
     return updatedPeriod;
 }
 
@@ -123,7 +133,7 @@ async function closePeriod(periodId) {
     if(period.status !== "OPEN") throw new Error('Period is not available to close');
     const settlements = period.settlements;
     for(const settlement of settlements){
-        const s = await payrollController.closePayroll(settlement.id);
+        const s = await closeSettlement(settlement.id);
     }
     const updatedPeriod = await periodService.update(periodId, { status: "CLOSED" });
     return updatedPeriod;
@@ -138,37 +148,14 @@ async function deletePeriod(periodId) {
     throw new Error('Cannot delete a period with status: \'' + period.status + '\'');
 }
 
-async function openPeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status !== "CLOSED") throw new Error('Period is not available to open');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.openPayroll(settlement.id);
-    }
-    const updatedPeriod = await periodService.update(periodId, { status: "OPEN" });
-    return updatedPeriod;
-}
-
 async function draftPeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status !== "OPEN") throw new Error('Period is not available to draft');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.draftPayroll(settlement.id);
-    }
-    const updatedPeriod = await periodService.update(periodId, { status: "DRAFT" });
-    return updatedPeriod;
+    //TODO: Implementar la lógica para revertir el periodo
+    return null;
 }
 
 async function voidPeriod(periodId) {
-    const period = await periodService.getById(periodId);
-    if(period.status !== "DRAFT") throw new Error('Period is not available to void');
-    const settlements = period.settlements;
-    for(const settlement of settlements){
-        const s = await payrollController.voidPayroll(settlement.id);
-    }
-    const updatedPeriod = await periodService.update(periodId, { status: "VOID" });
-    return updatedPeriod;
+    //TODO: Implementar la lógica para anular el periodo
+    return null;
 }
 
 module.exports = {
@@ -177,7 +164,6 @@ module.exports = {
     settlePeriod,
     closePeriod,
     deletePeriod,
-    openPeriod,
     draftPeriod,
     voidPeriod
 }

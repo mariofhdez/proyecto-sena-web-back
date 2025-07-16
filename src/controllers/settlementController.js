@@ -4,14 +4,11 @@
  */
 
 const settlementService = require('../services/settlementService');
-const { formatDate } = require('../utils/formatDate');
-const payrollController = require('./payrollController');
 const { validateSettlementQuery, validateSettlementCreation } = require('../utils/settlementValidation');
 const { ValidationError, NotFoundError } = require('../utils/appError');
-const { verifyId } = require('../utils/verifyId');
-const { validateRequiredNumber, isValidNumericType, fromTimestampToDate } = require('../utils/typeofValidations');
-const settlementCalculationEngine = require('../services/settlementCalculationEngine');
+const { validateRequiredNumber, isValidNumericType } = require('../utils/typeofValidations');
 const settlementDetailService = require('../services/settlementDetailService');
+const { calculateSettlement } = require('../utils/settlementValidation');
 
 /**
  * Obtiene todas las liquidaciones del sistema o filtra por parámetros
@@ -135,21 +132,7 @@ exports.updateSettlement = async (req, res, next) => {
 exports.deleteSettlement = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id, 10);
-        if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
-
-        const settlement = await settlementService.getById(id);
-        if(!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
-
-        if(settlement.details.length > 0){
-            for(const detail of settlement.details  ){
-                console.log('eliminando detalle')
-                const deletedDetail = await settlementDetailService.remove(detail.id);
-                if(!deletedDetail) throw new Error('Error al eliminar detalle');
-            }
-        }
-
-        const deleteSettlemtent = await settlementService.remove(settlement.id);
-        if(!deleteSettlemtent) throw new Error('Error al eliminar nómina');
+        await removeSettlement(id);
 
         res.json({ message: 'Settlement was deleted' });
 
@@ -178,40 +161,7 @@ exports.deleteSettlement = async (req, res, next) => {
 exports.settlePayroll = async (req, res, next) => {
     try {
         const settlementId = parseInt(req.body.settlementId, 10);
-        let errors = [];
-        let data ={
-            details: {create: []}
-        }
-
-        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
-        if (errors.length > 0) throw new ValidationError('Payroll was not settled', errors);
-        // Validar que el id sea un número
-        if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
-
-
-        let settlement = await settlementService.getById(settlementId);
-        // Validar que la liquidación exista
-        if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
-
-        // Validar que la liquidación no esté ya liquidada
-        if (settlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
-
-        const settlementCalculated = await settlementCalculationEngine.generateSettlement(settlement.employeeId, settlement.periodId, fromTimestampToDate(settlement.startDate), fromTimestampToDate(settlement.endDate));
-        if (!settlementCalculated) throw new Error('Error al liquidar nómina');
-
-        data.employeeId = settlementCalculated.employeeId;
-        data.periodId = settlementCalculated.periodId;
-        data.startDate = settlementCalculated.startDate;
-        data.endDate = settlementCalculated.endDate;
-        data.status = settlementCalculated.status;
-        data.earningsValue = settlementCalculated.earningsValue;
-        data.deductionsValue = settlementCalculated.deductionsValue;
-        data.totalValue = settlementCalculated.totalValue;
-        data.details.create = settlementCalculated.details;
-
-        console.log(settlementCalculated.details);
-        const updatedSettlement = await settlementService.update(settlement.id, data);
-        if (!updatedSettlement) throw new Error('Error al crear nómina');
+        const updatedSettlement = await calculateSettlement(settlementId);
         res.json(updatedSettlement);
     } catch (error) {
         next(error);

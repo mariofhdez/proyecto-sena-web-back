@@ -1,9 +1,12 @@
-const { validateRequiredNumber, validateRequiredString, validateDateFormat } = require("./typeofValidations");
+const { validateRequiredNumber, validateRequiredString, validateDateFormat, isValidNumericType } = require("./typeofValidations");
 const settlementService = require("../services/settlementService");
-const { splitDate } = require("./typeofValidations");
+const { splitDate, fromTimestampToDate } = require("./typeofValidations");
 const { NotFoundError } = require("./appError");
 const { verifyId } = require("./verifyId");
 const { formatDate } = require("./formatDate");
+const settlementDetailService = require("../services/settlementDetailService");
+const { ValidationError } = require("./appError");
+const settlementCalculationEngine = require("../services/settlementCalculationEngine");
 
 function validateSettlementQuery(params) {
     let errors = [];
@@ -143,9 +146,76 @@ async function verifySettlement(settlementId) {
     return settlement;
 }
 
+async function calculateSettlement(settlementId) {
+    let errors = [];
+        let data ={
+            details: {create: []}
+        }
+
+        const validationResult = validateRequiredNumber(settlementId, "settlementId", errors);
+        if (errors.length > 0) throw new ValidationError('Payroll was not settled', errors);
+        // Validar que el id sea un número
+        if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
+
+
+        let settlement = await settlementService.getById(settlementId);
+        // Validar que la liquidación exista
+        if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+
+        // Validar que la liquidación no esté ya liquidada
+        if (settlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
+
+        const settlementCalculated = await settlementCalculationEngine.generateSettlement(settlement.employeeId, settlement.periodId, fromTimestampToDate(settlement.startDate), fromTimestampToDate(settlement.endDate));
+        if (!settlementCalculated) throw new Error('Error al liquidar nómina');
+
+        data.employeeId = settlementCalculated.employeeId;
+        data.periodId = settlementCalculated.periodId;
+        data.startDate = settlementCalculated.startDate;
+        data.endDate = settlementCalculated.endDate;
+        data.status = settlementCalculated.status;
+        data.earningsValue = settlementCalculated.earningsValue;
+        data.deductionsValue = settlementCalculated.deductionsValue;
+        data.totalValue = settlementCalculated.totalValue;
+        data.details.create = settlementCalculated.details;
+
+        const updatedSettlement = await settlementService.update(settlement.id, data);
+        if (!updatedSettlement) throw new Error('Error al crear nómina');
+        return updatedSettlement;
+}
+
+async function removeSettlement(id) {
+    if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
+    const settlement = await settlementService.getById(id);
+    if (!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
+    
+    if (settlement.details.length > 0) {
+        for (const detail of settlement.details) {
+            console.log('eliminando detalle');
+            const deletedDetail = await settlementDetailService.remove(detail.id);
+            if (!deletedDetail) throw new Error('Error al eliminar detalle');
+        }
+    }
+    console.log('settlementValidation: remove settlement', settlement);
+    
+    const deletedSettlement = await settlementService.remove(settlement.id);
+    if (!deletedSettlement) throw new Error('Error al eliminar nómina');
+    return deletedSettlement;
+}
+
+async function closeSettlement(settlementId) {
+    const settlement = await settlementService.getById(settlementId);
+    if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+    const updatedSettlement = await settlementService.update(settlementId, {status: 'CLOSED'});
+    if (!updatedSettlement) throw new Error('Error al cerrar nómina');
+    return updatedSettlement;
+}
+
 module.exports = {
     validateSettlementQuery,
     validateSettlementCreation,
     validateUniqueSettlement,
-    verifySettlement
+    verifySettlement,
+    removeSettlement,
+    calculateSettlement,
+    closeSettlement
 }
