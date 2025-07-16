@@ -32,7 +32,7 @@
  */
 
 const { PrismaClient } = require('../../generated/prisma');
-const { ValidationError } = require('../utils/appError');
+const { ValidationError, NotFoundError } = require('../utils/appError');
 const prisma = new PrismaClient();
 
 const { verifyId } = require('../utils/verifyId');
@@ -44,18 +44,20 @@ const { verifyId } = require('../utils/verifyId');
  * @function getAll
  * @returns {Array&lt;Object>} Lista de todas las liquidaciones
  */
-exports.getAll = async () => {
+exports.getAll = async (query) => {
+    let where = {
+        status: { not: 'VOID'},
+        ...query
+    }
+    console.log('where: ',where)
     const settlements = await prisma.settlement.findMany({
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         },
-        where: {
-            status: { not: 'VOID'}
-        }
+        where: where
     });
-    if (!settlements) throw new Error('Error al consultar las Nóminas');
+    if (!settlements) throw new NotFoundError('Settlements were not found');
     return settlements;
 };
 
@@ -72,12 +74,11 @@ exports.getById = async (id) => {
     const settlement = await prisma.settlement.findUnique({
         where: { id: id },
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         }
     });
-    if (!settlement) throw new Error('Nómina no encontrada');
+    if (!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
     return settlement;
 };
 
@@ -98,11 +99,10 @@ exports.create = async (data) => {
     const newSettlement = await prisma.settlement.create({
         data,
         include: {
-            earnings: true,
-            deductions: true
+            details: true
         }
     });
-    if (!newSettlement) throw new Error('No se pudo crear la Nómina');
+    if (!newSettlement) throw new Error('Settlement was not created');
     return newSettlement;
 };
 
@@ -117,17 +117,16 @@ exports.create = async (data) => {
  */
 exports.update = async (id, data) => {
     const isValidId = await verifyId(id, 'settlement');
-    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
+    if (!isValidId) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
     const updatedSettlement = await prisma.settlement.update({
         where: { id: id },
         data,
         include: {
-            earnings: true,
-            deductions: true,
+            details: true,
             employee: true
         }
     });
-    if (!updatedSettlement) throw new Error('No se pudo actualizar la Nómina');
+    if (!updatedSettlement) throw new Error('Settlement was not updated');
     return updatedSettlement;
 };
 
@@ -141,28 +140,11 @@ exports.update = async (id, data) => {
  */
 exports.remove = async (id) => {
     const isValidId = await verifyId(id, 'settlement');
-    if (!isValidId) throw new ValidationError('La nómina  no se encuentra registrada en base de datos');
-    return await prisma.settlement.delete({where: { id: id }});
+    if (!isValidId) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
+    const deletedSettlement = await prisma.settlement.delete({where: { id: id }});
+    if (!deletedSettlement) throw new Error('Settlement was not deleted');
+    return deletedSettlement;
 };
-
-exports.deleteEarnings = async (id) => {
-    return await prisma.settlementEarning.delete({where: { id: id }});
-}
-exports.deleteDeductions = async (id) => {
-    return await prisma.settlementDeduction.delete({where: { id: id }});
-}
-
-exports.query = async (query) => {
-    const settlements = await prisma.settlement.findMany({
-        where: query,
-        include: {
-            earnings: true,
-            deductions: true,
-            employee: true
-        }
-    });
-    return settlements;
-}
 
 exports.count = async (query) => {
     const count = await prisma.settlement.count({
@@ -179,13 +161,13 @@ exports.count = async (query) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-config_payrollConcepts.html">config/payrollConcepts</a></li><li><a href="module-controllers_adminController.html">controllers/adminController</a></li><li><a href="module-controllers_authController.html">controllers/authController</a></li><li><a href="module-controllers_conceptController.html">controllers/conceptController</a></li><li><a href="module-controllers_employeeController.html">controllers/employeeController</a></li><li><a href="module-controllers_payrollController.html">controllers/payrollController</a></li><li><a href="module-controllers_payrollNewController.html">controllers/payrollNewController</a></li><li><a href="module-controllers_periodController.html">controllers/periodController</a></li><li><a href="module-controllers_settlementController.html">controllers/settlementController</a></li><li><a href="module-controllers_settlementDeductionController.html">controllers/settlementDeductionController</a></li><li><a href="module-controllers_settlementEarningController.html">controllers/settlementEarningController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-middlewares_auth.html">middlewares/auth</a></li><li><a href="module-middlewares_errorHandler.html">middlewares/errorHandler</a></li><li><a href="module-middlewares_logger.html">middlewares/logger</a></li><li><a href="module-routes_concept.html">routes/concept</a></li><li><a href="module-routes_index.html">routes/index</a></li><li><a href="module-services_adminService.html">services/adminService</a></li><li><a href="module-services_authService.html">services/authService</a></li><li><a href="module-services_conceptService.html">services/conceptService</a></li><li><a href="module-services_employeeService.html">services/employeeService</a></li><li><a href="module-services_settlementEarningsService.html">services/settlementEarningsService</a></li><li><a href="module-services_settlementNewervice.html">services/settlementNewervice</a></li><li><a href="module-services_settlementService.html">services/settlementService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-utils_appError.html">utils/appError</a></li><li><a href="module-utils_formatDate.html">utils/formatDate</a></li><li><a href="module-utils_typeofValidations.html">utils/typeofValidations</a></li><li><a href="module-utils_verifyId.html">utils/verifyId</a></li></ul><h3>Classes</h3><ul><li><a href="module-utils_appError-AppError.html">AppError</a></li><li><a href="module-utils_appError-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-utils_appError-NotFoundError.html">NotFoundError</a></li><li><a href="module-utils_appError-UnauthorizedError.html">UnauthorizedError</a></li><li><a href="module-utils_appError-ValidationError.html">ValidationError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#main">main</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-config_payrollConcepts.html">config/payrollConcepts</a></li><li><a href="module-controllers_authController.html">controllers/authController</a></li><li><a href="module-controllers_conceptController.html">controllers/conceptController</a></li><li><a href="module-controllers_employeeController.html">controllers/employeeController</a></li><li><a href="module-controllers_periodController.html">controllers/periodController</a></li><li><a href="module-controllers_settlementController.html">controllers/settlementController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-middlewares_auth.html">middlewares/auth</a></li><li><a href="module-middlewares_errorHandler.html">middlewares/errorHandler</a></li><li><a href="module-middlewares_logger.html">middlewares/logger</a></li><li><a href="module-routes_concept.html">routes/concept</a></li><li><a href="module-routes_index.html">routes/index</a></li><li><a href="module-services_authService.html">services/authService</a></li><li><a href="module-services_conceptService.html">services/conceptService</a></li><li><a href="module-services_employeeService.html">services/employeeService</a></li><li><a href="module-services_settlementService.html">services/settlementService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-utils_appError.html">utils/appError</a></li><li><a href="module-utils_formatDate.html">utils/formatDate</a></li><li><a href="module-utils_typeofValidations.html">utils/typeofValidations</a></li><li><a href="module-utils_verifyId.html">utils/verifyId</a></li></ul><h3>Classes</h3><ul><li><a href="module-utils_appError-AppError.html">AppError</a></li><li><a href="module-utils_appError-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-utils_appError-NotFoundError.html">NotFoundError</a></li><li><a href="module-utils_appError-UnauthorizedError.html">UnauthorizedError</a></li><li><a href="module-utils_appError-ValidationError.html">ValidationError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getCalculationOrder">getCalculationOrder</a></li><li><a href="global.html#main">main</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Jul 04 2025 18:36:57 GMT-0500 (hora estándar de Colombia)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 15 2025 23:14:00 GMT-0500 (hora estándar de Colombia)
 </footer>
 
 <script> prettyPrint(); </script>

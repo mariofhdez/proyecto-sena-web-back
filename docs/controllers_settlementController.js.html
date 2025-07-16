@@ -32,12 +32,11 @@
  */
 
 const settlementService = require('../services/settlementService');
-const { formatDate } = require('../utils/formatDate');
-const payrollController = require('./payrollController');
-const { validateSettlementQuery, validateSettlementCreation, validateUniqueSettlement, verifySettlement } = require('../utils/settlementValidation');
+const { validateSettlementQuery, validateSettlementCreation } = require('../utils/settlementValidation');
 const { ValidationError, NotFoundError } = require('../utils/appError');
-const { verifyId } = require('../utils/verifyId');
 const { validateRequiredNumber, isValidNumericType } = require('../utils/typeofValidations');
+const settlementDetailService = require('../services/settlementDetailService');
+const { calculateSettlement } = require('../utils/settlementValidation');
 
 /**
  * Obtiene todas las liquidaciones del sistema o filtra por parámetros
@@ -59,10 +58,10 @@ exports.retriveSettlements = async (req, res, next) => {
     try {
         const queryParams = req.query;
         if (Object.keys(queryParams).length > 0) {
-            const settlements = await getSettlementByParams(queryParams);
+            const settlements = await settlementService.getAll(validateSettlementQuery(queryParams));
             res.json(settlements);
         } else {
-            const settlements = await getAllSettlements();
+            const settlements = await settlementService.getAll();
             res.json(settlements);
         }
     } catch (error) {
@@ -116,19 +115,12 @@ exports.createSettlement = async (req, res, next) => {
     try {
         const { employeeId, startDate, endDate } = req.body;
 
-        const validationResult = await validateSettlementCreation(req.body);
-        if (!validationResult.isValid) throw new ValidationError('Settlement was not created', validationResult.errors);
-
-        // const isUniqueSettlement = await validateUniqueSettlement(req.body.employeeId, req.body.startDate, req.body.endDate);
-        // if (!isUniqueSettlement.isValid) throw new ValidationError('Settlement was not created', isUniqueSettlement.errors);
-
-        // Validar que el empleado exista
-        const isValidEmployee = await verifyId(parseInt(req.body.employeeId, 10), "employee");
-        if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + req.body.employeeId + '\' was not found');
-        // 1. Crear nómina
-        const settlement = await payrollController.createSettlement(employeeId, startDate, endDate);
-        const regularNews = await payrollController.createRegularNews(employeeId, endDate);
-        if(!regularNews) throw new Error('Error al crear conceptos recurrentes');
+        const data = await validateSettlementCreation(req.body);
+        if (data.errors) throw new ValidationError('Settlement was not created', data.errors);
+        
+        const settlement = await settlementService.create(data);
+        if(!settlement) throw new Error('Error al crear nómina');
+        
         res.json(settlement);
 
     } catch (error) {
@@ -168,19 +160,7 @@ exports.updateSettlement = async (req, res, next) => {
 exports.deleteSettlement = async (req, res, next) => {
     try {
         const id = parseInt(req.params.id, 10);
-        if (!isValidNumericType(id)) throw new ValidationError('The field id must be a numeric value.');
-
-        const settlement = await settlementService.getById(id);
-        if(!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');
-
-        const earnings = await settlementService.deleteEarnings(settlement.earnings[0].id);
-        if(!earnings) throw new Error('Error al eliminar ingresos');
-
-        const deductions = await settlementService.deleteDeductions(settlement.deductions[0].id);
-        if(!deductions) throw new Error('Error al eliminar deducciones');
-
-        const deleteSettlemtent = await settlementService.remove(settlement.id);
-        if(!deleteSettlemtent) throw new Error('Error al eliminar nómina');
+        await removeSettlement(id);
 
         res.json({ message: 'Settlement was deleted' });
 
@@ -209,25 +189,8 @@ exports.deleteSettlement = async (req, res, next) => {
 exports.settlePayroll = async (req, res, next) => {
     try {
         const settlementId = parseInt(req.body.settlementId, 10);
-        let errors = [];
-
-        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
-        if (errors.length > 0) throw new ValidationError('Payroll was not settled', errors);
-        // Validar que el id sea un número
-        if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
-
-
-        // Validar que la liquidación exista
-        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
-        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
-
-        // Validar que la liquidación no esté ya liquidada
-        if (isValidSettlement.status === 'OPEN') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is already settled');
-
-
-        const settlement = await payrollController.settlePayroll(settlementId);
-        if (!settlement) throw new Error('Error al liquidar nómina');
-        res.json(settlement);
+        const updatedSettlement = await calculateSettlement(settlementId);
+        res.json(updatedSettlement);
     } catch (error) {
         next(error);
     }
@@ -253,17 +216,17 @@ exports.closePayroll = async (req, res, next) => {
         const settlementId = parseInt(req.body.settlementId, 10);
         let errors = [];
 
-        const validationResult = validateRequiredNumber(req.body.settlementId, "settlementId", errors);
+        validateRequiredNumber(req.body.settlementId, "settlementId", errors);
         if (errors.length > 0) throw new ValidationError('Payroll was not closed', errors);
         // Validar que el id sea un número
         if (!isValidNumericType(settlementId)) throw new ValidationError('The field settlementId must be a numeric value.');
 
         // Validar que la liquidación exista
-        const isValidSettlement = await verifySettlement(parseInt(settlementId, 10), "settlement");
-        if (!isValidSettlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
+        let settlement = await settlementService.getById(settlementId);
+        if (!settlement) throw new NotFoundError('Settlement with id \'' + settlementId + '\' was not found');
 
         // Validar que la liquidación no esté ya cerrada
-        switch (isValidSettlement.status) {
+        switch (settlement.status) {
             case 'DRAFT':
                 throw new ValidationError('Payroll was not closed', 'Payroll with id \'' + settlementId + '\' is not calculated');
                 break;
@@ -276,7 +239,8 @@ exports.closePayroll = async (req, res, next) => {
             default:
                 break;
         }
-        const settlement = await payrollController.closePayroll(settlementId);
+        
+        settlement = await closeSettlement(settlementId);
         if (!settlement) throw new Error('Error al cerrar nómina');
         res.json(settlement);
     } catch (error) {
@@ -284,50 +248,32 @@ exports.closePayroll = async (req, res, next) => {
     }
 }
 
-/**
- * Obtiene todas las liquidaciones del sistema
- * 
- * @async
- * @function getAllSettlements
- * @returns {Array} Lista de todas las liquidaciones
- */
-getAllSettlements = async () => {
-    const settlements = await settlementService.getAll();
-    return settlements;
+async function closeSettlement(settlementId){
+    try {
+        const settlement = await settlementService.getById(settlementId);
+        
+        for(const detail of settlement.details){
+            await settlementDetailService.update(detail.id, {status: 'CLOSED'});
+        }
+
+        const updatedSettlement = await settlementService.update(settlementId, {status: 'CLOSED'});
+        if (!updatedSettlement) throw new Error('Error al cerrar nómina');
+        return updatedSettlement;
+    } catch (error) {
+        console.error(error);
+    }
 }
 
-/**
- * Obtiene liquidaciones filtradas por parámetros
- * 
- * @async
- * @function getSettlementByParams
- * @param {Object} params - Parámetros de consulta
- * @param {string} params.startDate - Fecha de inicio para filtrar
- * @param {string} params.endDate - Fecha de fin para filtrar
- * @param {string} params.employeeId - ID del empleado para filtrar
- * @param {string} params.periodId - ID del período para filtrar
- * @returns {Array} Lista de liquidaciones filtradas
- * @throws {ValidationError} Si los parámetros de consulta no son válidos
- */
-getSettlementByParams = async (params) => {
-    const queryValidation = validateSettlementQuery(params);
-    if (!queryValidation.isValid) throw new ValidationError('Settlement was not retrieved', queryValidation.errors);
+exports.getSettlementsByEmployeeId = async (req, res, next) => {
+    try {
+        const employeeId = parseInt(req.params.employeeId, 10);
+        if (!isValidNumericType(employeeId)) throw new ValidationError('The field employeeId must be a numeric value.');
 
-    let query = {
-        status: { not: 'VOID'}
+        const settlements = await settlementService.getAll({employeeId: employeeId});
+        res.json(settlements);
+    } catch (error) {
+        next(error);
     }
-    if (params.startDate || params.endDate) {
-        query.startDate = formatDate(params.startDate);
-        query.endDate = formatDate(params.endDate);
-    }
-    if (params.employeeId) {
-        query.employeeId = parseInt(params.employeeId, 10)
-    }
-    if (params.periodId) {
-        query.periodId = parseInt(params.periodId, 10);
-    }
-    const settlement = await settlementService.query(query);
-    return settlement;
 }
 </code></pre>
         </article>
@@ -339,13 +285,13 @@ getSettlementByParams = async (params) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-config_payrollConcepts.html">config/payrollConcepts</a></li><li><a href="module-controllers_adminController.html">controllers/adminController</a></li><li><a href="module-controllers_authController.html">controllers/authController</a></li><li><a href="module-controllers_conceptController.html">controllers/conceptController</a></li><li><a href="module-controllers_employeeController.html">controllers/employeeController</a></li><li><a href="module-controllers_payrollController.html">controllers/payrollController</a></li><li><a href="module-controllers_payrollNewController.html">controllers/payrollNewController</a></li><li><a href="module-controllers_periodController.html">controllers/periodController</a></li><li><a href="module-controllers_settlementController.html">controllers/settlementController</a></li><li><a href="module-controllers_settlementDeductionController.html">controllers/settlementDeductionController</a></li><li><a href="module-controllers_settlementEarningController.html">controllers/settlementEarningController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-middlewares_auth.html">middlewares/auth</a></li><li><a href="module-middlewares_errorHandler.html">middlewares/errorHandler</a></li><li><a href="module-middlewares_logger.html">middlewares/logger</a></li><li><a href="module-routes_concept.html">routes/concept</a></li><li><a href="module-routes_index.html">routes/index</a></li><li><a href="module-services_adminService.html">services/adminService</a></li><li><a href="module-services_authService.html">services/authService</a></li><li><a href="module-services_conceptService.html">services/conceptService</a></li><li><a href="module-services_employeeService.html">services/employeeService</a></li><li><a href="module-services_settlementEarningsService.html">services/settlementEarningsService</a></li><li><a href="module-services_settlementNewervice.html">services/settlementNewervice</a></li><li><a href="module-services_settlementService.html">services/settlementService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-utils_appError.html">utils/appError</a></li><li><a href="module-utils_formatDate.html">utils/formatDate</a></li><li><a href="module-utils_typeofValidations.html">utils/typeofValidations</a></li><li><a href="module-utils_verifyId.html">utils/verifyId</a></li></ul><h3>Classes</h3><ul><li><a href="module-utils_appError-AppError.html">AppError</a></li><li><a href="module-utils_appError-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-utils_appError-NotFoundError.html">NotFoundError</a></li><li><a href="module-utils_appError-UnauthorizedError.html">UnauthorizedError</a></li><li><a href="module-utils_appError-ValidationError.html">ValidationError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#main">main</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-config_payrollConcepts.html">config/payrollConcepts</a></li><li><a href="module-controllers_authController.html">controllers/authController</a></li><li><a href="module-controllers_conceptController.html">controllers/conceptController</a></li><li><a href="module-controllers_employeeController.html">controllers/employeeController</a></li><li><a href="module-controllers_periodController.html">controllers/periodController</a></li><li><a href="module-controllers_settlementController.html">controllers/settlementController</a></li><li><a href="module-controllers_userController.html">controllers/userController</a></li><li><a href="module-middlewares_auth.html">middlewares/auth</a></li><li><a href="module-middlewares_errorHandler.html">middlewares/errorHandler</a></li><li><a href="module-middlewares_logger.html">middlewares/logger</a></li><li><a href="module-routes_concept.html">routes/concept</a></li><li><a href="module-routes_index.html">routes/index</a></li><li><a href="module-services_authService.html">services/authService</a></li><li><a href="module-services_conceptService.html">services/conceptService</a></li><li><a href="module-services_employeeService.html">services/employeeService</a></li><li><a href="module-services_settlementService.html">services/settlementService</a></li><li><a href="module-services_userService.html">services/userService</a></li><li><a href="module-utils_appError.html">utils/appError</a></li><li><a href="module-utils_formatDate.html">utils/formatDate</a></li><li><a href="module-utils_typeofValidations.html">utils/typeofValidations</a></li><li><a href="module-utils_verifyId.html">utils/verifyId</a></li></ul><h3>Classes</h3><ul><li><a href="module-utils_appError-AppError.html">AppError</a></li><li><a href="module-utils_appError-ForbiddenError.html">ForbiddenError</a></li><li><a href="module-utils_appError-NotFoundError.html">NotFoundError</a></li><li><a href="module-utils_appError-UnauthorizedError.html">UnauthorizedError</a></li><li><a href="module-utils_appError-ValidationError.html">ValidationError</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#express">express</a></li><li><a href="global.html#getCalculationOrder">getCalculationOrder</a></li><li><a href="global.html#main">main</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Jul 04 2025 18:36:57 GMT-0500 (hora estándar de Colombia)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Jul 15 2025 23:14:00 GMT-0500 (hora estándar de Colombia)
 </footer>
 
 <script> prettyPrint(); </script>
