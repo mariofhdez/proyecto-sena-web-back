@@ -25,7 +25,7 @@ const {generateToken} = require('../middlewares/auth')
 exports.registerService = async (email, name, password, role) => {
     const existingUser = await prisma.user.findFirst({ where: {email}});
     if(existingUser){
-        throw new ValidationError('Este correo ya está registrado');
+        throw new ValidationError('User creation failed', 'This email is already registered');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -78,13 +78,13 @@ exports.loginService = async (email, password) => {
     });
 
     if (!user) {
-        throw new ValidationError("Acceso denegado",'Usuario o contraseña inválidas');
+        throw new ValidationError("Access denied",'Invalid email or password');
     }
 
     // Verificar intentos de login
     if (user.loginAttempts >= 5 && 
         new Date() - new Date(user.lastLoginAttempt) < 15 * 60 * 1000) {
-        throw new ValidationError('Demasiados intentos fallidos. Intente más tarde');
+        throw new ValidationError('Too many failed attempts. Try again later');
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
@@ -96,7 +96,7 @@ exports.loginService = async (email, password) => {
                 lastLoginAttempt: new Date()
             }
         });
-        throw new ValidationError("Acceso denegado",'Usuario o contraseña inválidas');
+        throw new ValidationError("Access denied",'Invalid email or password');
     }
 
     // Resetear intentos de login

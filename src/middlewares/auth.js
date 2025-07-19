@@ -52,7 +52,7 @@ function generateToken(user) {
             },
             process.env.JWT_SECRET,
             {
-                expiresIn: '4h',
+                expiresIn: '1h',
                 algorithm: 'HS256'
             }
         );
@@ -82,4 +82,14 @@ function authorizeRole(allowedRoles = []) {
     }
 }
 
-module.exports = { authenticateToken, generateToken, requireRole, authorizeRole };
+function validateToken(token) {
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (!decoded) return new UnauthorizedError('Invalid token');
+        return decoded;
+    } catch (error) {
+        return error;
+    }
+}
+
+module.exports = { authenticateToken, generateToken, requireRole, authorizeRole, validateToken };

@@ -3,9 +3,10 @@
  * @module controllers/authController
  */
 
+const { validateToken } = require('../middlewares/auth');
 const { registerService, loginService, getMeService } = require('../services/authService');
 const { ValidationError } = require('../utils/appError');
-const { validateRegister, validateUser } = require('../utils/userValidation');
+const { validateRegister } = require('../utils/userValidation');
 
 /**
  * Registra un nuevo usuario en el sistema
@@ -27,12 +28,12 @@ exports.register = async(req, res, next) => {
     try {
         const { email, name, password, role } = req.body;
         if(!email || !name || !password || !role){
-            throw new ValidationError('Falta información en un campo', 400);
+            throw new ValidationError('User creation failed', 'Missing information in the field ' + (!email ? 'email' : !name ? 'name' : !password ? 'password' : !role ? 'role' : ''));
         }
         const validation = validateRegister({ email, name, password, role });
         if (!validation.isValid){
             console.log(validation.error);
-            throw new ValidationError("No se pudo crear el usuario",validation.error);
+            throw new ValidationError("User creation failed",validation.error);
         }
         await registerService(email, name, password, role);
         return res.status(201).json({ message: `User: ${name} was created succesfully!`});
@@ -59,7 +60,7 @@ exports.login = async (req, res, next) => {
     try{
         const { email, password } = req.body;
         if(!email || !password){
-            throw new ValidationError('Falta información en un campo', 400);
+            throw new ValidationError('Access denied', 'The field ' + (email ? 'password' : 'email') + ' is required');
         }
         const token = await loginService(email, password);
         return res.status(200).json({ token: token });
@@ -72,6 +73,16 @@ exports.getMe = async (req, res, next) => {
     try {
         const { id } = parseInt(req.user.id, 10);
         const user = await getMeService(id);
+        return res.status(200).json({ user: user });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.validateToken = async (req, res, next) => {
+    try {
+        const { token } = req.body;
+        const user = await validateToken(token);
         return res.status(200).json({ user: user });
     } catch (error) {
         next(error);
