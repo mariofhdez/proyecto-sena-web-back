@@ -3,8 +3,7 @@
  * @module config/payrollConcepts
  */
 
-const { PrismaClient } = require("../../generated/prisma");
-const prisma = new PrismaClient;
+const prisma = require('../config/database');
 const fs = require('fs');
 const path = require('path');
 

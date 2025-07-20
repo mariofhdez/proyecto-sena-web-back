@@ -24,28 +24,28 @@ function validateRegister(user){
     if(!isValidName(user.name)) {
         return {
             isValid: false,
-            error: 'El campo \'name\' debe ser igual o mayor a 3 caracteres',
+            error: 'The field \'name\' must be greater than 2 characters',
         }
     }
 
     if(!isValidPassword(user.password)) {
         return {
             isValid: false,
-            error: 'La contraseña debe tener al menos 8 caracteres, una letra y un número',
+            error: 'The password must be at least 8 characters, one letter and one number',
         }
     }
 
     if(!isValidEmail(user.email)) {
         return {
             isValid: false,
-            error: 'El campo \'email\' no cumple con la estructura esperada de un correo',
+            error: 'The field \'email\' does not meet the expected structure of an email',
         }
     }
 
     if(!isValidRole(user.role)){
         return {
             isValid: false,
-            error: 'El rol asignado es incorrecto'
+            error: 'Invalid role'
         }
     }
 

@@ -3,8 +3,7 @@
  * @module utils/verifyId
  */
 
-const { PrismaClient } = require('../../generated/prisma');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 /**
  * Verifica si un ID existe en un modelo específico de la base de datos

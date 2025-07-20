@@ -3,8 +3,7 @@
  * @module services/authService
  */
 
-const { PrismaClient } = require('../../generated/prisma');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 const bcrypt = require('bcryptjs');
 const { ValidationError } = require('../utils/appError');
@@ -112,6 +111,7 @@ exports.loginService = async (email, password) => {
 }
 
 exports.getMeService = async (userId) => {
+    console.log('Looking for user with ID:', userId);
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -120,5 +120,11 @@ exports.getMeService = async (userId) => {
             name: true,
             role: true,
         }
-    })
+    });
+    
+    if (!user) {
+        throw new ValidationError('User not found', 'User does not exist');
+    }
+    
+    return user;
 }

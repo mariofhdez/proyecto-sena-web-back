@@ -3,9 +3,8 @@
  * @module services/settlementService
  */
 
-const { PrismaClient } = require('../../generated/prisma');
-const { ValidationError, NotFoundError } = require('../utils/appError');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
+const { NotFoundError } = require('../utils/appError');
 
 const { verifyId } = require('../utils/verifyId');
 

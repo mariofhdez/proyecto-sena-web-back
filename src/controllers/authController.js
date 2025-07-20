@@ -27,16 +27,13 @@ const { validateRegister } = require('../utils/userValidation');
 exports.register = async(req, res, next) => {
     try {
         const { email, name, password, role } = req.body;
-        if(!email || !name || !password || !role){
-            throw new ValidationError('User creation failed', 'Missing information in the field ' + (!email ? 'email' : !name ? 'name' : !password ? 'password' : !role ? 'role' : ''));
-        }
         const validation = validateRegister({ email, name, password, role });
         if (!validation.isValid){
             console.log(validation.error);
             throw new ValidationError("User creation failed",validation.error);
         }
         await registerService(email, name, password, role);
-        return res.status(201).json({ message: `User: ${name} was created succesfully!`});
+        return res.status(201).json({ message: `User: ${name} was created successfully!`});
     } catch (error) {
         next(error);
     }
@@ -71,7 +68,7 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
     try {
-        const { id } = parseInt(req.user.id, 10);
+        const id = parseInt(req.user.id, 10);
         const user = await getMeService(id);
         return res.status(200).json({ user: user });
     } catch (error) {

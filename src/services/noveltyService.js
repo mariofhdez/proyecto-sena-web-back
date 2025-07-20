@@ -1,6 +1,5 @@
-const { PrismaClient } = require("../../generated/prisma");
+const prisma = require('../config/database');
 const { NotFoundError } = require("../utils/appError");
-const prisma = new PrismaClient();
 
 exports.getAllNovelties = async (data) => {
     const novelties = await prisma.novelty.findMany(data);

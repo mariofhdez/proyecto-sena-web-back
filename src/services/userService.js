@@ -3,8 +3,7 @@
  * @module services/userService
  */
 
-const { PrismaClient } = require('../../generated/prisma');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 const bcrypt = require('bcryptjs');
 const { ValidationError } = require('../utils/appError');
 const { generateToken } = require('../middlewares/auth');
@@ -115,4 +114,8 @@ exports.toggleUserStatus = async (userId) => {
         where: { id: parseInt(user.id, 10) },
         data: { isActive: !user.isActive }
     });
+}
+
+exports.deleteAllUsers = async () => {
+    await prisma.user.deleteMany({});
 }

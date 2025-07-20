@@ -5,6 +5,7 @@
 
 const jwt = require('jsonwebtoken');
 const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
+const prisma = require('../config/database');
 
 /**
  * Middleware para autenticar el token JWT en las solicitudes
@@ -14,18 +15,45 @@ const { UnauthorizedError, ForbiddenError } = require('../utils/appError');
  * @param {Object} res - Objeto de respuesta de Express
  * @param {Function} next - Función para pasar al siguiente middleware
  * @throws {UnauthorizedError} Si la cabecera Authorization no está presente
- * @throws {ForbiddenError} Si el token es inválido
+ * @throws {ForbiddenError} Si el token es inválido o el usuario está inactivo
  */
-function authenticateToken(req, res, next) {
-    if (!req.header('Authorization')) throw new UnauthorizedError('The headers \'Authorization\' has not been provided');
+async function authenticateToken(req, res, next) {
+    try {
+        if (!req.header('Authorization')) {
+            throw new UnauthorizedError('The headers \'Authorization\' has not been provided');
+        }
 
-    const token = req.header('Authorization').split(' ')[1];
+        const token = req.header('Authorization').split(' ')[1];
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return next(new ForbiddenError('Invalid token'));
-        req.user = user;
-        next();
-    });
+        jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+            if (err) {
+                return next(new ForbiddenError(err.message));
+            }
+
+            // Verificar que el usuario esté activo en la base de datos
+            const dbUser = await prisma.user.findUnique({
+                where: { id: user.id },
+                select: { role: true, isActive: true }
+            });
+
+            if (!dbUser) {
+                return next(new ForbiddenError('User not found'));
+            }
+
+            if (!dbUser.isActive) {
+                return next(new ForbiddenError('User account is deactivated'));
+            }
+
+            if (dbUser.role !== user.role) {
+                return next(new ForbiddenError('You are not authorized to access this resource'));
+            }
+
+            req.user = user;
+            next();
+        });
+    } catch (error) {
+        next(error);
+    }
 }
 
 /**
@@ -64,17 +92,12 @@ function generateToken(user) {
 
 function requireRole(role) {
     return (req, res, next) => {
-        if (req.user.role !== role) return next(new ForbiddenError('You are not authorized to access this resource'));
+        if (req.user.role !== role) return next(new ForbiddenError('Access denied', 'You are not authorized to access this resource'));
         next();
     }
 }
 
 function authorizeRole(allowedRoles = []) {
-    try {
-        
-    } catch (error) {
-        
-    }
     return (req, res, next) => {
         if (!req.user) return next(new UnauthorizedError('You are not authenticated'));
         if (!allowedRoles.includes(req.user.role)) return next(new ForbiddenError('You are not authorized to access this resource'));
@@ -85,7 +108,7 @@ function authorizeRole(allowedRoles = []) {
 function validateToken(token) {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded) return new UnauthorizedError('Invalid token');
+        if (!decoded) return new UnauthorizedError('Access denied', 'Invalid token');
         return decoded;
     } catch (error) {
         return error;

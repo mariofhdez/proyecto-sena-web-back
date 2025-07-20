@@ -1,5 +1,4 @@
-const { PrismaClient } = require('../../generated/prisma');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 const { ValidationError } = require('../utils/appError');
 const { verifyId } = require('../utils/verifyId');

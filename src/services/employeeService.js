@@ -3,8 +3,7 @@
  * @module services/employeeService
  */
 
-const { PrismaClient } = require('../../generated/prisma');
-const prisma = new PrismaClient();
+const prisma = require('../config/database');
 
 const { NotFoundError } = require('../utils/appError');
 
