@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development node --watch ./src/server.js",
     "start": "cross-env NODE_ENV=production node ./src/server.js",
-    "test": "cross-env NODE_ENV=test jest --verbose --silent",
-    "test:watch": "cls && npm run test -- --watch",
-    "test:coverage": "cross-env NODE_ENV=test jest --coverage",
+    "test": "cross-env NODE_ENV=test jest --runInBand --verbose ",
+    "test:watch": "cls && npm run test -- --watch --silent",
+    "test:coverage": "cls && npm run test -- --coverage --silent && start coverage/lcov-report/index.html",
     "test:db:setup": "cross-env NODE_ENV=test npx prisma migrate deploy && cross-env NODE_ENV=test node prisma/seedStatic.js",
     "test:db:clean": "cross-env NODE_ENV=test node tests/setup/cleanDb.js",
     "seed:static": "node prisma/seedStatic.js",

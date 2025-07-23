@@ -7,21 +7,25 @@ const userService = require('../../src/services/userService');
 const api = request(app);
 
 beforeEach(async() => {
-    // Asegurar que el helper esté inicializado
-    if (!global.testHelper.prisma) {
-        await global.testHelper.setup();
-    }
-    
-    // Limpiar usuarios existentes
+    console.log('🔄 Iniciando beforeEach...');
     await global.testHelper.prisma.user.deleteMany({});
+    console.log('️ Base de datos limpiada');
     
-    // Crear usuarios de prueba usando el helper
+    console.log('👥 Creando usuarios de prueba...');
     const users = await global.testHelper.createAuthTestUsers();
-    console.log('👥 Usuarios de prueba creados:', users.length);
+    console.log(`✅ Usuarios creados: ${users.length}`);
+    
+    // Verificar que realmente existen
+    const count = await global.testHelper.prisma.user.count();
+    console.log(`📊 Total usuarios en BD: ${count}`);
 })
 
 describe('Auth', () =>{
     test('Login exitoso con credenciales correctas', async() =>{
+        console.log(' Ejecutando test de login...');
+        // Verificar usuarios antes del test
+        const userCount = await global.testHelper.prisma.user.count();
+        console.log(` Usuarios antes del test: ${userCount}`);
         const response = await api
             .post('/api/auth/login')
             .send({
