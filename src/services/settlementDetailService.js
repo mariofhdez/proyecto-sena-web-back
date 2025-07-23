@@ -18,6 +18,7 @@ exports.getById = async(id) => {
 }
 
 exports.create = async(data) => {
+    console.log(data);
     const settlementDetail = await prisma.settlementDetail.create({
         data: data
     });

@@ -5,7 +5,7 @@
 
 const prisma = require('../config/database');
 
-const { NotFoundError } = require('../utils/appError');
+const { NotFoundError, ValidationError } = require('../utils/appError');
 
 /**
  * Obtiene todos los empleados del sistema
@@ -76,6 +76,16 @@ exports.update = async (id, data) => {
  * @returns {Object} Datos del empleado eliminado
  */
 exports.remove = async (id) => {
+  const employee = await prisma.employee.findUnique({
+    where: { id: id },
+    include: {
+      novelties: true,
+      settlements: true
+    }
+  });
+  if (!employee) throw new NotFoundError('Empleado no encontrado');
+  if (employee.novelties.length > 0) throw new ValidationError('Employee was not deleted','The employee has novelties');
+  if (employee.settlements.length > 0) throw new ValidationError('Employee was not deleted','The employee has settlements');
   const deletedEmployee = await prisma.employee.delete({ where: { id: id } });
   if (!deletedEmployee) throw new Error('No se pudo eliminar el empleado')
   return deletedEmployee;

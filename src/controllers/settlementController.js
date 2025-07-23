@@ -93,7 +93,7 @@ exports.createSettlement = async (req, res, next) => {
         const settlement = await settlementService.create(data);
         if(!settlement) throw new Error('Error al crear nómina');
         
-        res.json(settlement);
+        res.status(201).json(settlement);
 
     } catch (error) {
         next(error);
@@ -161,6 +161,8 @@ exports.deleteSettlement = async (req, res, next) => {
 exports.settlePayroll = async (req, res, next) => {
     try {
         const settlementId = parseInt(req.body.settlementId, 10);
+        const settlement = await settlementService.getById(settlementId);
+        if (settlement.status === 'CLOSED') throw new ValidationError('Payroll was not settled', 'Payroll with id \'' + settlementId + '\' is closed');
         const updatedSettlement = await calculateSettlement(settlementId);
         res.json(updatedSettlement);
     } catch (error) {

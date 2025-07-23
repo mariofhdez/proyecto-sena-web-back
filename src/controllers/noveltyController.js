@@ -34,6 +34,7 @@ exports.getNoveltyById = async (req, res, next) => {
 
 exports.createNovelty = async (req, res, next) => {
     try {
+        if(!req.body.employeeId || !req.body.conceptId) throw new ValidationError('Novelty was not created', `The field ${!req.body.employeeId ? 'employeeId' : 'conceptId'} is required`);
         const data = await validateNoveltyBody(null, req.body);
         if(data.errors) throw new ValidationError('Novelty was not created', data.errors);
 

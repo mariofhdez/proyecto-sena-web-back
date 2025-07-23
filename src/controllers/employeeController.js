@@ -92,6 +92,7 @@ exports.createEmployee = async (req, res, next) => {
       salary: req.body.salary,
       transportAllowance: req.body.transportAllowance,
       isActive: true,
+      position: req.body.position
     }
     const newEmployee = await employeeService.create(data);
     res.status(201).json(newEmployee);

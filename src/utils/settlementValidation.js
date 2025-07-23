@@ -7,6 +7,7 @@ const { formatDate } = require("./formatDate");
 const settlementDetailService = require("../services/settlementDetailService");
 const { ValidationError } = require("./appError");
 const settlementCalculationEngine = require("../services/settlementCalculationEngine");
+const employeeService = require("../services/employeeService");
 
 function validateSettlementQuery(params) {
     let errors = [];
@@ -71,8 +72,9 @@ async function validateSettlementCreation(settlement) {
 
     // Valida que el id del empleado sea un numero
     validateRequiredNumber(settlement.employeeId, "employeeId", errors);
-    const isValidEmployee = await verifyId(parseInt(settlement.employeeId, 10), "employee");
-    if (!isValidEmployee) throw new NotFoundError('Employee with id \'' + settlement.employeeId + '\' was not found');
+    const employee = await employeeService.getById(settlement.employeeId);
+    if (!employee) throw new NotFoundError('Employee with id \'' + settlement.employeeId + '\' was not found');
+    if (!employee.isActive) throw new ValidationError('The employee is inactive');
     data.employee.connect.id = settlement.employeeId;
 
     // Valida que la fecha de inicio sea una fecha

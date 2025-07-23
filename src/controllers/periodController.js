@@ -76,8 +76,9 @@ exports.getPeriodById = async (req, res, next) => {
  */
 exports.createPeriod = async (req, res, next) => {
     try {
+        if(req.body.startDate === '' || req.body.endDate === '') throw new ValidationError('Period was not created', ['The startDate and endDate fields are required']);
         const periodData = await validatePeriodCreation(req.body);
-        if(periodData.errors) return next(new ValidationError('Period was not created', periodData.errors));
+        if(periodData.errors) throw new ValidationError('Period was not created', periodData.errors);
 
         const period = await periodService.create(periodData);
         res.status(201).json(period);

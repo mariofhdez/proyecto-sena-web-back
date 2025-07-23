@@ -40,13 +40,17 @@ exports.createSettlementDetail = async(req, res, next) => {
         data.settlement.connect.id = parseInt(req.body.settlementId, 10);
         data.concept.connect.id = parseInt(req.body.conceptId, 10);
         data.employee.connect.id = parseInt(req.body.employeeId, 10);
+
         data.date = formatDate(req.body.date);
         data.quantity = parseInt(req.body.quantity, 10);
         data.value = parseFloat(req.body.value);
+
+        if(req.body.quantity === 0) throw new ValidationError('SettlementDetail was not created', 'The quantity cannot be 0');
+
         data.status = 'DRAFT';
 
         const settlementDetail = await settlementDetailService.create(data);
-        res.json(settlementDetail);
+        res.status(201).json(settlementDetail);
     } catch (error) {
         next(error)
     }

@@ -46,16 +46,14 @@ async function validatePeriodCreation(data) {
 }
 
 async function validateUniquePeriod(startDate, endDate, errors) {
-    const splitStartDate = splitDate(startDate);
-    const splitEndDate = splitDate(endDate);
     const query = {
         startDate: {
-            gte: new Date(splitStartDate.year, splitStartDate.month - 1, '01'),
-            lte: new Date(splitStartDate.year, splitStartDate.month - 1, '30')
+            gte: formatDate(startDate),
+            lte: formatDate(endDate)
         },
         endDate: {
-            gte: new Date(splitEndDate.year, splitEndDate.month - 1, '01'),
-            lte: new Date(splitEndDate.year, splitEndDate.month - 1, '30')
+            gte: formatDate(endDate),
+            lte: formatDate(endDate)
         }
     }
 
