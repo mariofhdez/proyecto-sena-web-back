@@ -95,8 +95,6 @@ exports.getEmployeeByIdentification = async (identification) => {
   const employee = await prisma.employee.findFirst({ where: { identification: identification } });
   return employee;
 };
-<<<<<<< HEAD
-=======
 
 exports.toggleEmployeeStatus = async (id) => {
   const employee = await prisma.employee.findFirst({
@@ -110,4 +108,3 @@ exports.toggleEmployeeStatus = async (id) => {
     data: { isActive: !employee.isActive}
   })
 }
->>>>>>> refactor/auth

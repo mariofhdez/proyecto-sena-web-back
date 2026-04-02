@@ -12,11 +12,7 @@ async function validatePeriodCreation(data) {
         period: null,
         startDate: null,
         endDate: null,
-<<<<<<< HEAD
-        status: 'OPEN'
-=======
         status: 'DRAFT'
->>>>>>> refactor/auth
     }
  
     // Valida que la fecha de inicio sea una fecha correcta
@@ -75,10 +71,7 @@ async function loadEmployees(periodId, employees) {
     
     for (const employee of employees) {
         const isValidEmployee = await verifyId(parseInt(employee, 10), "employee");
-<<<<<<< HEAD
-=======
     if(period.status !== 'DRAFT') throw new ValidationError('Period was not open', ['Period status in not \'DRAFT\'.'])
->>>>>>> refactor/auth
         if (!isValidEmployee) {
             throw new NotFoundError('Employee with id \'' + employee + '\' was not found');
         }
@@ -103,12 +96,8 @@ async function loadEmployees(periodId, employees) {
         employeesQuantity: sumEmployees,
         earningsTotal: 0,
         deductionsTotal: 0,
-<<<<<<< HEAD
-        totalValue: 0
-=======
         totalValue: 0,
         status: 'OPEN'
->>>>>>> refactor/auth
     });
     console.log(updatePeriod);
     return updatePeriod;
@@ -131,11 +120,7 @@ async function settlePeriod(periodId) {
     }
 
     const updatedPeriod = await periodService.update(periodId, { 
-<<<<<<< HEAD
-        status: "OPEN", 
-=======
         status: "SETTLE", 
->>>>>>> refactor/auth
         earningsTotal: earningsTotal, 
         deductionsTotal: deductionsTotal, 
         totalValue: totalValue 

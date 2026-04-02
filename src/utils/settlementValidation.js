@@ -58,10 +58,6 @@ function validateSettlementQuery(params) {
 
 async function validateSettlementCreation(settlement) {
     let errors = [];
-<<<<<<< HEAD
-    console.log(settlement);
-=======
->>>>>>> refactor/auth
     let data = {
         employee: {connect: {id: null}},
         startDate: null,
@@ -106,10 +102,6 @@ async function validateSettlementCreation(settlement) {
 
     await validateUniqueSettlement(settlement.employeeId, settlement.startDate, settlement.endDate, errors);
 
-<<<<<<< HEAD
-    console.log(errors);
-=======
->>>>>>> refactor/auth
     if (errors.length > 0) {
         return {
             isValid: false,
@@ -146,10 +138,6 @@ async function validateUniqueSettlement(employee, startDate, endDate, errors) {
     if (lenght > 0) {
         return errors.push("The settlement for the period already exists")
     }
-<<<<<<< HEAD
-    console.log('unique: ',settlement)
-=======
->>>>>>> refactor/auth
 }
 
 async function verifySettlement(settlementId) {

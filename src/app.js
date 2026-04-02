@@ -68,13 +68,6 @@ app.get('/{any}', (req, res) => {
             message: 'La ruta solicitada no existe',
             path: req.path
         })
-<<<<<<< HEAD
-        .send(`
-        <h1>Error 404</h1>
-        <h3>Página no encontrada</h3>
-        `);
-=======
->>>>>>> refactor/auth
 });
 
 // Middleware para manejo global de errores

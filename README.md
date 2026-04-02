@@ -189,9 +189,6 @@ Este sistema proporciona una autenticación robusta basada en JWT que permite ma
 
 ## ✅ Pruebas
 
-<<<<<<< HEAD
-🏗️ en proceso de elaboración
-=======
 ### 🧪 Configuración de Tests
 
 El proyecto utiliza **Jest** como framework de testing con las siguientes configuraciones:
@@ -267,7 +264,6 @@ Al ejecutar `npm run test:coverage` se genera:
 - [ ] Tests de integración para endpoints complejos
 - [ ] Tests de performance para motor de cálculo
 - [ ] Tests de seguridad para autenticación
->>>>>>> refactor/auth
 
 🧪 [Configuración de Postman 🚀 para pruebas de la API](https://www.loom.com/share/bb755f19685f4aeb99ae2a9b9bf5a81b?sid=59dd5733-1db7-4057-b83a-b9f9a27e121d)
 

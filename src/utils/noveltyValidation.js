@@ -37,17 +37,6 @@ async function validateNoveltyBody(noveltyId, novelty) {
     if (isRegularConcept) errors.push('Concept with id \'' + novelty.conceptId + '\' is not available for novelties');
     data.concept.connect.id = novelty.conceptId;
 
-<<<<<<< HEAD
-    if (getCalculationType(novelty.conceptId) === 'NOMINAL') {
-        validateRequiredNumber(novelty.value, 'value', errors);
-        data.value = novelty.value;
-    }
-    if (getCalculationType(novelty.conceptId) === 'LINEAL' || getCalculationType(novelty.conceptId) === 'FACTORIAL') {
-        validateRequiredNumber(novelty.quantity, 'quantity', errors);
-        data.quantity = novelty.quantity;
-
-        data.value = await calculateConceptValue(novelty.conceptId, novelty.employeeId, novelty.quantity, novelty.date);
-=======
     if (getCalculationType(novelty.conceptId) === 'LINEAL' || getCalculationType(novelty.conceptId) === 'FACTORIAL') {
         validateRequiredNumber(novelty.quantity, 'quantity', errors);
         data.quantity = novelty.quantity;
@@ -56,7 +45,6 @@ async function validateNoveltyBody(noveltyId, novelty) {
     } else {
         validateRequiredNumber(novelty.value, 'value', errors);
         data.value = novelty.value;    
->>>>>>> refactor/auth
     }
 
     if(!noveltyId){
@@ -91,10 +79,6 @@ async function validateUniqueNovelty(employee, concept, date) {
     return true;
 }
 
-<<<<<<< HEAD
-module.exports = {
-    validateNoveltyBody
-=======
 async function validatePreloadBody(novelty) {
     let errors = [];
     let data = {
@@ -141,5 +125,4 @@ async function validatePreloadBody(novelty) {
 module.exports = {
     validateNoveltyBody,
     validatePreloadBody
->>>>>>> refactor/auth
 }

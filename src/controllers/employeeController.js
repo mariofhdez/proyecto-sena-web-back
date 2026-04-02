@@ -181,8 +181,6 @@ exports.getActiveEmployees = async (req, res, next) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 exports.toggleEmployee = async (req, res, next) => {
   try {
     if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en del empleado.');
@@ -200,7 +198,6 @@ exports.toggleEmployee = async (req, res, next) => {
   }
 }
 
->>>>>>> refactor/auth
 
 getAllEmployees = async () => {
   const employees = await employeeService.getAll();

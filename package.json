@@ -3,14 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-<<<<<<< HEAD
-    "dev": "cross-env NODE_ENV=development node --watch ./src/server.js",
-    "start": "cross-env NODE_ENV=production node ./src/server.js",
-    "test": "cross-env NODE_ENV=test jest --runInBand --verbose ",
-    "test:watch": "cls && npm run test -- --watch --silent",
-    "test:coverage": "cls && npm run test -- --coverage --silent && start coverage/lcov-report/index.html",
-    "test:db:setup": "cross-env NODE_ENV=test npx prisma migrate deploy && cross-env NODE_ENV=test node prisma/seedStatic.js",
-=======
     "dev": "npx prisma generate && cross-env NODE_ENV=development node --watch ./src/server.js",
     "start": "cross-env NODE_ENV=production node ./src/server.js",
     "db:setup": "npx prisma migrate dev --name init && npm run seed:static",
@@ -19,7 +11,6 @@
     "test:watch": "cls && npm run test -- --watch --silent",
     "test:coverage": "cls && npm run test -- --coverage --silent && start coverage/lcov-report/index.html",
     "test:db:setup": "cross-env NODE_ENV=test cross-env DATABASE_URL=\"mysql://root:admin@localhost:3306/proyecto_test\" npx prisma migrate deploy && cross-env NODE_ENV=test cross-env DATABASE_URL=\"mysql://root:admin@localhost:3306/proyecto_test\" node prisma/seedStatic.js",
->>>>>>> refactor/auth
     "test:db:clean": "cross-env NODE_ENV=test node tests/setup/cleanDb.js",
     "seed:static": "node prisma/seedStatic.js",
     "seed:demo": "node prisma/seedDemo.js"
@@ -37,10 +28,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-<<<<<<< HEAD
-=======
     "proyecto-sena": "file:..",
->>>>>>> refactor/auth
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },
@@ -55,13 +43,9 @@
   },
   "jest": {
     "testEnvironment": "node",
-<<<<<<< HEAD
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup/jest.setup.js"],
-=======
     "setupFilesAfterEnv": [
       "<rootDir>/tests/setup/jest.setup.js"
     ],
->>>>>>> refactor/auth
     "globalSetup": "<rootDir>/tests/setup/globalSetup.js",
     "testTimeout": 30000,
     "verbose": true

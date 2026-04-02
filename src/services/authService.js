@@ -34,11 +34,7 @@ exports.registerService = async (email, name, password, role) => {
             name,
             password: hashedPassword,
             role,
-<<<<<<< HEAD
-            isActive: false,
-=======
             isActive: true,
->>>>>>> refactor/auth
             createdAt: new Date(),
             updatedAt: new Date(),
         },
@@ -71,10 +67,7 @@ exports.loginService = async (email, password) => {
         where: { email: email },
         select: {
             id: true,
-<<<<<<< HEAD
-=======
             name: true,
->>>>>>> refactor/auth
             email: true,
             password: true,
             role: true,

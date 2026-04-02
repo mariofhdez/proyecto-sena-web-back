@@ -145,10 +145,7 @@ dist
 
 # Prisma ORM
 generated/prisma/
-<<<<<<< HEAD
-=======
 prisma/migrations/
->>>>>>> refactor/auth
 
 requerimientos.md
 estructura-carpetas.txt
@@ -157,9 +154,5 @@ cronograma.md
 utilidades-comunes.md
 test-mock.js
 test-settlement.js
-<<<<<<< HEAD
-README_TESTS_SIMPLE.md
-=======
 README_TESTS_SIMPLE.md
 CHECKLIST_AVANCE_BACKEND.md
->>>>>>> refactor/auth
