@@ -20,7 +20,10 @@ exports.getAll = async (query) => {
         status: { not: 'VOID'},
         ...query
     }
+<<<<<<< HEAD
     console.log('where: ',where)
+=======
+>>>>>>> refactor/auth
     const settlements = await prisma.settlement.findMany({
         include: {
             details: true,
@@ -45,8 +48,14 @@ exports.getById = async (id) => {
     const settlement = await prisma.settlement.findUnique({
         where: { id: id },
         include: {
+<<<<<<< HEAD
             details: true,
             employee: true
+=======
+            employee: true,
+            period: true,
+            details: {include: {concept: true}}
+>>>>>>> refactor/auth
         }
     });
     if (!settlement) throw new NotFoundError('Settlement with id \'' + id + '\' was not found');

@@ -16,7 +16,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"email\": \"marioe_4@xample.com\",\r\n    \"name\": \"Andres\",\r\n    \"password\": \"P455w0rd\",\r\n    \"role\": \"ADMIN\"\r\n}",
+=======
+							"raw": "{\r\n    \"email\": \"mario+4@xample.com\",\r\n    \"name\": \"Andres\",\r\n    \"password\": \"P455w0rd\",\r\n    \"role\": \"USER\"\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -107,7 +111,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"email\": \"admin@xample.com\",\r\n    \"password\": \"P455w0rd\"\r\n\r\n}",
+=======
+							"raw": "{\r\n    \"email\": \"admin@admin.com\",\r\n    \"password\": \"admin123\"\r\n\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -159,11 +167,54 @@
 							"body": null
 						}
 					]
+<<<<<<< HEAD
+=======
+				},
+				{
+					"name": "Validate token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTI1LCJlbWFpbCI6InRlc3QtYWRtaW5AZW1haWwuY29tIiwicm9sZSI6IkFETUlOIiwiaXNBY3RpdmUiOnRydWUsImlhdCI6MTc1Mjk4NTUyMSwiZXhwIjoxNzUyOTg5MTIxfQ.FeHi9id0NaSJihesy-tuIZN3OwBj_dIsC2ReiduEpxo\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get me",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+>>>>>>> refactor/auth
 				}
 			]
 		},
 		{
+<<<<<<< HEAD
 			"name": "Admin",
+=======
+			"name": "Users",
+>>>>>>> refactor/auth
 			"item": [
 				{
 					"name": "Retrieve users",
@@ -188,13 +239,20 @@
 							}
 						],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/admin/users",
+=======
+							"raw": "{{base_url}}/api/users",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"admin",
+=======
+>>>>>>> refactor/auth
 								"users"
 							]
 						}
@@ -213,20 +271,31 @@
 							}
 						],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/admin/users/:id",
+=======
+							"raw": "{{base_url}}/api/users/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"admin",
+=======
+>>>>>>> refactor/auth
 								"users",
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "1"
+=======
+									"value": "2"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -234,7 +303,11 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Deactivate user",
+=======
+					"name": "Switch user status",
+>>>>>>> refactor/auth
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -249,14 +322,23 @@
 						"method": "PATCH",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/admin/deactivate-user/:id",
+=======
+							"raw": "{{base_url}}/api/users/status/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"admin",
 								"deactivate-user",
+=======
+								"users",
+								"status",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
@@ -270,6 +352,7 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Delete user",
 					"request": {
 						"method": "DELETE",
@@ -301,6 +384,8 @@
 			"name": "User",
 			"item": [
 				{
+=======
+>>>>>>> refactor/auth
 					"name": "Update user",
 					"request": {
 						"method": "PATCH",
@@ -327,6 +412,34 @@
 						}
 					},
 					"response": []
+<<<<<<< HEAD
+=======
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+>>>>>>> refactor/auth
 				}
 			]
 		},
@@ -340,7 +453,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "// [\r\n    {\r\n        // \"id\": 1,\r\n        \"identification\": \"98657\",\r\n        \"firstSurname\": \"Gonzalez\",\r\n        \"secondSurname\": \"García\",\r\n        \"firstName\": \"Juan\",\r\n        \"otherNames\": \"Carlos\",\r\n        \"salary\": 1500000,\r\n        \"transportAllowance\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 4,\r\n    //     \"identification\": \"456\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 5,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 6,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 7,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 8,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 9,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 10,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 11,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 12,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    // },\r\n    // {\r\n    //     \"id\": 13,\r\n    //     \"identification\": \"65416561685\",\r\n    //     \"firstSurname\": \"iglesias\",\r\n    //     \"secondSurname\": null,\r\n    //     \"firstName\": \"julio\",\r\n    //     \"otherNames\": null,\r\n    //     \"salary\": 1300000,\r\n    //     \"transportAllowance\": true,\r\n    //     \"isActive\": true\r\n    }\r\n// ]",
+=======
+							"raw": "{\r\n    \"identification\": \"12356\",\r\n    \"firstName\": \"Manuel\",\r\n    \"otherNames\": \"Francisco\",\r\n    \"firstSurname\": \"Rodríguez\",\r\n    \"secondSurname\": \"Zapata\",\r\n    \"salary\": 1500000,\r\n    \"transportAllowance\": true,\r\n    \"position\": \"Gerente\"\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -348,13 +465,21 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee/",
+=======
+							"raw": "{{base_url}}/api/employees/",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee",
+=======
+								"employees",
+>>>>>>> refactor/auth
 								""
 							]
 						}
@@ -367,13 +492,40 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee",
+=======
+							"raw": "{{base_url}}/api/employees",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee"
+=======
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get active employees",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/employees/active",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"employees",
+								"active"
+>>>>>>> refactor/auth
 							]
 						}
 					},
@@ -385,13 +537,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee/:id",
+=======
+							"raw": "{{base_url}}/api/employees/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee",
+=======
+								"employees",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
@@ -410,18 +570,30 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee?identification=456",
+=======
+							"raw": "{{base_url}}/api/employees?identification=986",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee"
+=======
+								"employees"
+>>>>>>> refactor/auth
 							],
 							"query": [
 								{
 									"key": "identification",
+<<<<<<< HEAD
 									"value": "456"
+=======
+									"value": "986"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -435,7 +607,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"firstSurname\": \"Jaime\",\r\n    \"secondSurname\": \"\",\r\n    \"firstName\": \"Agudelo\",\r\n    \"otherNames\": null,\r\n    \"salary\": 7000000,\r\n    \"transportAllowance\": false,\r\n    \"position\": \"Gerente General\"\r\n}",
+=======
+							"raw": "{\r\n    \"transportAllowance\": true\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -443,19 +619,31 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee/:id",
+=======
+							"raw": "{{base_url}}/api/employees/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee",
+=======
+								"employees",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "2"
+=======
+									"value": "3"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -468,19 +656,31 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/employee/:id",
+=======
+							"raw": "{{base_url}}/api/employees/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"employee",
+=======
+								"employees",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "17"
+=======
+									"value": "2"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -490,6 +690,7 @@
 			]
 		},
 		{
+<<<<<<< HEAD
 			"name": "News",
 			"item": [
 				{
@@ -508,19 +709,35 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/settlement-news/preload",
+=======
+			"name": "Concepts",
+			"item": [
+				{
+					"name": "Retrieve Concepts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/concepts",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news",
 								"preload"
+=======
+								"concepts"
+>>>>>>> refactor/auth
 							]
 						}
 					},
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Create settlement new",
 					"request": {
 						"method": "POST",
@@ -563,11 +780,37 @@
 								"settlement-news",
 								":id",
 								"draft"
+=======
+					"name": "Get by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/concepts/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"concepts",
+								":id"
+							],
+							"query": [
+								{
+									"key": null,
+									"value": "",
+									"disabled": true
+								}
+>>>>>>> refactor/auth
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "10"
+=======
+									"value": "8"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -575,35 +818,87 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Retrieve settlement news",
+=======
+					"name": "Get by Code",
+>>>>>>> refactor/auth
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement-news",
+=======
+							"raw": "{{base_url}}/api/concepts/code/:code",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news"
+=======
+								"concepts",
+								"code",
+								":code"
+							],
+							"variable": [
+								{
+									"key": "code",
+									"value": "111"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Novelties",
+			"item": [
+				{
+					"name": "Retrieve novelties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/novelties",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"novelties"
+>>>>>>> refactor/auth
 							]
 						}
 					},
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Retrieve settlement news with params",
+=======
+					"name": "Get novelties by params",
+>>>>>>> refactor/auth
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement-news?employeeId=2&startDate=2025-01-01&endDate=2025-01-31",
+=======
+							"raw": "{{base_url}}/api/novelties?status=PENDING",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news"
 							],
 							"query": [
@@ -622,6 +917,18 @@
 								{
 									"key": "conceptType",
 									"value": "DEDUCCION",
+=======
+								"novelties"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "PENDING"
+								},
+								{
+									"key": "conceptId",
+									"value": "8",
+>>>>>>> refactor/auth
 									"disabled": true
 								}
 							]
@@ -630,24 +937,40 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Get settlement by id",
+=======
+					"name": "Get novelty by id",
+>>>>>>> refactor/auth
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement-news/:id",
+=======
+							"raw": "{{base_url}}/api/novelties/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news",
+=======
+								"novelties",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "51"
+=======
+									"value": "7"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -655,6 +978,7 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Update settlement new",
 					"request": {
 						"method": "PATCH",
@@ -670,12 +994,51 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/settlement-news/:id",
+=======
+					"name": "Get employee novelties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/novelties/employee/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news",
+=======
+								"novelties",
+								"employee",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get period novelties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/novelties/period/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"novelties",
+								"period",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
@@ -689,24 +1052,104 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Delete settlement new by id",
 					"request": {
 						"method": "DELETE",
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/settlement-news/:id",
+=======
+					"name": "Create a novelty",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2025-01-01\",\r\n    \"quantity\": 2,\r\n    \"conceptId\": 24,\r\n    \"employeeId\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/novelties",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement-news",
+=======
+								"novelties"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update novelty",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\"id\": 7,\r\n    \"date\": \"2025-02-01\",\r\n    \"quantity\": 8,\r\n    \"value\": 45454.55,\r\n    \"status\": \"PENDING\",\r\n    \"conceptId\": 8,\r\n    \"employeeId\": 3}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/novelties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"novelties",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "109"
+=======
+									"value": "7"
+>>>>>>> refactor/auth
+								}
+							]
+						}
+					},
+					"response": []
+<<<<<<< HEAD
+=======
+				},
+				{
+					"name": "Delete novelty",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/novelties/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"novelties",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "4"
 								}
 							]
 						}
@@ -716,9 +1159,112 @@
 			]
 		},
 		{
+			"name": "Settlement Detail",
+			"item": [
+				{
+					"name": "Retrieve settlement details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlement detail by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-details/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-details",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlement detail by settlementId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlement-details/settlement/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-details",
+								"settlement",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create settlement detail",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"settlementId\": 1,\r\n    \"conceptId\": 1,\r\n    \"employeeId\": 3,\r\n    \"date\": \"2024-12-12\",\r\n    \"quantity\": 2,\r\n    \"value\": 100000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/settlement-details",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlement-details"
+							]
+						}
+					},
+					"response": []
+>>>>>>> refactor/auth
+				}
+			]
+		},
+		{
 			"name": "Settlements",
 			"item": [
 				{
+<<<<<<< HEAD
 					"name": "settlementEarnings",
 					"item": [
 						{
@@ -1014,13 +1560,19 @@
 					]
 				},
 				{
+=======
+>>>>>>> refactor/auth
 					"name": "Create settlement",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"employeeId\": 3,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+=======
+							"raw": "{\r\n    \"employeeId\": 3,\r\n    \"startDate\": \"2023-02-01\",\r\n    \"endDate\": \"2023-02-28\"\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1028,13 +1580,21 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement",
+=======
+							"raw": "{{base_url}}/api/settlements",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement"
+=======
+								"settlements"
+>>>>>>> refactor/auth
 							]
 						}
 					},
@@ -1047,7 +1607,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"settlementId\": 30,\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+=======
+							"raw": "{\r\n    \"settlementId\": 13\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1055,13 +1619,21 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement/settle",
+=======
+							"raw": "{{base_url}}/api/settlements/settle",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement",
+=======
+								"settlements",
+>>>>>>> refactor/auth
 								"settle"
 							]
 						}
@@ -1075,7 +1647,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"settlementId\": 5\r\n}",
+=======
+							"raw": "{\r\n    \"settlementId\": 13\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1083,14 +1659,23 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement/draft",
+=======
+							"raw": "{{base_url}}/api/settlements/close",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement",
 								"draft"
+=======
+								"settlements",
+								"close"
+>>>>>>> refactor/auth
 							]
 						}
 					},
@@ -1102,13 +1687,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement",
+=======
+							"raw": "{{base_url}}/api/settlements",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement"
+=======
+								"settlements"
+>>>>>>> refactor/auth
 							]
 						}
 					},
@@ -1120,13 +1713,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement?periodId=9",
+=======
+							"raw": "{{base_url}}/api/settlements?periodId=1",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement"
+=======
+								"settlements"
+>>>>>>> refactor/auth
 							],
 							"query": [
 								{
@@ -1141,7 +1742,11 @@
 								},
 								{
 									"key": "periodId",
+<<<<<<< HEAD
 									"value": "9"
+=======
+									"value": "1"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -1154,19 +1759,57 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement/:id",
+=======
+							"raw": "{{base_url}}/api/settlements/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement",
+=======
+								"settlements",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "14"
+=======
+									"value": "7"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get settlement by employeeId",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/settlements/employeeId/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"settlements",
+								"employeeId",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -1221,19 +1864,31 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/settlement/:id",
+=======
+							"raw": "{{base_url}}/api/settlements/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"settlement",
+=======
+								"settlements",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "5"
+=======
+									"value": "30"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -1252,7 +1907,11 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
+<<<<<<< HEAD
 							"raw": "{\r\n    \"startDate\": \"2025-01-01\",\r\n    \"endDate\": \"2025-01-31\"\r\n}",
+=======
+							"raw": "{\r\n    \"period\": \"2020 Febrero\",\r\n    \"startDate\": \"2020-02-01\",\r\n    \"endDate\": \"2020-02-28\",\r\n    \"status\": \"DRAFT\"\r\n}",
+>>>>>>> refactor/auth
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1260,13 +1919,21 @@
 							}
 						},
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/period/",
+=======
+							"raw": "{{base_url}}/api/periods/",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"period",
+=======
+								"periods",
+>>>>>>> refactor/auth
 								""
 							]
 						}
@@ -1274,6 +1941,7 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
 					"name": "Load employees to period",
 					"request": {
 						"method": "POST",
@@ -1379,6 +2047,8 @@
 					"response": []
 				},
 				{
+=======
+>>>>>>> refactor/auth
 					"name": "Open period",
 					"request": {
 						"method": "POST",
@@ -1414,6 +2084,79 @@
 					"response": []
 				},
 				{
+<<<<<<< HEAD
+=======
+					"name": "Settle period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/settle",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"settle"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Close period",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employees\": [\r\n        1,\r\n        2,\r\n        3\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/period/:id/close",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"period",
+								":id",
+								"close"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+>>>>>>> refactor/auth
 					"name": "Draft period",
 					"request": {
 						"method": "POST",
@@ -1489,13 +2232,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/period/",
+=======
+							"raw": "{{base_url}}/api/periods/",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"period",
+=======
+								"periods",
+>>>>>>> refactor/auth
 								""
 							]
 						}
@@ -1508,13 +2259,21 @@
 						"method": "GET",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/period/:id",
+=======
+							"raw": "{{base_url}}/api/periods/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"period",
+=======
+								"periods",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
@@ -1533,19 +2292,31 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
+<<<<<<< HEAD
 							"raw": "{{base_url}}/api/period/:id",
+=======
+							"raw": "{{base_url}}/api/periods/:id",
+>>>>>>> refactor/auth
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
+<<<<<<< HEAD
 								"period",
+=======
+								"periods",
+>>>>>>> refactor/auth
 								":id"
 							],
 							"variable": [
 								{
 									"key": "id",
+<<<<<<< HEAD
 									"value": "4"
+=======
+									"value": "1"
+>>>>>>> refactor/auth
 								}
 							]
 						}
@@ -1553,6 +2324,7 @@
 					"response": []
 				}
 			]
+<<<<<<< HEAD
 		},
 		{
 			"name": "Concepts",
@@ -1576,6 +2348,8 @@
 					"response": []
 				}
 			]
+=======
+>>>>>>> refactor/auth
 		}
 	],
 	"auth": {
@@ -1609,5 +2383,20 @@
 				]
 			}
 		}
+<<<<<<< HEAD
+=======
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+>>>>>>> refactor/auth
 	]
 }

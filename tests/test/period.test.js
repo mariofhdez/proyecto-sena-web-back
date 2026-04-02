@@ -25,7 +25,7 @@ describe('Period', () => {
         expect(response.body).toHaveProperty('period', '2024 Enero');
         expect(response.body).toHaveProperty('startDate', '2024-01-01T00:00:00.000Z');
         expect(response.body).toHaveProperty('endDate', '2024-01-31T00:00:00.000Z');
-        expect(response.body).toHaveProperty('status', 'OPEN');
+        expect(response.body).toHaveProperty('status', 'DRAFT');
     });
     test('Debe arrojar un error al crear un periodo sin fechas', async () => {
         const response = await api.post('/api/periods').send({

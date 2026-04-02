@@ -181,6 +181,26 @@ exports.getActiveEmployees = async (req, res, next) => {
   }
 };
 
+<<<<<<< HEAD
+=======
+exports.toggleEmployee = async (req, res, next) => {
+  try {
+    if (!req.params.id || req.params.id === null) throw new ValidationError('Falta el \'id\' en del empleado.');
+
+    const id = parseInt(req.params.id);
+    if (!isValidNumericType(id)) throw new ValidationError('Field id must be a number type');
+     // Valida que el empleado exista
+    const verified = await verifyId(id, "employee");
+    if (!verified) throw new NotFoundError('Employee with id \'' + id + '\' was not found');
+
+    const updatedEmployee = await employeeService.toggleEmployeeStatus(id);
+    res.json(updatedEmployee);
+  } catch (error){
+    next(error);
+  }
+}
+
+>>>>>>> refactor/auth
 
 getAllEmployees = async () => {
   const employees = await employeeService.getAll();

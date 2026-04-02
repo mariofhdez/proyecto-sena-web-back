@@ -250,5 +250,10 @@ employeeRouter.patch('/:id', employeeController.updateEmployee);
  */
 employeeRouter.delete('/:id', employeeController.deleteEmployee);
 
+<<<<<<< HEAD
+=======
+employeeRouter.post('/status/:id', employeeController.toggleEmployee);
+
+>>>>>>> refactor/auth
 
 module.exports = employeeRouter;

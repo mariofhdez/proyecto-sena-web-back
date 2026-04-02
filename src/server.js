@@ -23,7 +23,11 @@ async function main() {
         if (!areConceptsLoaded()) {
             await loadPayrollConcepts();
         }
+<<<<<<< HEAD
         app.listen(PORT, () => {
+=======
+        app.listen(PORT, '0.0.0.0', () => {
+>>>>>>> refactor/auth
             console.log(`Servidor: http://localhost:${PORT}`);
         });
     } catch (error) {

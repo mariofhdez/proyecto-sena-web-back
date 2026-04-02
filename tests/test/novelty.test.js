@@ -203,7 +203,7 @@ describe('Novelty', () => {
         });
 
         const conceptsEmployee1 = [4, 8, 12, 15]
-        const conceptsEmployee2 = [18, 3, 25, 46]
+        const conceptsEmployee2 = [16, 3, 25, 46]
 
         for (const conceptId of conceptsEmployee1) {
             global.testHelper.createTestNovelty({
@@ -216,13 +216,14 @@ describe('Novelty', () => {
         }
 
         for (const conceptId of conceptsEmployee2) {
-            global.testHelper.createTestNovelty({
+            const novelty = global.testHelper.createTestNovelty({
                 employeeId: employee2.id,
                 conceptId: conceptId,
                 date: new Date('2024-01-20'),
                 value: 100000,
                 status: 'PENDING'
             });
+            expect(novelty).toBeTruthy();
         }
 
         const period = await api.post('/api/periods')

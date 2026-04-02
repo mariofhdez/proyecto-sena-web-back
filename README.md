@@ -189,7 +189,85 @@ Este sistema proporciona una autenticación robusta basada en JWT que permite ma
 
 ## ✅ Pruebas
 
+<<<<<<< HEAD
 🏗️ en proceso de elaboración
+=======
+### 🧪 Configuración de Tests
+
+El proyecto utiliza **Jest** como framework de testing con las siguientes configuraciones:
+
+- **Base de datos de pruebas**: Base de datos separada para tests (`payma_test`)
+- **Timeout**: 30 segundos por test
+- **Entorno**: Node.js
+- **Cobertura**: Genera reportes de cobertura automáticamente
+
+### 🔧 Configuración de Base de Datos para Tests
+
+Antes de ejecutar las pruebas por primera vez se debe ejecutar el comando de configuración de base de datos.
+Los tests utilizan una base de datos separada (`payma_test`) que se configura automáticamente:
+
+1. **Variables de entorno**: Se configuran automáticamente para usar `NODE_ENV=test`
+2. **Migraciones**: Se ejecutan automáticamente en la BD de pruebas
+3. **Datos de prueba**: Se cargan desde `prisma/seedStatic.js`
+4. **Limpieza**: La BD se limpia después de cada suite de tests
+
+```bash
+# Configurar base de datos de pruebas
+npm run test:db:setup
+
+# Limpiar base de datos de pruebas
+npm run test:db:clean
+```
+
+### 📋 Comandos Disponibles
+
+```bash
+# Ejecutar todas las pruebas
+npm test
+
+# Ejecutar pruebas en modo watch (desarrollo)
+npm run test:watch
+
+# Ejecutar pruebas con reporte de cobertura
+npm run test:coverage
+
+```
+
+### 🗂️ Estructura de Tests
+
+```
+# Desde ./backend/
+tests/
+├── setup/                 # Configuración y setup de tests
+│   ├── globalSetup.js     # Setup global antes de todos los tests
+│   ├── jest.setup.js      # Configuración específica de Jest
+│   ├── testDatabase.js    # Configuración de BD de pruebas
+│   └── cleanDb.js         # Limpieza de BD después de tests
+├── helpers/               # Utilidades y helpers para tests
+│   └── testHelper.js      # Funciones auxiliares para tests
+└── test/                  # Archivos de pruebas por módulo
+    ├── auth.test.js       # Tests de autenticación
+    ├── employee.test.js   # Tests de empleados
+    ├── concept.test.js    # Tests de conceptos
+    ├── period.test.js     # Tests de períodos
+    ├── settlement.test.js # Tests de liquidaciones
+    └── ...
+```
+
+### 📊 Reportes de Cobertura
+
+Al ejecutar `npm run test:coverage` se genera:
+- Reporte HTML en `coverage/lcov-report/index.html`
+- Métricas de cobertura por archivo y función
+- Análisis de líneas cubiertas vs no cubiertas
+
+### 🚀 Próximos Pasos
+
+- [ ] Aumentar cobertura de tests > 80%
+- [ ] Tests de integración para endpoints complejos
+- [ ] Tests de performance para motor de cálculo
+- [ ] Tests de seguridad para autenticación
+>>>>>>> refactor/auth
 
 🧪 [Configuración de Postman 🚀 para pruebas de la API](https://www.loom.com/share/bb755f19685f4aeb99ae2a9b9bf5a81b?sid=59dd5733-1db7-4057-b83a-b9f9a27e121d)
 

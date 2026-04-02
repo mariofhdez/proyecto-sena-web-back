@@ -1,6 +1,10 @@
 const noveltyService = require('../services/noveltyService');
 const { ValidationError, NotFoundError } = require('../utils/appError');
+<<<<<<< HEAD
 const { validateNoveltyBody } = require('../utils/noveltyValidation');
+=======
+const { validateNoveltyBody, validatePreloadBody } = require('../utils/noveltyValidation');
+>>>>>>> refactor/auth
 const { isValidNumericType } = require('../utils/typeofValidations');
 const { verifyId } = require('../utils/verifyId');
 
@@ -48,7 +52,11 @@ exports.createNovelty = async (req, res, next) => {
 
 exports.preload = async (req, res, next) => {
     try {
+<<<<<<< HEAD
         const data = await validateNoveltyPreload(req.body);
+=======
+        const data = await validatePreloadBody(req.body);
+>>>>>>> refactor/auth
         res.json(data);
     } catch (error) {
         next(error);
@@ -97,7 +105,11 @@ exports.getNoveltiesByEmployee = async (req, res, next) => {
         const employeeId = parseInt(req.params.employeeId);
         if (!isValidNumericType(employeeId)) throw new ValidationError('The field employeeId must be a numeric value.');
 
+<<<<<<< HEAD
         const novelties = await noveltyService.getAllNovelties({where: {employeeId: employeeId}});
+=======
+        const novelties = await noveltyService.getAllNovelties({employeeId: employeeId});
+>>>>>>> refactor/auth
         res.json(novelties);
     } catch (error) {
         next(error);
@@ -109,7 +121,11 @@ exports.getNoveltiesByPeriod = async (req, res, next) => {
         const periodId = parseInt(req.params.periodId);
         if (!isValidNumericType(periodId)) throw new ValidationError('The field periodId must be a numeric value.');
 
+<<<<<<< HEAD
         const novelties = await noveltyService.getAllNovelties({where: {periodId: periodId}});
+=======
+        const novelties = await noveltyService.getAllNovelties({periodId: periodId});
+>>>>>>> refactor/auth
         res.json(novelties);
     } catch (error) {
         next(error);

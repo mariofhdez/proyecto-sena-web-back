@@ -34,7 +34,7 @@ class TestHelper {
             const data = JSON.parse(fs.readFileSync('./prisma/staticData.json', 'utf8'));
             
             // Cargar conceptos usando upsert para evitar duplicados
-            for (const concept of data.PayrollConcept) {
+            for (const concept of data.payrollConcept) {
                 await this.prisma.concept.upsert({
                     where: { code: concept.code },
                     update: concept,

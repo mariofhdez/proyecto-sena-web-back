@@ -129,6 +129,7 @@ async function getPeriodBase(employeeId, date, type, calculatedValues = new Map(
                 throw new Error(`Tipo de base no soportado: ${type}`);
         };
 
+<<<<<<< HEAD
         const periodNovelties = await noveltyService.getAllNovelties({
             where: query,
             include: {
@@ -137,6 +138,16 @@ async function getPeriodBase(employeeId, date, type, calculatedValues = new Map(
         });
 
         total = periodNovelties.reduce((sum, novelty) => sum + novelty.value, 0);
+=======
+        const periodNovelties = await noveltyService.getAllNovelties(query);
+
+        total = periodNovelties.reduce((sum, novelty) => sum + novelty.value, 0);
+
+        if (total === 0) {
+            const employee = await employeeService.getById(employeeId);
+            total = employee.salary / 30;
+        }
+>>>>>>> refactor/auth
     }
 
     // Guardar en caché
@@ -217,6 +228,7 @@ async function generateSettlement(employeeId, periodId, startDate, endDate) {
 
     // Obtener novedades del período
     const novelties = await noveltyService.getAllNovelties({
+<<<<<<< HEAD
         where: {
             employeeId: employeeId,
             status: 'PENDING',
@@ -226,6 +238,14 @@ async function generateSettlement(employeeId, periodId, startDate, endDate) {
             }
         },
         include: { concept: true }
+=======
+        employeeId: employeeId,
+        status: 'PENDING',
+        date: {
+            gte: new Date(startDate),
+            lte: new Date(endDate)
+        }
+>>>>>>> refactor/auth
     });
 
     // Combinar conceptos regulares y novedades
@@ -273,10 +293,15 @@ async function generateSettlement(employeeId, periodId, startDate, endDate) {
                 calculatedValues // 🆕 Pasar el caché
             );
         } else {
+<<<<<<< HEAD
             console.log('else: ',concept);
             const novelty = novelties.find(n => n.conceptId === concept.id);
             if (novelty) {
                 console.log('novelty: ',novelty);
+=======
+            const novelty = novelties.find(n => n.conceptId === concept.id);
+            if (novelty) {
+>>>>>>> refactor/auth
                 value = novelty.value;
             }
         }

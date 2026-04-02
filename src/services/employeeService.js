@@ -95,3 +95,19 @@ exports.getEmployeeByIdentification = async (identification) => {
   const employee = await prisma.employee.findFirst({ where: { identification: identification } });
   return employee;
 };
+<<<<<<< HEAD
+=======
+
+exports.toggleEmployeeStatus = async (id) => {
+  const employee = await prisma.employee.findFirst({
+    where: {id: parseInt(id, 10)}
+  })
+
+  if(!employee) throw new NotFoundError('Employee was not found');
+
+  return prisma.employee.update({
+    where: { id: parseInt(employee.id,10)},
+    data: { isActive: !employee.isActive}
+  })
+}
+>>>>>>> refactor/auth

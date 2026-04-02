@@ -84,7 +84,11 @@ async function createUser() {
 
 async function main() {
   await createUser();
+<<<<<<< HEAD
   await upsertUnique('Concept', 'code', data.PayrollConcept); // Si no tiene id
+=======
+  await upsertUnique('concept', 'code', data.payrollConcept); // Si no tiene id
+>>>>>>> refactor/auth
 }
 
 // Ejecuta la función principal y maneja errores

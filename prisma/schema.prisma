@@ -145,7 +145,13 @@ model Period {
 }
 
 enum PeriodStatus {
+<<<<<<< HEAD
   OPEN
+=======
+  DRAFT
+  OPEN
+  SETTLE
+>>>>>>> refactor/auth
   CLOSED
 }
 
